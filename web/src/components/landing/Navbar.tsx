@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import type { NavData } from "../../types/landing";
 
 interface NavbarProps {
@@ -26,12 +27,12 @@ export function Navbar({ data }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+          <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-sky-600 flex items-center justify-center">
               <span className="text-white font-bold text-sm leading-none">S</span>
             </div>
             <span className="font-bold text-white text-lg tracking-tight">Signova</span>
-          </a>
+          </Link>
 
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-7">
@@ -48,17 +49,17 @@ export function Navbar({ data }: NavbarProps) {
 
           {/* Desktop CTA */}
           <div className="hidden md:block">
-            <a
-              href="#"
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg transition-colors"
+            <Link
+              to="/practice"
+              className="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold rounded-lg transition-colors"
             >
               {data.cta}
-            </a>
+            </Link>
           </div>
 
           {/* Mobile toggle */}
           <button
-            className="md:hidden p-2 text-slate-300 hover:text-white transition-colors"
+            className="md:hidden p-2 bg-transparent border-0 text-slate-300"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
             type="button"
@@ -89,12 +90,13 @@ export function Navbar({ data }: NavbarProps) {
               {link.label}
             </a>
           ))}
-          <a
-            href="#"
-            className="mt-4 flex items-center justify-center py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg transition-colors"
+          <Link
+            to="/practice"
+            onClick={() => setMobileOpen(false)}
+            className="mt-4 flex items-center justify-center py-3 bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold rounded-lg transition-colors"
           >
             {data.cta}
-          </a>
+          </Link>
         </div>
       )}
     </nav>

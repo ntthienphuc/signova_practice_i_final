@@ -11,11 +11,11 @@ export function TargetUsers({ data }: TargetUsersProps) {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center gap-4 mb-5">
-            <div className="w-10 h-1 rounded-full bg-indigo-600" />
-            <span className="text-sm font-semibold text-indigo-600 uppercase tracking-widest">
+            <div className="w-10 h-1 rounded-full bg-sky-600" />
+            <span className="text-sm font-semibold text-sky-600 uppercase tracking-widest">
               Who It's For
             </span>
-            <div className="w-10 h-1 rounded-full bg-indigo-600" />
+            <div className="w-10 h-1 rounded-full bg-sky-600" />
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-5">
             {data.heading}
@@ -27,7 +27,7 @@ export function TargetUsers({ data }: TargetUsersProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {data.items.map((item) => (
             <div key={item.title} className="text-center group">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 flex items-center justify-center text-4xl mx-auto mb-6 group-hover:from-indigo-100 group-hover:to-indigo-200 transition-colors shadow-sm">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-sky-50 to-sky-100 flex items-center justify-center text-4xl mx-auto mb-6 group-hover:from-sky-100 group-hover:to-sky-200 transition-colors shadow-sm">
                 {item.icon}
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
