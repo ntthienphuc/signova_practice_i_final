@@ -1,5 +1,4 @@
-import type { LandingData } from "../types/landing";
-
+import { useOutletContext } from "react-router-dom";
 import { Hero } from "../components/landing/Hero";
 import { ProblemStatement } from "../components/landing/ProblemStatement";
 import { Features } from "../components/landing/Features";
@@ -9,12 +8,12 @@ import { Pricing } from "../components/landing/Pricing";
 import { ValueProps } from "../components/landing/ValueProps";
 import { CTAFooter } from "../components/landing/CTAFooter";
 import landingData from "../data/landingData";
+import type { LandingOutletContext } from "../layouts/LandingLayout";
 
-interface LandingPageProps {
-  data?: LandingData;
-}
+export default function LandingPage() {
+  const { locale } = useOutletContext<LandingOutletContext>();
+  const data = landingData[locale];
 
-export default function LandingPage({ data = landingData.vi }: LandingPageProps) {
   return (
     <>
       <main>
