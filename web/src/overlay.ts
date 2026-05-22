@@ -1,4 +1,4 @@
-import type { AnalyzeResponse, FrameData, FramePoints, Point, SegmentTiming } from "./api";
+import type { AnalyzeResponse, FrameData, FramePoints, Point, SegmentTiming } from "./api/index";
 
 export interface Palette {
   baseEdge: string;
