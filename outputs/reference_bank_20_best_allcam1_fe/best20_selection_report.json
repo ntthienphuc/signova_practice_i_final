@@ -1,0 +1,304 @@
+{
+  "selected": [
+    {
+      "gloss": "Làm bài tập",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 100.0,
+      "wrong_avg_score": 43.0,
+      "display_reference": {
+        "gloss": "Làm bài tập",
+        "video_id": "021028",
+        "video_path": "All_cam1\\021028.mp4",
+        "score": 100.0
+      }
+    },
+    {
+      "gloss": "Không nên",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 100.0,
+      "wrong_avg_score": 65.0,
+      "display_reference": {
+        "gloss": "Không nên",
+        "video_id": "021267",
+        "video_path": "All_cam1\\021267.mp4",
+        "score": 100.0
+      }
+    },
+    {
+      "gloss": "Tường",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 98.5,
+      "wrong_avg_score": 51.0,
+      "display_reference": {
+        "gloss": "Tường",
+        "video_id": "020723",
+        "video_path": "All_cam1\\020723.mp4",
+        "score": 100.0
+      }
+    },
+    {
+      "gloss": "Mới",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 98.0,
+      "wrong_avg_score": 72.0,
+      "display_reference": {
+        "gloss": "Mới",
+        "video_id": "021079",
+        "video_path": "All_cam1\\021079.mp4",
+        "score": 100.0
+      }
+    },
+    {
+      "gloss": "Cầu lông",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 95.0,
+      "wrong_avg_score": 63.0,
+      "display_reference": {
+        "gloss": "Cầu lông",
+        "video_id": "020800",
+        "video_path": "All_cam1\\020800.mp4",
+        "score": 100.0
+      }
+    },
+    {
+      "gloss": "Thái Lan",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 94.5,
+      "wrong_avg_score": 51.0,
+      "display_reference": {
+        "gloss": "Thái Lan",
+        "video_id": "021199",
+        "video_path": "All_cam1\\021199.mp4",
+        "score": 95.0
+      }
+    },
+    {
+      "gloss": "Trường Cao đẳng",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 93.5,
+      "wrong_avg_score": 58.0,
+      "display_reference": {
+        "gloss": "Trường Cao đẳng",
+        "video_id": "020634",
+        "video_path": "All_cam1\\020634.mp4",
+        "score": 100.0
+      }
+    },
+    {
+      "gloss": "Con chó",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 92.5,
+      "wrong_avg_score": 26.0,
+      "display_reference": {
+        "gloss": "Con chó",
+        "video_id": "021301",
+        "video_path": "All_cam1\\021301.mp4",
+        "score": 97.0
+      }
+    },
+    {
+      "gloss": "Quần đùi",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 90.0,
+      "wrong_avg_score": 57.0,
+      "display_reference": {
+        "gloss": "Quần đùi",
+        "video_id": "021194",
+        "video_path": "All_cam1\\021194.mp4",
+        "score": 99.0
+      }
+    },
+    {
+      "gloss": "Nhân viên phục vụ",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 89.5,
+      "wrong_avg_score": 54.0,
+      "display_reference": {
+        "gloss": "Nhân viên phục vụ",
+        "video_id": "020968",
+        "video_path": "All_cam1\\020968.mp4",
+        "score": 94.0
+      }
+    },
+    {
+      "gloss": "Tháng mười",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 86.0,
+      "wrong_avg_score": 67.0,
+      "display_reference": {
+        "gloss": "Tháng mười",
+        "video_id": "020777",
+        "video_path": "All_cam1\\020777.mp4",
+        "score": 95.0
+      }
+    },
+    {
+      "gloss": "Buổi tối",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 85.5,
+      "wrong_avg_score": 77.0,
+      "display_reference": {
+        "gloss": "Buổi tối",
+        "video_id": "020791",
+        "video_path": "All_cam1\\020791.mp4",
+        "score": 98.0
+      }
+    },
+    {
+      "gloss": "Mũ",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 83.5,
+      "wrong_avg_score": 50.0,
+      "display_reference": {
+        "gloss": "Mũ",
+        "video_id": "020860",
+        "video_path": "All_cam1\\020860.mp4",
+        "score": 84.0
+      }
+    },
+    {
+      "gloss": "Nhảy dây",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 83.5,
+      "wrong_avg_score": 57.0,
+      "display_reference": {
+        "gloss": "Nhảy dây",
+        "video_id": "020905",
+        "video_path": "All_cam1\\020905.mp4",
+        "score": 85.0
+      }
+    },
+    {
+      "gloss": "Bơi lội",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 80.5,
+      "wrong_avg_score": 52.0,
+      "display_reference": {
+        "gloss": "Bơi lội",
+        "video_id": "020804",
+        "video_path": "All_cam1\\020804.mp4",
+        "score": 86.0
+      }
+    },
+    {
+      "gloss": "Ngày Quốc tế Lao động",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 72.5,
+      "wrong_avg_score": 56.0,
+      "display_reference": {
+        "gloss": "Ngày Quốc tế Lao động",
+        "video_id": "020667",
+        "video_path": "All_cam1\\020667.mp4",
+        "score": 74.0
+      }
+    },
+    {
+      "gloss": "Hoàng hôn",
+      "correct_pass": 2,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 69.0,
+      "wrong_avg_score": 60.0,
+      "display_reference": {
+        "gloss": "Hoàng hôn",
+        "video_id": "020687",
+        "video_path": "All_cam1\\020687.mp4",
+        "score": 70.0
+      }
+    },
+    {
+      "gloss": "Dài",
+      "correct_pass": 1,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 83.5,
+      "wrong_avg_score": 67.0,
+      "display_reference": {
+        "gloss": "Dài",
+        "video_id": "021383",
+        "video_path": "All_cam1\\021383.mp4",
+        "score": 100.0
+      }
+    },
+    {
+      "gloss": "Dụng cụ học tập",
+      "correct_pass": 1,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 82.5,
+      "wrong_avg_score": 58.0,
+      "display_reference": {
+        "gloss": "Dụng cụ học tập",
+        "video_id": "020930",
+        "video_path": "All_cam1\\020930.mp4",
+        "score": 100.0
+      }
+    },
+    {
+      "gloss": "Giúp đỡ",
+      "correct_pass": 1,
+      "correct_total": 2,
+      "wrong_pass": 1,
+      "wrong_total": 1,
+      "correct_avg_score": 81.0,
+      "wrong_avg_score": 12.0,
+      "display_reference": {
+        "gloss": "Giúp đỡ",
+        "video_id": "021036",
+        "video_path": "All_cam1\\021036.mp4",
+        "score": 100.0
+      }
+    }
+  ]
+}
