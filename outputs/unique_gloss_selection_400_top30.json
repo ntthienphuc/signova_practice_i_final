@@ -1,0 +1,873 @@
+{
+  "cam": "cam_1",
+  "num_glosses_total": 400,
+  "samples_per_gloss_for_selection": 10,
+  "target_len": 40,
+  "selected_glosses": [
+    "Con chó",
+    "Quần đùi",
+    "Ngày Quốc tế Lao động",
+    "Nhân viên phục vụ",
+    "Hoàng hôn",
+    "Mũ",
+    "Tường",
+    "Dài",
+    "Mới",
+    "Ngày Nhà giáo Việt Nam",
+    "Buổi tối",
+    "Thái Lan",
+    "Rạp chiếu phim",
+    "Bình minh",
+    "Múa",
+    "Buổi sáng",
+    "Vợ",
+    "Trường Cao đẳng",
+    "Dụng cụ học tập",
+    "Mũ bảo hiểm",
+    "Làm bài tập",
+    "Giúp đỡ",
+    "Nhảy dây",
+    "Con dê",
+    "Bóng rổ",
+    "Tháng mười",
+    "Bơi lội",
+    "Cầu lông",
+    "Thấp (đồ vật)",
+    "Không nên"
+  ],
+  "selected": [
+    {
+      "gloss": "Con chó",
+      "sample_count": 64,
+      "nearest_neighbors": [
+        {
+          "gloss": "Gội đầu",
+          "distance": 0.13848306238651276
+        },
+        {
+          "gloss": "Con thỏ",
+          "distance": 0.14928565919399261
+        },
+        {
+          "gloss": "Đầu bếp",
+          "distance": 0.1890067309141159
+        },
+        {
+          "gloss": "Đồ buộc tóc",
+          "distance": 0.19695965945720673
+        },
+        {
+          "gloss": "Mùa mưa",
+          "distance": 0.2564431428909302
+        }
+      ]
+    },
+    {
+      "gloss": "Quần đùi",
+      "sample_count": 66,
+      "nearest_neighbors": [
+        {
+          "gloss": "Cái quần",
+          "distance": 0.092269666492939
+        },
+        {
+          "gloss": "Mập",
+          "distance": 0.26705196499824524
+        },
+        {
+          "gloss": "Trung Quốc",
+          "distance": 0.26903802156448364
+        },
+        {
+          "gloss": "Trễ",
+          "distance": 0.27818596363067627
+        },
+        {
+          "gloss": "Hài hước",
+          "distance": 0.2949807941913605
+        }
+      ]
+    },
+    {
+      "gloss": "Ngày Quốc tế Lao động",
+      "sample_count": 60,
+      "nearest_neighbors": [
+        {
+          "gloss": "Ngày Quốc tế Thiếu nhi",
+          "distance": 0.2387920618057251
+        },
+        {
+          "gloss": "Trường Đại học",
+          "distance": 0.36753425002098083
+        },
+        {
+          "gloss": "Ngày Quốc tế Phụ nữ",
+          "distance": 0.42304307222366333
+        },
+        {
+          "gloss": "Dụng cụ học tập",
+          "distance": 0.42665067315101624
+        },
+        {
+          "gloss": "Giấy nháp",
+          "distance": 0.4291648268699646
+        }
+      ]
+    },
+    {
+      "gloss": "Nhân viên phục vụ",
+      "sample_count": 53,
+      "nearest_neighbors": [
+        {
+          "gloss": "Áo thun",
+          "distance": 0.3372194468975067
+        },
+        {
+          "gloss": "Áo sơ mi",
+          "distance": 0.34825730323791504
+        },
+        {
+          "gloss": "Màu xanh lá cây",
+          "distance": 0.4354648292064667
+        },
+        {
+          "gloss": "Nhân viên văn phòng",
+          "distance": 0.4463392198085785
+        },
+        {
+          "gloss": "Mũ bảo hiểm",
+          "distance": 0.44862431287765503
+        }
+      ]
+    },
+    {
+      "gloss": "Hoàng hôn",
+      "sample_count": 59,
+      "nearest_neighbors": [
+        {
+          "gloss": "Diễn viên",
+          "distance": 0.32204189896583557
+        },
+        {
+          "gloss": "Công viên",
+          "distance": 0.3357278108596802
+        },
+        {
+          "gloss": "Xe tải",
+          "distance": 0.34708377718925476
+        },
+        {
+          "gloss": "Buổi trưa",
+          "distance": 0.3553442060947418
+        },
+        {
+          "gloss": "Quả dứa",
+          "distance": 0.3607098460197449
+        }
+      ]
+    },
+    {
+      "gloss": "Mũ",
+      "sample_count": 54,
+      "nearest_neighbors": [
+        {
+          "gloss": "Y tá",
+          "distance": 0.12167815864086151
+        },
+        {
+          "gloss": "Kẹp tóc",
+          "distance": 0.13164058327674866
+        },
+        {
+          "gloss": "Cái đèn",
+          "distance": 0.14627724885940552
+        },
+        {
+          "gloss": "Tivi",
+          "distance": 0.14743651449680328
+        },
+        {
+          "gloss": "Sinh viên",
+          "distance": 0.16906072199344635
+        }
+      ]
+    },
+    {
+      "gloss": "Tường",
+      "sample_count": 67,
+      "nearest_neighbors": [
+        {
+          "gloss": "Vòng tay",
+          "distance": 0.2220810502767563
+        },
+        {
+          "gloss": "Tháng",
+          "distance": 0.2240862250328064
+        },
+        {
+          "gloss": "Giây",
+          "distance": 0.2260190099477768
+        },
+        {
+          "gloss": "Ngân hàng",
+          "distance": 0.2391723245382309
+        },
+        {
+          "gloss": "Báo cáo",
+          "distance": 0.24912555515766144
+        }
+      ]
+    },
+    {
+      "gloss": "Dài",
+      "sample_count": 71,
+      "nearest_neighbors": [
+        {
+          "gloss": "Rộng",
+          "distance": 0.1433786153793335
+        },
+        {
+          "gloss": "Xa",
+          "distance": 0.14726601541042328
+        },
+        {
+          "gloss": "Cái bàn",
+          "distance": 0.2502254545688629
+        },
+        {
+          "gloss": "Yên tĩnh",
+          "distance": 0.2630138099193573
+        },
+        {
+          "gloss": "Cái nồi",
+          "distance": 0.3654392957687378
+        }
+      ]
+    },
+    {
+      "gloss": "Mới",
+      "sample_count": 57,
+      "nearest_neighbors": [
+        {
+          "gloss": "Quả dừa",
+          "distance": 0.25434502959251404
+        },
+        {
+          "gloss": "Nặng",
+          "distance": 0.25607988238334656
+        },
+        {
+          "gloss": "Dép",
+          "distance": 0.2749490439891815
+        },
+        {
+          "gloss": "Xe buýt",
+          "distance": 0.2800760269165039
+        },
+        {
+          "gloss": "Phút",
+          "distance": 0.2818770110607147
+        }
+      ]
+    },
+    {
+      "gloss": "Ngày Nhà giáo Việt Nam",
+      "sample_count": 73,
+      "nearest_neighbors": [
+        {
+          "gloss": "Ngày Quốc tế Phụ nữ",
+          "distance": 0.26694852113723755
+        },
+        {
+          "gloss": "Không nghe lời",
+          "distance": 0.3470999300479889
+        },
+        {
+          "gloss": "Trường Đại học",
+          "distance": 0.36814913153648376
+        },
+        {
+          "gloss": "Giấy nháp",
+          "distance": 0.38041457533836365
+        },
+        {
+          "gloss": "Ngày Quốc tế Thiếu nhi",
+          "distance": 0.46565932035446167
+        }
+      ]
+    },
+    {
+      "gloss": "Buổi tối",
+      "sample_count": 55,
+      "nearest_neighbors": [
+        {
+          "gloss": "Mùa khô",
+          "distance": 0.322238564491272
+        },
+        {
+          "gloss": "Thay đổi",
+          "distance": 0.35462528467178345
+        },
+        {
+          "gloss": "Nhà sách",
+          "distance": 0.35554829239845276
+        },
+        {
+          "gloss": "Lạnh",
+          "distance": 0.37171462178230286
+        },
+        {
+          "gloss": "Nhà",
+          "distance": 0.3744494915008545
+        }
+      ]
+    },
+    {
+      "gloss": "Thái Lan",
+      "sample_count": 60,
+      "nearest_neighbors": [
+        {
+          "gloss": "Hàn Quốc",
+          "distance": 0.1062685027718544
+        },
+        {
+          "gloss": "Bảo vệ",
+          "distance": 0.10949146747589111
+        },
+        {
+          "gloss": "Lười biếng",
+          "distance": 0.11313218623399734
+        },
+        {
+          "gloss": "Em",
+          "distance": 0.11812582612037659
+        },
+        {
+          "gloss": "Sớm",
+          "distance": 0.12280523031949997
+        }
+      ]
+    },
+    {
+      "gloss": "Rạp chiếu phim",
+      "sample_count": 66,
+      "nearest_neighbors": [
+        {
+          "gloss": "Laptop",
+          "distance": 0.20127572119235992
+        },
+        {
+          "gloss": "Phơi đồ",
+          "distance": 0.28611961007118225
+        },
+        {
+          "gloss": "Vâng lời",
+          "distance": 0.2976754605770111
+        },
+        {
+          "gloss": "Nói chuyện",
+          "distance": 0.34272852540016174
+        },
+        {
+          "gloss": "Rửa mặt",
+          "distance": 0.3784663677215576
+        }
+      ]
+    },
+    {
+      "gloss": "Bình minh",
+      "sample_count": 61,
+      "nearest_neighbors": [
+        {
+          "gloss": "Thước kẻ",
+          "distance": 0.330812931060791
+        },
+        {
+          "gloss": "Đồ dùng",
+          "distance": 0.33958253264427185
+        },
+        {
+          "gloss": "Đồng hồ đeo tay",
+          "distance": 0.34306979179382324
+        },
+        {
+          "gloss": "Trực thăng",
+          "distance": 0.3601946532726288
+        },
+        {
+          "gloss": "Công viên",
+          "distance": 0.3604350686073303
+        }
+      ]
+    },
+    {
+      "gloss": "Múa",
+      "sample_count": 56,
+      "nearest_neighbors": [
+        {
+          "gloss": "Tỉnh",
+          "distance": 0.4265386462211609
+        },
+        {
+          "gloss": "Báo cáo",
+          "distance": 0.4349045753479004
+        },
+        {
+          "gloss": "Giới thiệu",
+          "distance": 0.4402046501636505
+        },
+        {
+          "gloss": "Quả địa cầu",
+          "distance": 0.4402323067188263
+        },
+        {
+          "gloss": "Nhà hàng",
+          "distance": 0.4431535303592682
+        }
+      ]
+    },
+    {
+      "gloss": "Buổi sáng",
+      "sample_count": 57,
+      "nearest_neighbors": [
+        {
+          "gloss": "Sáng tạo",
+          "distance": 0.2703305780887604
+        },
+        {
+          "gloss": "Dây chuyền",
+          "distance": 0.3773060739040375
+        },
+        {
+          "gloss": "Con mèo",
+          "distance": 0.38653936982154846
+        },
+        {
+          "gloss": "Mền",
+          "distance": 0.3897874355316162
+        },
+        {
+          "gloss": "Rộng",
+          "distance": 0.3902183771133423
+        }
+      ]
+    },
+    {
+      "gloss": "Vợ",
+      "sample_count": 66,
+      "nearest_neighbors": [
+        {
+          "gloss": "Chồng",
+          "distance": 0.20493267476558685
+        },
+        {
+          "gloss": "Màu xanh lá cây",
+          "distance": 0.2809436023235321
+        },
+        {
+          "gloss": "Áo thun",
+          "distance": 0.2860105037689209
+        },
+        {
+          "gloss": "Áo sơ mi",
+          "distance": 0.29105260968208313
+        },
+        {
+          "gloss": "Nhân viên văn phòng",
+          "distance": 0.33189067244529724
+        }
+      ]
+    },
+    {
+      "gloss": "Trường Cao đẳng",
+      "sample_count": 57,
+      "nearest_neighbors": [
+        {
+          "gloss": "Kính lúp",
+          "distance": 0.2727859616279602
+        },
+        {
+          "gloss": "Nhà trọ",
+          "distance": 0.2907622456550598
+        },
+        {
+          "gloss": "Giáng sinh",
+          "distance": 0.3177489936351776
+        },
+        {
+          "gloss": "Quả chuối",
+          "distance": 0.31980571150779724
+        },
+        {
+          "gloss": "Nhà sách",
+          "distance": 0.3253001570701599
+        }
+      ]
+    },
+    {
+      "gloss": "Dụng cụ học tập",
+      "sample_count": 58,
+      "nearest_neighbors": [
+        {
+          "gloss": "Trường Đại học",
+          "distance": 0.24054215848445892
+        },
+        {
+          "gloss": "Giấy nháp",
+          "distance": 0.24503058195114136
+        },
+        {
+          "gloss": "Không nghe lời",
+          "distance": 0.3423883318901062
+        },
+        {
+          "gloss": "Tháng mười hai",
+          "distance": 0.3475593030452728
+        },
+        {
+          "gloss": "Tháng mười một",
+          "distance": 0.38512349128723145
+        }
+      ]
+    },
+    {
+      "gloss": "Mũ bảo hiểm",
+      "sample_count": 60,
+      "nearest_neighbors": [
+        {
+          "gloss": "Màu xanh lá cây",
+          "distance": 0.25296151638031006
+        },
+        {
+          "gloss": "Áo thun",
+          "distance": 0.42047789692878723
+        },
+        {
+          "gloss": "Vợ",
+          "distance": 0.4258063733577728
+        },
+        {
+          "gloss": "Áo sơ mi",
+          "distance": 0.43896928429603577
+        },
+        {
+          "gloss": "Nhân viên phục vụ",
+          "distance": 0.44862431287765503
+        }
+      ]
+    },
+    {
+      "gloss": "Làm bài tập",
+      "sample_count": 62,
+      "nearest_neighbors": [
+        {
+          "gloss": "Khỏe",
+          "distance": 0.17532451450824738
+        },
+        {
+          "gloss": "Mùa đông",
+          "distance": 0.21566252410411835
+        },
+        {
+          "gloss": "Mát mẻ",
+          "distance": 0.22457267343997955
+        },
+        {
+          "gloss": "Bảng",
+          "distance": 0.22537270188331604
+        },
+        {
+          "gloss": "Mềm",
+          "distance": 0.22777193784713745
+        }
+      ]
+    },
+    {
+      "gloss": "Giúp đỡ",
+      "sample_count": 66,
+      "nearest_neighbors": [
+        {
+          "gloss": "Buổi chiều",
+          "distance": 0.18682432174682617
+        },
+        {
+          "gloss": "Nghèo",
+          "distance": 0.18967854976654053
+        },
+        {
+          "gloss": "Thời gian",
+          "distance": 0.20549608767032623
+        },
+        {
+          "gloss": "Lễ tân",
+          "distance": 0.20606140792369843
+        },
+        {
+          "gloss": "Cà phê",
+          "distance": 0.21288825571537018
+        }
+      ]
+    },
+    {
+      "gloss": "Nhảy dây",
+      "sample_count": 62,
+      "nearest_neighbors": [
+        {
+          "gloss": "Tham lam",
+          "distance": 0.3448503613471985
+        },
+        {
+          "gloss": "Bây giờ",
+          "distance": 0.34729358553886414
+        },
+        {
+          "gloss": "Cái nồi",
+          "distance": 0.3479987382888794
+        },
+        {
+          "gloss": "Mập",
+          "distance": 0.35996490716934204
+        },
+        {
+          "gloss": "Xe máy",
+          "distance": 0.3733920753002167
+        }
+      ]
+    },
+    {
+      "gloss": "Con dê",
+      "sample_count": 59,
+      "nearest_neighbors": [
+        {
+          "gloss": "Bác sĩ",
+          "distance": 0.29145410656929016
+        },
+        {
+          "gloss": "Rửa mặt",
+          "distance": 0.30510351061820984
+        },
+        {
+          "gloss": "Bệnh viện",
+          "distance": 0.30810800194740295
+        },
+        {
+          "gloss": "Laptop",
+          "distance": 0.31135380268096924
+        },
+        {
+          "gloss": "Quả địa cầu",
+          "distance": 0.3151509761810303
+        }
+      ]
+    },
+    {
+      "gloss": "Bóng rổ",
+      "sample_count": 65,
+      "nearest_neighbors": [
+        {
+          "gloss": "Buổi sáng",
+          "distance": 0.3954252600669861
+        },
+        {
+          "gloss": "Sáng tạo",
+          "distance": 0.4028014838695526
+        },
+        {
+          "gloss": "Dây chuyền",
+          "distance": 0.4091675579547882
+        },
+        {
+          "gloss": "Mền",
+          "distance": 0.41624391078948975
+        },
+        {
+          "gloss": "Cầu lông",
+          "distance": 0.4283254146575928
+        }
+      ]
+    },
+    {
+      "gloss": "Tháng mười",
+      "sample_count": 66,
+      "nearest_neighbors": [
+        {
+          "gloss": "Tháng mười một",
+          "distance": 0.11126702278852463
+        },
+        {
+          "gloss": "Tháng ba",
+          "distance": 0.11369427293539047
+        },
+        {
+          "gloss": "Tháng sáu",
+          "distance": 0.12269958108663559
+        },
+        {
+          "gloss": "Tháng năm",
+          "distance": 0.12675820291042328
+        },
+        {
+          "gloss": "Tháng chín",
+          "distance": 0.12987864017486572
+        }
+      ]
+    },
+    {
+      "gloss": "Bơi lội",
+      "sample_count": 57,
+      "nearest_neighbors": [
+        {
+          "gloss": "Yên tĩnh",
+          "distance": 0.31236571073532104
+        },
+        {
+          "gloss": "Xa",
+          "distance": 0.3397890031337738
+        },
+        {
+          "gloss": "Ô tô",
+          "distance": 0.3551231920719147
+        },
+        {
+          "gloss": "Cái bàn",
+          "distance": 0.36145615577697754
+        },
+        {
+          "gloss": "Cái nồi",
+          "distance": 0.3658299446105957
+        }
+      ]
+    },
+    {
+      "gloss": "Cầu lông",
+      "sample_count": 57,
+      "nearest_neighbors": [
+        {
+          "gloss": "Bác sĩ",
+          "distance": 0.15485551953315735
+        },
+        {
+          "gloss": "Bệnh viện",
+          "distance": 0.15814308822155
+        },
+        {
+          "gloss": "Phơi đồ",
+          "distance": 0.21074919402599335
+        },
+        {
+          "gloss": "Chụp hình",
+          "distance": 0.2188931256532669
+        },
+        {
+          "gloss": "Thành phố",
+          "distance": 0.23417475819587708
+        }
+      ]
+    },
+    {
+      "gloss": "Thấp (đồ vật)",
+      "sample_count": 56,
+      "nearest_neighbors": [
+        {
+          "gloss": "Đồng ý",
+          "distance": 0.08532523363828659
+        },
+        {
+          "gloss": "Rẻ",
+          "distance": 0.0881732776761055
+        },
+        {
+          "gloss": "Không cho",
+          "distance": 0.10770111531019211
+        },
+        {
+          "gloss": "Ướt",
+          "distance": 0.12069961428642273
+        },
+        {
+          "gloss": "Có",
+          "distance": 0.12322556227445602
+        }
+      ]
+    },
+    {
+      "gloss": "Không nên",
+      "sample_count": 65,
+      "nearest_neighbors": [
+        {
+          "gloss": "Nên",
+          "distance": 0.17527005076408386
+        },
+        {
+          "gloss": "Đậm",
+          "distance": 0.21397778391838074
+        },
+        {
+          "gloss": "Nghề nghiệp",
+          "distance": 0.21995803713798523
+        },
+        {
+          "gloss": "Không cần",
+          "distance": 0.22015918791294098
+        },
+        {
+          "gloss": "Bắt buộc",
+          "distance": 0.23390576243400574
+        }
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "topic_id": "daily_objects",
+      "topic_name": "Đời sống & đồ vật",
+      "description": "Tu gan gui trong sinh hoat, gia dinh, do dung va mo ta co ban.",
+      "glosses": [
+        "Con chó",
+        "Quần đùi",
+        "Mũ",
+        "Tường",
+        "Dài",
+        "Mới",
+        "Vợ",
+        "Dụng cụ học tập",
+        "Mũ bảo hiểm",
+        "Con dê"
+      ]
+    },
+    {
+      "topic_id": "time_places",
+      "topic_name": "Thời gian & địa điểm",
+      "description": "Tu chi moc thoi gian, noi chon, quoc gia va boi canh hoc tap/van hoa.",
+      "glosses": [
+        "Ngày Quốc tế Lao động",
+        "Hoàng hôn",
+        "Ngày Nhà giáo Việt Nam",
+        "Buổi tối",
+        "Thái Lan",
+        "Rạp chiếu phim",
+        "Bình minh",
+        "Buổi sáng",
+        "Trường Cao đẳng",
+        "Tháng mười"
+      ]
+    },
+    {
+      "topic_id": "actions_sports",
+      "topic_name": "Hành động & thể thao",
+      "description": "Tu ve hanh dong, nghe nghiep, van dong, the thao va khai niem luyen tap.",
+      "glosses": [
+        "Nhân viên phục vụ",
+        "Múa",
+        "Làm bài tập",
+        "Giúp đỡ",
+        "Nhảy dây",
+        "Bóng rổ",
+        "Bơi lội",
+        "Cầu lông",
+        "Thấp (đồ vật)",
+        "Không nên"
+      ]
+    }
+  ]
+}
