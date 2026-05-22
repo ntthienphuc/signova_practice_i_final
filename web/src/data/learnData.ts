@@ -1,0 +1,108 @@
+import momImg from '../assets/words/mom.jpeg'
+import dadImg from '../assets/words/dad.jpeg'
+import eatImg from '../assets/words/eat.jpeg'
+import drinkImg from '../assets/words/drink.jpeg'
+
+const learnData = {
+  vi: {
+    title: 'Học từ ký hiệu',
+    progress: 'Từ',
+    of: '/',
+    prev: '← Từ trước',
+    next: 'Từ tiếp theo →',
+    difficulty: { beginner: 'Sơ cấp', intermediate: 'Trung cấp' },
+    wordLabel: 'Từ tiếng Việt',
+    translationLabel: 'Tiếng Anh',
+    categoryLabel: 'Danh mục',
+    difficultyLabel: 'Cấp độ',
+    descriptionLabel: 'Mô tả',
+    videoPlaceholder: 'Video mẫu',
+    playLabel: 'Phát video',
+  },
+  en: {
+    title: 'Sign Language Learning',
+    progress: 'Word',
+    of: '/',
+    prev: '← Previous',
+    next: 'Next →',
+    difficulty: { beginner: 'Beginner', intermediate: 'Intermediate' },
+    wordLabel: 'Vietnamese',
+    translationLabel: 'English',
+    categoryLabel: 'Category',
+    difficultyLabel: 'Level',
+    descriptionLabel: 'Description',
+    videoPlaceholder: 'Sample Video',
+    playLabel: 'Play video',
+  },
+}
+
+export const words = [
+  {
+    id: 1,
+    vi: 'Mẹ',
+    en: 'Mom',
+    category_vi: 'Gia đình',
+    category_en: 'Family',
+    difficulty: 'beginner',
+    image: momImg,
+    description_vi: 'Dùng tay phải chạm nhẹ vào cằm, di chuyển xuống dưới.',
+    description_en: 'Touch the right hand lightly to the chin, move downward.',
+  },
+  {
+    id: 2,
+    vi: 'Bố',
+    en: 'Dad',
+    category_vi: 'Gia đình',
+    category_en: 'Family',
+    difficulty: 'beginner',
+    image: dadImg,
+    description_vi: 'Dùng tay phải chạm vào trán, di chuyển ra phía trước.',
+    description_en: 'Touch the right hand to the forehead, move forward.',
+  },
+  {
+    id: 3,
+    vi: 'Ăn',
+    en: 'Eat',
+    category_vi: 'Sinh hoạt',
+    category_en: 'Daily Life',
+    difficulty: 'beginner',
+    image: eatImg,
+    description_vi: 'Đưa các đầu ngón tay khép lại chạm vào miệng nhiều lần.',
+    description_en: 'Bring fingertips together and tap them to the mouth repeatedly.',
+  },
+  {
+    id: 4,
+    vi: 'Uống',
+    en: 'Drink',
+    category_vi: 'Sinh hoạt',
+    category_en: 'Daily Life',
+    difficulty: 'beginner',
+    image: drinkImg,
+    description_vi: 'Giả vờ cầm cốc, nghiêng lên phía miệng.',
+    description_en: 'Mime holding a cup and tilt it toward the mouth.',
+  },
+  {
+    id: 5,
+    vi: 'Học',
+    en: 'Study',
+    category_vi: 'Giáo dục',
+    category_en: 'Education',
+    difficulty: 'intermediate',
+    image: null,
+    description_vi: 'Tay trái mở phẳng, tay phải khum lại gõ nhẹ lên tay trái.',
+    description_en: 'Left hand flat, right hand curved and taps lightly on the left.',
+  },
+  {
+    id: 6,
+    vi: 'Nước',
+    en: 'Water',
+    category_vi: 'Thực phẩm',
+    category_en: 'Food & Drink',
+    difficulty: 'beginner',
+    image: null,
+    description_vi: 'Chữ W (3 ngón) chạm vào cằm hai lần.',
+    description_en: 'W handshape (3 fingers) taps the chin twice.',
+  },
+]
+
+export default learnData
