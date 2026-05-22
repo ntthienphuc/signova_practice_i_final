@@ -4,9 +4,17 @@ import type { NavData } from "../../types/landing";
 
 interface NavbarProps {
   data: NavData;
+  locale: "vi" | "en";
+  onLocaleChange: (locale: "vi" | "en") => void;
 }
 
-export function Navbar({ data }: NavbarProps) {
+function scrollToSection(href: string) {
+  const id = href.replace(/^#/, "");
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -40,15 +48,25 @@ export function Navbar({ data }: NavbarProps) {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-slate-300 hover:text-white transition-colors text-sm font-medium"
+                onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
+                className="text-slate-300 hover:text-white transition-colors text-sm font-medium cursor-pointer"
               >
                 {link.label}
               </a>
             ))}
           </div>
 
-          {/* Desktop CTA */}
-          <div className="hidden md:block">
+          {/* Desktop locale toggle + CTA */}
+          <div className="hidden md:flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => onLocaleChange(locale === "vi" ? "en" : "vi")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white text-xs font-semibold tracking-wide transition-colors bg-transparent"
+            >
+              <span className={locale === "vi" ? "text-white" : "text-slate-500"}>VI</span>
+              <span className="text-slate-600">/</span>
+              <span className={locale === "en" ? "text-white" : "text-slate-500"}>EN</span>
+            </button>
             <Link
               to="/practice"
               className="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold rounded-lg transition-colors"
@@ -84,19 +102,30 @@ export function Navbar({ data }: NavbarProps) {
             <a
               key={link.href}
               href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center py-3 text-slate-300 hover:text-white text-sm font-medium border-b border-slate-800/60 last:border-0 transition-colors"
+              onClick={(e) => { e.preventDefault(); scrollToSection(link.href); setMobileOpen(false); }}
+              className="flex items-center py-3 text-slate-300 hover:text-white text-sm font-medium border-b border-slate-800/60 last:border-0 transition-colors cursor-pointer"
             >
               {link.label}
             </a>
           ))}
-          <Link
-            to="/practice"
-            onClick={() => setMobileOpen(false)}
-            className="mt-4 flex items-center justify-center py-3 bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold rounded-lg transition-colors"
-          >
-            {data.cta}
-          </Link>
+          <div className="mt-4 flex flex-col gap-3">
+            <button
+              type="button"
+              onClick={() => onLocaleChange(locale === "vi" ? "en" : "vi")}
+              className="flex items-center justify-center gap-2 py-2.5 rounded-lg border border-slate-700 text-sm font-semibold bg-transparent"
+            >
+              <span className={locale === "vi" ? "text-white" : "text-slate-500"}>Tiếng Việt</span>
+              <span className="text-slate-600">/</span>
+              <span className={locale === "en" ? "text-white" : "text-slate-500"}>English</span>
+            </button>
+            <Link
+              to="/practice"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-center py-3 bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold rounded-lg transition-colors"
+            >
+              {data.cta}
+            </Link>
+          </div>
         </div>
       )}
     </nav>
