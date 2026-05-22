@@ -11,11 +11,11 @@ export function ValueProps({ data }: ValuePropsProps) {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center gap-4 mb-5">
-            <div className="w-10 h-1 rounded-full bg-emerald-500" />
-            <span className="text-sm font-semibold text-emerald-400 uppercase tracking-widest">
+            <div className="w-10 h-1 rounded-full bg-teal-500" />
+            <span className="text-sm font-semibold text-teal-400 uppercase tracking-widest">
               Value Props
             </span>
-            <div className="w-10 h-1 rounded-full bg-emerald-500" />
+            <div className="w-10 h-1 rounded-full bg-teal-500" />
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-5">
             {data.heading}
@@ -28,20 +28,17 @@ export function ValueProps({ data }: ValuePropsProps) {
           {data.items.map((item) => (
             <div
               key={item.role}
-              className="bg-slate-900 border border-slate-800 hover:border-indigo-500/30 rounded-2xl p-6 transition-colors group"
+              className="bg-slate-900 border border-slate-800 hover:border-sky-500/30 rounded-2xl p-6 transition-colors group flex flex-col justify-start"
             >
               <div className="text-3xl mb-3">{item.icon}</div>
               <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wide">
                 {item.role}
               </h3>
-              <ul className="space-y-3">
+              <div className="space-y-3">
                 {item.props.map((prop) => (
-                  <li key={prop} className="flex items-start gap-2.5">
-                    <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5" />
-                    <span className="text-slate-400 text-sm leading-snug">{prop}</span>
-                  </li>
+                    <div key={prop} className="text-slate-400 text-sm leading-snug">• {prop}</div>
                 ))}
-              </ul>
+              </div>
             </div>
           ))}
         </div>
