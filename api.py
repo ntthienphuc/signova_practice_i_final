@@ -646,6 +646,15 @@ def create_app() -> FastAPI:
     def curriculum() -> dict[str, Any]:
         return build_curriculum()
 
+    @app.get("/vocabulary/{gloss}")
+    def vocabulary_detail(gloss: str) -> dict[str, Any]:
+        if gloss not in store.list_glosses():
+            raise HTTPException(status_code=404, detail=f"Unknown gloss: {gloss}")
+        study = build_reference_study_payload(gloss)
+        if study is None:
+            raise HTTPException(status_code=404, detail=f"No reference data for gloss: {gloss}")
+        return study
+
     @app.get("/practice-i/task/random")
     def practice_i_task_random() -> dict[str, object]:
         target_gloss = rng.choice(store.list_glosses())
