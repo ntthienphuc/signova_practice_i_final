@@ -23,7 +23,7 @@ export default function LearnPage() {
       {/* Dot-grid overlay */}
       <div className="fixed inset-0 bg-dot-grid pointer-events-none" />
 
-      <div className="relative flex flex-col flex-1 max-w-6xl mx-auto w-full px-8">
+      <div className="relative flex flex-col flex-1 max-w-6xl mx-auto w-full px-4 sm:px-8">
         {/* Progress track */}
         <div className="pt-10 pb-6">
           <div className="flex items-center justify-between mb-3">
@@ -43,14 +43,14 @@ export default function LearnPage() {
         </div>
 
         {/* Word title */}
-        <div className="text-center mb-8">
-          <span className="text-4xl font-bold text-text-main">{word.vi}</span>
-          <span className="text-4xl font-bold text-text-muted mx-3">/</span>
-          <span className="text-4xl font-bold text-brand-primaryLight">{word.en}</span>
+        <div className="text-center mb-6 sm:mb-8">
+          <span className="text-2xl sm:text-4xl font-bold text-text-main">{word.vi}</span>
+          <span className="text-2xl sm:text-4xl font-bold text-text-muted mx-2 sm:mx-3">/</span>
+          <span className="text-2xl sm:text-4xl font-bold text-brand-primaryLight">{word.en}</span>
         </div>
 
         {/* 3-panel layout */}
-        <div className="flex items-center justify-center gap-5 flex-1 pb-4">
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-5 flex-1 pb-4">
           <AvatarCard word={word.vi} image={word.image} />
           <VideoCard wordVi={word.vi} wordEn={word.en} />
           <MetaCard word={word} />
@@ -69,7 +69,7 @@ export default function LearnPage() {
             </button>
 
             {/* Progress dots */}
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               {words.map((_, i) => (
                 <button
                   key={i}

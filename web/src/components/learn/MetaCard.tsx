@@ -14,7 +14,7 @@ const DIFFICULTY_LABEL: Record<string, string> = {
 
 export default function MetaCard({ word }: MetaCardProps) {
   return (
-    <div className="w-80 h-80 bg-dark-card border border-white/10 rounded-2xl p-6 flex flex-col gap-4 text-left flex-shrink-0 overflow-y-auto">
+    <div className="w-56 sm:w-64 lg:w-80 aspect-square bg-dark-card border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col gap-3 sm:gap-4 text-left overflow-y-auto">
       {/* Vietnamese */}
       <div>
         <p className="m-0 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-hint">

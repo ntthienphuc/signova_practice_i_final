@@ -30,7 +30,7 @@ export default function MainContent() {
 
   if (loading) {
     return (
-      <main className="flex-1 overflow-y-auto px-10 py-8 min-w-0 flex items-center justify-center">
+      <main className="flex-1 overflow-y-auto px-4 py-5 md:px-6 md:py-6 lg:px-10 lg:py-8 pb-20 md:pb-5 lg:pb-8 min-w-0 flex items-center justify-center">
         <p className="text-gray-400 text-sm">Đang tải...</p>
       </main>
     );
@@ -38,22 +38,22 @@ export default function MainContent() {
 
   if (error) {
     return (
-      <main className="flex-1 overflow-y-auto px-10 py-8 min-w-0 flex items-center justify-center">
+      <main className="flex-1 overflow-y-auto px-4 py-5 md:px-6 md:py-6 lg:px-10 lg:py-8 pb-20 md:pb-5 lg:pb-8 min-w-0 flex items-center justify-center">
         <p className="text-red-500 text-sm">{error}</p>
       </main>
     );
   }
 
   return (
-    <main className="flex-1 overflow-y-auto px-10 py-8 min-w-0">
-      <div className="flex items-start justify-between mb-8">
+    <main className="flex-1 overflow-y-auto px-4 py-5 md:px-6 md:py-6 lg:px-10 lg:py-8 pb-20 md:pb-5 lg:pb-8 min-w-0">
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-6 lg:mb-8">
         <div>
           <p className="m-0 mb-2 text-[11px] font-bold uppercase tracking-widest text-gray-400">
             {activeTopic
               ? `${activeTopic.title} • 0/${activeTopic.word_count} TỪ • ĐANG HỌC`
               : "CHỌN CHỦ ĐỀ ĐỂ BẮT ĐẦU"}
           </p>
-          <h1 className="m-0 text-3xl font-bold text-gray-900">
+          <h1 className="m-0 text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">
             {activeTopic?.subtitle ?? "Chọn chủ đề"}
           </h1>
         </div>
