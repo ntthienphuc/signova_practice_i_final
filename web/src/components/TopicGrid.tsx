@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronRight, ArrowRight, Sparkles } from "lucide-react";
 import type { ProgressByTopic, Topic, TopicProgress, WordItem } from "../types/learn";
 
@@ -40,7 +41,6 @@ function TopicWordRow({ word, unlocked }: TopicWordRowProps) {
 interface TopicGridProps {
   topics: Topic[];
   progressByTopic: ProgressByTopic;
-  onOpenTopic: (topic: Topic) => void;
 }
 
 interface NormalizedTopic {
@@ -49,7 +49,8 @@ interface NormalizedTopic {
   progress: TopicProgress;
 }
 
-export function TopicGrid({ topics, progressByTopic, onOpenTopic }: TopicGridProps) {
+export function TopicGrid({ topics, progressByTopic }: TopicGridProps) {
+  const navigate = useNavigate();
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(topics[0]?.id ?? null);
 
   const normalizedTopics = useMemo<NormalizedTopic[]>(
@@ -72,11 +73,6 @@ export function TopicGrid({ topics, progressByTopic, onOpenTopic }: TopicGridPro
             Mỗi topic có 10 từ. Mình học từng từ một, luyện ngay bằng Practice I, checkpoint ở từ
             thứ 5, rồi làm Practice II tổng kết khi xong cả topic.
           </p>
-        </div>
-        <div className="learn-dashboard-hero-pills">
-          <span className="lesson-chip active">10 từ / topic</span>
-          <span className="lesson-chip active">Practice I sau mỗi từ</span>
-          <span className="lesson-chip active">Checkpoint sau 5 từ</span>
         </div>
       </div>
 
@@ -141,10 +137,12 @@ export function TopicGrid({ topics, progressByTopic, onOpenTopic }: TopicGridPro
                       <button
                         className="primary-button"
                         type="button"
-                        onClick={() => onOpenTopic(topic)}
+                        onClick={() => {
+                          const targetIndex = progress.completed ? 0 : Math.min(completedWords, topic.words.length - 1);
+                          navigate(`/learn/${topic.id}/${targetIndex}`);
+                        }}
                       >
                         {progress.completed ? "Học lại topic này" : "Bắt đầu học topic"}
-                        <ArrowRight size={16} />
                       </button>
                     </div>
 
