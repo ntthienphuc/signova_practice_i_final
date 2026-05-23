@@ -25,7 +25,6 @@ export default function LearnWordPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Reset to learn stage when the word changes via URL
   useEffect(() => {
     setStage("learn");
   }, [topicId, wordOrder]);
@@ -45,10 +44,10 @@ export default function LearnWordPage() {
 
   if (loading) {
     return (
-      <div className="app-shell app-shell-learn-immersive">
-        <main className="learn-immersive-main">
-          <section className="card-surface hero-panel">
-            <p className="eyebrow">Loading</p>
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)]">
+        <main className="min-h-screen">
+          <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
+            <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Loading</p>
             <h2>Đang chuẩn bị bài học...</h2>
           </section>
         </main>
@@ -58,12 +57,15 @@ export default function LearnWordPage() {
 
   if (error || !topic || !word) {
     return (
-      <div className="app-shell app-shell-learn-immersive">
-        <main className="learn-immersive-main">
-          <section className="card-surface hero-panel">
-            <p className="eyebrow">Lỗi</p>
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)]">
+        <main className="min-h-screen">
+          <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
+            <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Lỗi</p>
             <h2>{error || "Không tìm thấy bài học"}</h2>
-            <button className="primary-button mt-4" onClick={() => navigate("/practice")}>
+            <button
+              className="border-0 rounded-full min-h-[48px] px-5 transition-all font-extrabold bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white shadow-[0_16px_30px_rgba(83,110,249,0.22)] hover:-translate-y-px cursor-pointer mt-4"
+              onClick={() => navigate("/practice")}
+            >
               Quay lại
             </button>
           </section>
@@ -74,8 +76,8 @@ export default function LearnWordPage() {
 
   if (stage === "practice") {
     return (
-      <div className="app-shell app-shell-learn-immersive">
-        <main className="learn-immersive-main">
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)]">
+        <main className="min-h-screen">
           <PracticeWorkspace
             mode="practice_i"
             targetGloss={word.gloss}
@@ -102,8 +104,8 @@ export default function LearnWordPage() {
   }
 
   return (
-    <div className="app-shell app-shell-learn-immersive">
-      <main className="learn-immersive-main">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)]">
+      <main className="min-h-screen">
         <StudyStage
           topic={topic}
           word={word}
