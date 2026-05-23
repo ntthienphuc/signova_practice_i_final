@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import type { AppTab, CurriculumTopicSummary } from "../types/learn";
+import type { AppTab, CurriculumTopicSummary } from "../../types/learn";
 
 interface SidebarProps {
   activeTab: AppTab;
@@ -128,28 +128,8 @@ export function Sidebar({
         ))}
       </div>
 
-      <label className="field">
-        <span>API Base</span>
-        <input value={apiBase} onChange={handleChange} />
-      </label>
-
-      <div className="card-surface">
-        <p className="eyebrow">Lộ trình học</p>
-        <div className="sidebar-topic-list">
-          {curriculumTopics.map((topic) => (
-            <div key={topic.id} className="sidebar-topic-item">
-              <div className="sidebar-topic-copy">
-                <strong>{topic.title}</strong>
-                <div className="sidebar-topic-subtitle">5 từ đầu → checkpoint → 5 từ sau</div>
-              </div>
-              <span className="sidebar-topic-count">{topic.word_count} từ</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <div className="card-surface sidebar-helper-card">
-        <p className="eyebrow">Cách chơi</p>
+        <p className="eyebrow">Cách học</p>
         <ul className="helper-list">
           <li>Xem hình và video mẫu trước.</li>
           <li>Học xong một từ thì luyện ngay.</li>

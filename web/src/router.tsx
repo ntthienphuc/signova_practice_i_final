@@ -1,8 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import LandingLayout from "./layouts/LandingLayout";
 import LandingPage from "./pages/LandingPage";
-import PracticePage from "./PracticePage";
-import { StudyStage } from "./components/StudyStage";
+import PracticePage from "./pages/PracticePage";
+import LearnWordPage from "./pages/LearnWordPage";
 
 export const router = createBrowserRouter([
   {
@@ -22,7 +22,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/learn/:topicId/:wordOrder",
-    element: <StudyStage />,
+    element: <LearnWordPage />,
   }
   // {
   //   path: "/dashboard/family",
