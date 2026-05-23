@@ -15,49 +15,72 @@ No test runner is configured. Type checking and build are the verification path.
 
 ## Tech Stack
 
-React 19 · TypeScript · Vite 5 · Tailwind CSS v3 · Axios
+React 18 · TypeScript · Vite 5 · Tailwind CSS v3 · Axios · React Router v7
 
-## Architecture
+## Routing
 
-### Two apps share one `main.tsx`
+`router.tsx` defines two top-level routes via `createBrowserRouter`:
 
-Currently `main.tsx` renders only `<App />` (the practice app). The landing page (`pages/LandingPage.tsx`) exists but routing is not yet wired — React Router integration is pending.
+- `/` — `LandingLayout` (wraps `Navbar` + `<Outlet>`), renders `LandingPage` as the index child.
+- `/practice` — `App` (the sign-language practice tool), rendered standalone with no layout wrapper.
 
-### Practice app (`App.tsx` + `components/`)
+`LandingLayout` owns the `locale` state (`"vi" | "en"`) and passes it down via `useOutletContext<LandingOutletContext>()`. All landing child pages must call `useOutletContext` to get the locale.
 
-`App.tsx` owns all state and event handlers; it renders two purely presentational subtrees:
+## Practice App (`App.tsx`)
 
-- **`ControlPanel`** (aside) — `TaskCard` → `UploadCard` → `ResultStrip`
-- **`StagePanel`** (main) — `VideoPanel` (×2, user + reference), `TransportBar`, `FeedbackGrid`
+`App.tsx` is the single stateful root for the practice tool. It owns all state and refs, and renders two purely presentational subtrees:
 
-Video playback is synchronized manually: the API response includes `segment.start_ms` / `segment.end_ms` for the user clip and `reference.segment` for the reference clip. `App.tsx` seeks both `<video>` elements to those windows and redraws canvas overlays on each `timeupdate` event.
+- **`ControlPanel`** (aside, 360 px fixed) — `TaskCard` → `UploadCard` → `ResultStrip`
+- **`StagePanel`** (main) — dual `VideoPanel` (user + reference), `TransportBar`, `FeedbackGrid`
 
-### API layer (`src/api/`)
+**Video + overlay loop**: After analysis, `App.tsx` runs a `requestAnimationFrame` loop that calls `drawOverlay()` on every tick. Both `<video>` elements are seeked to their segment windows and their `playbackRate` is adjusted so they finish simultaneously regardless of differing segment lengths. The loop watches `playing` state to auto-pause at segment end.
 
-The API base URL is user-controlled state in `App.tsx`, so every call creates a fresh Axios instance:
+**API base URL** is runtime user-controlled state in `App.tsx` (default `http://127.0.0.1:8014`). A fresh Axios instance is created per call via `createApiClient(baseUrl)` — there is no shared singleton client.
 
-```ts
-// client.ts
-createApiClient(baseUrl)   // returns AxiosInstance with trailing-slash normalized base
-handleAxiosError(error)    // never return — always throws; mirrors original fetch behavior
-```
+## Landing Page (`LandingPage.tsx`)
 
-Endpoints live in `api/endpoints/`. All TypeScript interfaces for the API contract are in `api/types.ts`. Import everything through the barrel `api/index.ts`.
+Nine section components assembled in order: `Hero`, `ProblemStatement`, `Features`, `Products`, `TargetUsers`, `Pricing`, `ValueProps` (in `<main>`), then `CTAFooter`. Each accepts a typed `data` prop — no API calls, pure render.
 
-### Landing page (`pages/LandingPage.tsx` + `components/landing/`)
+Sample data lives in `data/landingData.ts` as a bilingual object keyed `vi` / `en`. The `LandingData` type is in `types/landing.ts`. `Navbar` is excluded from `LandingPage` — it lives in `LandingLayout` so it persists across future child routes.
 
-Nine data-driven sections assembled in `LandingPage`. Each section component accepts a typed `data` prop — no API calls, pure render. Sample data lives in `data/landingData.ts` as a `vi` (Vietnamese) locale object; the `LandingData` type is in `types/landing.ts`.
+## API Layer (`src/api/`)
 
-The `Navbar` component is intentionally excluded from `LandingPage` — it is meant to be rendered by the router layout so it persists across page transitions.
+All TypeScript interfaces for the backend contract are in `api/types.ts`. Import everything through the barrel `api/index.ts`.
 
-### CSS strategy
+`handleAxiosError` is typed `never` — it always throws, so async functions satisfy TypeScript's return type without a trailing `return undefined`.
 
-`styles.css` contains both the existing practice-app custom CSS and the Tailwind directives (`@tailwind base/components/utilities`). Tailwind is configured with `corePlugins: { preflight: false }` — this is critical to prevent Tailwind's CSS reset from breaking the practice-app styles (`.app-shell`, `.control-panel`, etc.).
+Key API endpoints:
+- `GET /practice-i/task/random` — returns `RandomTask`
+- `GET /practice-ii/task/random?lesson_size=N` — returns `RandomTask` with a lesson set
+- `POST /practice-i/analyze-video` (multipart) — returns `AnalyzeResponse`
+- `POST /practice-ii/analyze-video` (multipart) — same shape, adds classifier decision
+
+Fixed form params sent with every analyze call: `frame_stride=2`, `auto_segment=true`, `segment_min_frames=12`, `segment_pad_frames=8`, `overlay_frame_count=32`, `return_visualization=false`.
+
+## Overlay System (`overlay.ts`)
+
+`normalizeAnalysis(raw, apiBase)` converts the raw `AnalyzeResponse` into `NormalizedAnalysis`:
+- Resolves relative video URLs against `apiBase`
+- Normalizes `segment_start_ms` / `segment_end_ms` from either field name variant
+- Builds `badByFrame: Set<number>[]` — one Set per frame, containing bad joint indices
+- Falls back to `visualization.joint_status` when `bad_joint_indices` is absent
+
+`drawOverlay()` maps normalized `[0,1]` joint coordinates to canvas pixels using letterbox math (`getVideoContentBox`). Bad joints/edges render in `focusEdge`/`focusJoint` colors; good ones use `baseEdge`/`baseJoint`. DPR scaling is applied on each draw.
+
+`FrameData` union: frames can arrive as `{ points: FramePoints }` or bare `FramePoints`. `drawOverlay` normalizes both.
+
+## CSS Strategy
+
+`styles.css` contains both the practice-app custom CSS classes (`.app-shell`, `.control-panel`, `.video-shell`, etc.) and the Tailwind directives. Tailwind is configured with `corePlugins: { preflight: false }` — **do not remove this** or Tailwind's reset will break the practice-app styles.
+
+Custom utility classes defined in `@layer utilities`: `.bg-dot-grid`, `.custom-scrollbar`.
+
+Landing page components use Tailwind exclusively. Practice app components use the hand-authored CSS classes in `styles.css`.
 
 ## Key Gotchas
 
-**React 19 ref types** — `useRef<T>(null)` returns `RefObject<T | null>`, not `RefObject<T>`. Props that accept refs must be typed as `RefObject<HTMLVideoElement | null>` or `RefObject<HTMLCanvasElement | null>`.
+**React 19 ref types** — `useRef<T>(null)` returns `RefObject<T | null>`. Props accepting refs must be typed as `RefObject<HTMLVideoElement | null>` (not `RefObject<HTMLVideoElement>`).
 
-**`FrameData` union** — `type FrameData = { points: FramePoints } | FramePoints`. The API can return frames as either a wrapped object or a bare array; `overlay.ts` normalizes both before drawing.
+**No icon library installed** — `lucide-react` is not in `package.json`. Install it before using icon components: `npm install lucide-react`.
 
-**`handleAxiosError` is typed `never`** — it always throws, which lets async functions satisfy TypeScript's return-type check without a trailing `return undefined`.
+**Page specs** — UI generation specs for new dashboard pages live in `guide/`. Read the relevant spec before implementing a new page.
