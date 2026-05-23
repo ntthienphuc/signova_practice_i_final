@@ -26,7 +26,7 @@ React 18 · TypeScript · Vite 5 · Tailwind CSS v3 · Axios · React Router v7 
 | `/` | `LandingLayout` → `LandingPage` | Navbar persists via layout |
 | `/practice` | `PracticePage` | Main production app |
 | `/learn-dashboard` | `PracticePage` | Same component, alias route |
-| `/learn/:topicId/:wordOrder` | `StudyStage` | Direct deep-link into word study |
+| `/learn/:topicId/:wordOrder` | `LearnWordPage` | Word-level learn + Practice I cycle |
 
 `LandingLayout` owns the `locale` state (`"vi" | "en"`) and passes it via `useOutletContext<LandingOutletContext>()`. Landing child pages must call `useOutletContext` to get the locale.
 
@@ -37,7 +37,7 @@ React 18 · TypeScript · Vite 5 · Tailwind CSS v3 · Axios · React Router v7 
 **`PracticePage.tsx`** is the production app. It:
 - Manages auth (JWT in `localStorage` as `signova_token`), user roles, and role-based tab visibility.
 - Boots by calling `GET /app-config` and `GET /curriculum` in parallel.
-- Renders a `Sidebar` (tab nav + API base input + curriculum overview) and a `<main>` that switches between tabs.
+- Renders a `Sidebar` (tab nav + curriculum overview) and a `<main>` that switches between tabs.
 - Drives the full learning session state machine (see Session Flow below).
 
 ## Auth System
@@ -52,37 +52,39 @@ User roles: `learner` | `parent` | `school`. Role determines which tabs the Side
 
 `AppTab` union: `"learn" | "review" | "progress" | "family" | "school" | "account" | "custom_package"`.
 
+## LearnWordPage (`src/pages/LearnWordPage.tsx`)
+
+Standalone page at `/learn/:topicId/:wordOrder` that handles the per-word learn → practice cycle outside of `PracticePage`. It:
+- Loads curriculum independently via `loadCurriculum()` on mount.
+- Has a local two-stage state machine: `"learn"` → `"practice"`.
+- `learn` → renders `StudyStage`; user clicks "Start Practice" → transitions to `"practice"`.
+- `practice` → renders `PracticeWorkspace` (mode `practice_i`); on complete → navigates to next word URL or back to `/learn-dashboard` when the topic is finished.
+- Word navigation is URL-driven: `navigate(`/learn/${topic.id}/${index}`)`. A `useEffect` on `[topicId, wordOrder]` resets local stage back to `"learn"` on each URL change.
+- Completion at the last word navigates to `/learn-dashboard`; "Back to topics" also navigates to `/learn-dashboard`.
+
+`TopicGrid` triggers this flow by calling `navigate(`/learn/${topic.id}/${targetIndex}`)` when the user clicks "Bắt đầu học topic" or "Học lại topic này".
+
 ## Session Flow (`PracticeSession`)
 
-`PracticeSession` is the state machine for a learner's in-progress topic. Stages (`SessionStage`):
+`PracticeSession` is the state machine for a learner's in-progress topic inside `PracticePage`. Its intended stages (`SessionStage`):
 
 ```
 learn → practice_i → (word 4) → quiz_intro (scope=5) → practice_ii → learn (word 5)
       → practice_i → ... → quiz_intro (scope=10) → practice_ii → summary
 ```
 
-- Words 0–4: each word cycles `learn → practice_i`. After word 4, triggers `quiz_intro` with `quizScope=5`.
-- Words 5–9: same. After word 9, triggers `quiz_intro` with `quizScope=10` → `summary`.
-- `quizQueue` is a shuffled list of gloss strings. `quizRoundIndex` advances per Practice II submission.
-- `practiceResults` maps gloss → `AnalysisSummary`. `quiz5Results` and `finalQuizResults` hold checkpoint and final quiz results.
+**Current state**: the `learn`, `practice_i`, `quiz_intro`, and `practice_ii` branches inside `LearnTab` are commented out. The per-word learn + Practice I cycle is now handled by `LearnWordPage` (URL navigation). `LearnTab` currently only renders:
+- No session → `TopicGrid`
+- `summary` stage → `TopicSummary`
+- All other stages → `null`
 
-Components rendered per stage in `PracticePage.renderLearnTab()`:
-- `learn` → `StudyStage` (reference video + metadata, "start practice" CTA)
-- `practice_i` → `PracticeWorkspace` (upload + analyze, Practice I)
-- `quiz_intro` → inline `QuizIntro` component (scope intro + lesson chip list)
-- `practice_ii` → `PracticeWorkspace` (upload + analyze, Practice II with classifier)
-- `summary` → `TopicSummary`
+`quizQueue`, `quizRoundIndex`, `practiceResults`, `quiz5Results`, `finalQuizResults` are still defined on the session object but not yet wired to any active UI.
 
 ## API Layer (`src/api/`)
 
-Two clients coexist — do not confuse them:
+All API calls go through the `apiClient` singleton defined in `client.ts`. The base URL is set once from `VITE_API_BASE_URL` (falls back to the HF Spaces backend) and exported as `BASE_URL`. No runtime `apiBase` state exists anywhere — components do not accept or pass a base URL.
 
-| Client | Location | When used |
-|---|---|---|
-| `apiClient` singleton | `client.ts` (exported) | Auth functions in `client.ts` (`loginUser`, `registerUser`, `getCurrentUser`, `getReviewWords`, `getParentDashboard`, etc.) |
-| `createApiClient(baseUrl)` factory | `client.ts` | Endpoints in `endpoints/` (`loadAppConfig`, `loadCurriculum`, `createRandomTask`, `analyzeAttempt`) — uses runtime `apiBase` state |
-
-The singleton `apiClient` uses `VITE_API_BASE_URL` env var (defaults to `""`). The factory clients use the user-editable `apiBase` state in `PracticePage`.
+The `createApiClient(baseUrl)` factory is still exported for cases where a one-off client with a different base is needed, but all production endpoints use the singleton.
 
 All TypeScript interfaces for the backend contract are in `api/types.ts`. Import everything through the barrel `api/index.ts`. `handleAxiosError` is typed `never` — it always throws.
 
@@ -116,8 +118,8 @@ Fixed form params sent with every analyze call: `frame_stride=2`, `auto_segment=
 
 ## Overlay System (`overlay.ts`)
 
-`normalizeAnalysis(raw, apiBase)` converts the raw `AnalyzeResponse` into `NormalizedAnalysis`:
-- Resolves relative video URLs against `apiBase`
+`normalizeAnalysis(raw)` converts the raw `AnalyzeResponse` into `NormalizedAnalysis`:
+- Resolves relative video URLs against `apiClient.defaults.baseURL`
 - Normalizes `segment_start_ms` / `segment_end_ms` from either field name variant
 - Builds `badByFrame: Set<number>[]` — one Set per frame, containing bad joint indices
 - Falls back to `visualization.joint_status` when `bad_joint_indices` is absent
@@ -166,7 +168,7 @@ The live curriculum comes from `GET /curriculum` at runtime, not from these file
 
 **React 19 ref types** — `useRef<T>(null)` returns `RefObject<T | null>`. Props accepting refs must be typed as `RefObject<HTMLVideoElement | null>`.
 
-**Two API clients** — `apiClient` (singleton, uses `VITE_API_BASE_URL`) and `createApiClient(baseUrl)` (factory, uses runtime state). Auth-related functions in `client.ts` use the singleton; practice/curriculum functions in `endpoints/` use the factory. Mixing them causes the wrong base URL.
+**Single API client** — all endpoints (`loadAppConfig`, `loadCurriculum`, `createRandomTask`, `analyzeAttempt`) and auth functions use the `apiClient` singleton from `client.ts`. The base URL is set once at module load time from `VITE_API_BASE_URL`. Do not pass `apiBase` as a prop or parameter — read `apiClient.defaults.baseURL` directly if a component needs the URL for resolving relative paths.
 
 **Auth token** — `createApiClient` reads `localStorage.getItem("signova_token")` at request time via interceptor, so creating the client before login is safe — the token will be present by the time the request fires.
 

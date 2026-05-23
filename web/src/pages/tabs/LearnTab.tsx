@@ -83,7 +83,7 @@ export function LearnTab({
     if (!session) return null;
     return session.topic.words[session.wordIndex] ?? null;
   }, [session]);
-
+  console.log("Learn Tab:", session)
   const quizLessonGlosses = useMemo(() => {
     if (!session || !session.quizScope) return [];
     return session.topic.words.slice(0, session.quizScope).map((word) => word.gloss);
@@ -126,76 +126,76 @@ export function LearnTab({
     );
   }
 
-  if (session.stage === "learn" && currentWord) {
-    return (
-      <StudyStage
-        topic={session.topic}
-        word={currentWord}
-        wordIndex={session.wordIndex}
-        onStartPractice={onStartWordPractice}
-        onBackToTopics={onBackToTopics}
-        onPreviousWord={onGoToLearnWord}
-      />
-    );
-  }
+  // if (session.stage === "learn" && currentWord) {
+  //   return (
+  //     <StudyStage
+  //       topic={session.topic}
+  //       word={currentWord}
+  //       wordIndex={session.wordIndex}
+  //       onStartPractice={onStartWordPractice}
+  //       onBackToTopics={onBackToTopics}
+  //       onPreviousWord={onGoToLearnWord}
+  //     />
+  //   );
+  // }
 
-  if (session.stage === "practice_i" && currentWord) {
-    return (
-      <PracticeWorkspace
-        mode="practice_i"
-        targetGloss={currentWord.gloss}
-        lessonGlosses={[currentWord.gloss]}
-        referenceStudy={currentWord.study}
-        wordIndex={session.wordIndex}
-        wordCount={session.topic.word_count}
-        title={`Practice I • ${currentWord.gloss}`}
-        subtitle="Luyện ngay từ vừa học xong trước khi chuyển sang từ tiếp theo."
-        actionLabel="Upload và phân tích"
-        completionLabel={
-          session.wordIndex === 4 && session.quiz5Results.length === 0
-            ? "Sang checkpoint 5 từ →"
-            : session.wordIndex === session.topic.words.length - 1
-              ? "Sang bài tổng kết topic →"
-              : "Sang từ tiếp theo →"
-        }
-        onBackToLearn={() => onGoToLearnWord(session.wordIndex)}
-        onComplete={onPracticeIComplete}
-      />
-    );
-  }
+  // if (session.stage === "practice_i" && currentWord) {
+  //   return (
+  //     <PracticeWorkspace
+  //       mode="practice_i"
+  //       targetGloss={currentWord.gloss}
+  //       lessonGlosses={[currentWord.gloss]}
+  //       referenceStudy={currentWord.study}
+  //       wordIndex={session.wordIndex}
+  //       wordCount={session.topic.word_count}
+  //       title={`Practice I • ${currentWord.gloss}`}
+  //       subtitle="Luyện ngay từ vừa học xong trước khi chuyển sang từ tiếp theo."
+  //       actionLabel="Upload và phân tích"
+  //       completionLabel={
+  //         session.wordIndex === 4 && session.quiz5Results.length === 0
+  //           ? "Sang checkpoint 5 từ →"
+  //           : session.wordIndex === session.topic.words.length - 1
+  //             ? "Sang bài tổng kết topic →"
+  //             : "Sang từ tiếp theo →"
+  //       }
+  //       onBackToLearn={() => onGoToLearnWord(session.wordIndex)}
+  //       onComplete={onPracticeIComplete}
+  //     />
+  //   );
+  // }
 
-  if (session.stage === "quiz_intro" && session.quizScope) {
-    return (
-      <QuizIntro
-        scope={session.quizScope}
-        topic={session.topic}
-        onStart={onStartQuiz}
-        onBack={onBackToTopics}
-      />
-    );
-  }
+  // if (session.stage === "quiz_intro" && session.quizScope) {
+  //   return (
+  //     <QuizIntro
+  //       scope={session.quizScope}
+  //       topic={session.topic}
+  //       onStart={onStartQuiz}
+  //       onBack={onBackToTopics}
+  //     />
+  //   );
+  // }
 
-  if (session.stage === "practice_ii" && currentQuizGloss && currentQuizWord) {
-    return (
-      <PracticeWorkspace
-        mode="practice_ii"
-        targetGloss={currentQuizGloss}
-        lessonGlosses={quizLessonGlosses}
-        referenceStudy={currentQuizWord.study}
-        wordIndex={session.quizRoundIndex}
-        wordCount={session.quizQueue.length}
-        title={`Practice II • Vòng ${session.quizRoundIndex + 1}/${session.quizQueue.length}`}
-        subtitle={`Target hiện tại: ${currentQuizGloss}. Nếu ký nhầm sang từ khác trong lesson set, backend sẽ cố detect.`}
-        actionLabel="Upload và chấm round này"
-        completionLabel={
-          session.quizRoundIndex === session.quizQueue.length - 1
-            ? "Kết thúc bài Practice II"
-            : "Sang round tiếp theo"
-        }
-        onComplete={onPracticeIIComplete}
-      />
-    );
-  }
+  // if (session.stage === "practice_ii" && currentQuizGloss && currentQuizWord) {
+  //   return (
+  //     <PracticeWorkspace
+  //       mode="practice_ii"
+  //       targetGloss={currentQuizGloss}
+  //       lessonGlosses={quizLessonGlosses}
+  //       referenceStudy={currentQuizWord.study}
+  //       wordIndex={session.quizRoundIndex}
+  //       wordCount={session.quizQueue.length}
+  //       title={`Practice II • Vòng ${session.quizRoundIndex + 1}/${session.quizQueue.length}`}
+  //       subtitle={`Target hiện tại: ${currentQuizGloss}. Nếu ký nhầm sang từ khác trong lesson set, backend sẽ cố detect.`}
+  //       actionLabel="Upload và chấm round này"
+  //       completionLabel={
+  //         session.quizRoundIndex === session.quizQueue.length - 1
+  //           ? "Kết thúc bài Practice II"
+  //           : "Sang round tiếp theo"
+  //       }
+  //       onComplete={onPracticeIIComplete}
+  //     />
+  //   );
+  // }
 
   if (session.stage === "summary") {
     return (

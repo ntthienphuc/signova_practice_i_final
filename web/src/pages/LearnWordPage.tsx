@@ -15,7 +15,7 @@ export default function LearnWordPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [stage, setStage] = useState<PageStage>("learn");
-
+  console.log(stage)
   useEffect(() => {
     setLoading(true);
     setError("");
@@ -90,7 +90,11 @@ export default function LearnWordPage() {
               wordIndex >= topic.words.length - 1 ? "Hoàn thành topic →" : "Sang từ tiếp theo →"
             }
             onBackToLearn={() => setStage("learn")}
-            onComplete={() => goToWord(wordIndex + 1)}
+            onComplete={() =>
+              wordIndex >= topic.words.length - 1
+                ? navigate("/learn-dashboard")
+                : goToWord(wordIndex + 1)
+            }
           />
         </main>
       </div>
@@ -105,7 +109,7 @@ export default function LearnWordPage() {
           word={word}
           wordIndex={wordIndex}
           onStartPractice={() => setStage("practice")}
-          onBackToTopics={() => navigate("/practice")}
+          onBackToTopics={() => navigate("/learn-dashboard")}
           onPreviousWord={goToWord}
         />
       </main>
