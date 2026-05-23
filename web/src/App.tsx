@@ -36,7 +36,10 @@ function useObjectUrl(file: File | null): string {
 }
 
 export default function App() {
-  const [apiBase, setApiBase] = useState("http://127.0.0.1:8010");
+  // Initialize apiBase from environment variable, fallback to remote HF Spaces backend
+  const [apiBase, setApiBase] = useState(
+    import.meta.env.VITE_API_BASE_URL || "https://thienphuc12339-signova-backend.hf.space"
+  );
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [mode, setMode] = useState<PracticeMode>("practice_i");
   const [lessonSize, setLessonSize] = useState(5);

@@ -31,10 +31,11 @@ export interface AnalysisResponse {
  * ========================================== */
 
 export function ensureBaseUrl(value: string): string {
-  if (!value) {
-    return "http://127.0.0.1:8010/"; // Default port updated dynamically if needed
-  }
-  return value.endsWith("/") ? value : `${value}/`;
+  // Use remote HF Spaces backend as default, not local localhost
+  const defaultUrl = "https://thienphuc12339-signova-backend.hf.space";
+  const baseUrl = value || defaultUrl;
+  // Normalize: ensure trailing slash, handle both with and without it
+  return baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
 }
 
 export function createApiClient(baseUrl: string): AxiosInstance {
@@ -71,7 +72,7 @@ export function handleAxiosError(error: unknown): never {
 }
 
 // Instantiate the primary client interface using your custom engine
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://thienphuc12339-signova-backend.hf.space";
 export const apiClient = createApiClient(BASE_URL);
 
 /** ==========================================

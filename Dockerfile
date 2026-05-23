@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     curl \
     git \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up environment variables
@@ -30,6 +31,7 @@ COPY app/ ./app/
 COPY alembic/ ./alembic/
 COPY scripts/ ./scripts/
 COPY outputs/ ./outputs/
+COPY signova_practice_i/ ./signova_practice_i/
 COPY api.py .
 COPY alembic.ini .
 COPY gloss.csv .
