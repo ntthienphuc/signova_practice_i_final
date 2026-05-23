@@ -1,191 +1,114 @@
-# SIGNOVA Practice I/II - Bank 20 Glosses
+# SIGNOVA Learning Flow
 
-Repo này là bản backend + web demo cho 2 flow:
+Repo này là bản app demo đã được dọn lại để chỉ giữ phần đang chạy: backend FastAPI, web React, bank final 20 từ, reference video local, và model Practice II local.
 
-- `Practice I`: người dùng luyện đúng 1 gloss mục tiêu, upload video, server tự cắt đoạn ký hiệu chính, chấm với bank reference và trả feedback để frontend vẽ đỏ/xanh.
-- `Practice II`: người dùng làm bài trong lesson 5 hoặc 10 từ, server vừa chấm theo target gloss vừa dùng classifier để bắt trường hợp ký nhầm sang từ khác trong lesson.
+Web hiện có 2 phần:
 
-Phiên bản hiện tại mặc định chạy với **bank 20 gloss tốt nhất** ở:
+- landing page ở `/`
+- practice app ở `/practice`
 
-```text
-outputs/reference_bank_20_best_allcam1_fe
-```
+Mục tiêu hiện tại là demo trọn flow `Học -> Practice I -> Practice II` trên **2 topic**, mỗi topic **10 từ**.
 
-## 1. Repo Này Có Gì
+## Flow hiện tại
 
-```text
-signova_practice_i_final/
-  api.py
-  signova_practice_i/
-  web/
-  scripts/
-  outputs/
-    reference_bank_20_best_allcam1_fe/
-    reference_bank_30_unique_video_ref20_template/
-```
+Tab `Học` hoạt động theo tuần tự:
 
-Thành phần chính:
+1. Màn hình đầu hiển thị **2 topic** được chia từ bank 20 từ.
+2. Bấm vào một topic sẽ vào lộ trình học của topic đó.
+3. Với mỗi từ:
+   - xem **từ**
+   - xem **hình minh họa**
+   - xem **video reference**
+   - bấm sang **Practice I** để luyện ngay từ đó
+4. Học xong **5 từ đầu** sẽ vào **Practice II** cho đúng 5 từ đó.
+5. Sau checkpoint 5 từ, tiếp tục học 5 từ còn lại.
+6. Học xong đủ **10 từ** sẽ vào **Practice II** tổng kết cho cả topic.
+7. Kết thúc topic sẽ có màn **summary**.
 
-- `api.py`: FastAPI app cho Practice I/II.
-- `signova_practice_i/`: AI core gồm extract pose, auto-segment, scoring, classifier, payload visualization.
-- `web/`: React + Vite demo frontend.
-- `scripts/run_api.ps1`: chạy API.
-- `scripts/run_web.ps1`: chạy web demo.
-- `scripts/setup_venv.ps1`: tạo `.venv` và cài dependency.
-- `scripts/infer_video.ps1`: gọi API nhanh bằng PowerShell.
-- `scripts/test_all_cam1_api.py`: batch test HTTP trên dataset local.
+Hai tab `Dashboard Gia đình` và `Dashboard Trường học` vẫn được giữ chỗ, chưa làm logic thật.
 
-## 2. Bank 20 Glosses
+## Repo hiện có
 
-Bank mặc định hiện tại có 20 gloss:
+- Backend FastAPI ở [api.py](api.py)
+- Core AI ở [signova_practice_i](signova_practice_i)
+- Web React ở [web](web)
+- Bank final 20 gloss ở [outputs/reference_bank_20_best_allcam1_fe](outputs/reference_bank_20_best_allcam1_fe)
+- Reference video local ở [outputs/reference_bank_20_best_allcam1_fe/reference_videos](outputs/reference_bank_20_best_allcam1_fe/reference_videos)
+- Model Practice II local ở [models/spoter_v3.0.onnx](models/spoter_v3.0.onnx)
+- Gloss map local ở [gloss.csv](gloss.csv)
 
-```text
-Làm bài tập
-Không nên
-Tường
-Mới
-Cầu lông
-Thái Lan
-Trường Cao đẳng
-Con chó
-Quần đùi
-Nhân viên phục vụ
-Tháng mười
-Buổi tối
-Mũ
-Nhảy dây
-Bơi lội
-Ngày Quốc tế Lao động
-Hoàng hôn
-Dài
-Dụng cụ học tập
-Giúp đỡ
-```
+## 20 gloss active
 
-Manifest:
+- `Làm bài tập`
+- `Không nên`
+- `Tường`
+- `Mới`
+- `Cầu lông`
+- `Thái Lan`
+- `Trường Cao đẳng`
+- `Con chó`
+- `Quần đùi`
+- `Nhân viên phục vụ`
+- `Tháng mười`
+- `Buổi tối`
+- `Mũ`
+- `Nhảy dây`
+- `Bơi lội`
+- `Ngày Quốc tế Lao động`
+- `Hoàng hôn`
+- `Dài`
+- `Dụng cụ học tập`
+- `Giúp đỡ`
 
-- [reference_bank_manifest.json](/d:/signova_practice_i_final/outputs/reference_bank_20_best_allcam1_fe/reference_bank_manifest.json)
-- [display_reference_manifest.json](/d:/signova_practice_i_final/outputs/reference_bank_20_best_allcam1_fe/display_reference_manifest.json)
+## 2 topic hiện tại
 
-Thông số bank:
+`Topic 1`
+- 10 từ đầu tiên trong bank 20 từ
 
-```text
-cam: cam_1
-frame_stride: 2
-max_frames: 64
-target_len: 64
-references_per_gloss: 20
-gloss_count: 20
-```
+`Topic 2`
+- 10 từ còn lại trong bank 20 từ
 
-`display_reference_manifest.json` map mỗi gloss tới 1 clip reference để frontend phát ở panel phải.
+Backend tự build curriculum qua endpoint `/curriculum`.
 
-## 3. Kiến Trúc Hiện Tại
+## Kiến trúc
 
-Flow chính:
+### Backend làm
 
-1. FE chọn task random hoặc nhập `target_gloss`.
-2. FE upload video lên API.
-3. Backend extract pose bằng MediaPipe Holistic.
-4. Backend tự cắt đoạn ký hiệu chính bằng heuristic hoạt động tay.
-5. Backend normalize + resample pose để chấm với bank.
-6. Backend trả:
-   - score
-   - decision
-   - segment timing
-   - overlay compact payload
-   - reference video URL / playback URL
-7. FE tự seek video user/reference theo thời gian do API trả và tự vẽ overlay.
+- extract pose từ video
+- auto-segment đoạn sign chính
+- normalize và so với reference bank
+- chấm `Practice I`
+- với `Practice II`: classifier ONNX + bank ranking để detect ký nhầm từ
+- trả JSON cho FE tự phát lại và vẽ overlay
 
-Điểm quan trọng:
+### Frontend làm
 
-- Backend **không render overlay video**.
-- Backend **không bắt FE phải extract landmark**.
-- FE chỉ cần upload video, nhận JSON, phát video và vẽ canvas overlay.
+- hiển thị landing page giới thiệu sản phẩm
+- lấy curriculum từ backend
+- dẫn flow học theo topic
+- upload video
+- phát clip user và reference
+- seek theo segment backend trả về
+- vẽ overlay trên video
 
-## 4. Practice I Và Practice II
+Backend **không render video kết quả**.
 
-### Practice I
-
-Input:
-
-- `target_gloss`
-- `video`
-
-Output chính:
-
-- `score`
-- `decision.accept_as_target`
-- `decision.possible_wrong_word`
-- `feedback.main_errors`
-- `segment`
-- `overlay`
-- `playback`
-
-### Practice II
-
-Input:
-
-- `target_gloss`
-- `lesson_glosses`
-- `video`
-
-Output thêm:
-
-- `decision.wrong_word_detected`
-- `decision.predicted_wrong_gloss`
-
-Ý nghĩa:
-
-- nếu người dùng ký đúng target nhưng hơi lệch, server trả feedback kiểu Practice I
-- nếu người dùng ký nhầm hẳn sang gloss khác trong lesson, server cố đoán gloss nhầm đó để FE quay lại flow sửa đúng target
-
-## 5. API Contract
-
-### `GET /health`
-
-Kiểm tra server đang lên, bank nào đang active, classifier đã sẵn sàng chưa.
+## API chính
 
 ### `GET /app-config`
 
-Trả config FE cần dùng:
+Trả cấu hình app cơ bản, gồm `curriculum_topics`.
 
-- gloss list
-- topic list
-- random lesson sizes
-- render mode hiện tại
+### `GET /curriculum`
 
-### `GET /glosses`
+Trả curriculum đầy đủ cho 2 topic, mỗi word gồm:
 
-Trả danh sách gloss đang active trong bank.
-
-### `GET /topics`
-
-Trả topic list từ manifest bank. Với bank 20 hiện tại có 1 topic:
-
-```text
-Best 20 Glosses
-```
-
-### `GET /practice-i/task/random`
-
-Random 1 target gloss cho Practice I.
-
-### `GET /practice-ii/task/random?lesson_size=5`
-
-Random 1 lesson set cho Practice II.
-
-### `GET /reference-video/{gloss}`
-
-Trả clip reference gốc cho gloss.
-
-### `GET /playback/reference/{gloss}`
-
-Trả clip reference đã transcode H.264 để browser phát ổn định.
-
-### `GET /playback/attempt/{attempt_id}`
-
-Trả clip upload của user đã transcode H.264 để FE preview ổn định.
+- `gloss`
+- `order`
+- `checkpoint_group`
+- `study.poster_url`
+- `study.reference.video_url`
+- `study.reference.playback_url`
 
 ### `POST /practice-i/analyze-video`
 
@@ -193,322 +116,152 @@ Multipart form:
 
 - `target_gloss`
 - `video`
-- `lesson_glosses`: optional
-- `frame_stride`: mặc định `2`
-- `max_frames`: optional
-- `auto_segment`: mặc định `true`
-- `segment_min_frames`: mặc định `12`
-- `segment_max_frames`: optional
-- `segment_pad_frames`: mặc định `8`
-- `overlay_frame_count`: mặc định `32`
-- `return_visualization`: mặc định `false`
+- optional:
+  - `lesson_glosses`
+  - `frame_stride`
+  - `auto_segment`
+  - `overlay_frame_count`
 
 ### `POST /practice-ii/analyze-video`
 
-Giống Practice I nhưng thêm:
+Multipart form tương tự, nhưng `lesson_glosses` phải chứa lesson set hiện tại.
 
-- `lesson_glosses`
-- `classifier_top_k`
-- `wrong_word_min_lesson_score`
-- `wrong_word_min_margin`
+### `GET /poster/reference/{gloss}`
 
-### Legacy aliases
+Trả ảnh minh họa lấy từ reference video.
 
-Hai route cũ vẫn còn để tương thích:
+### `GET /reference-video/{gloss}`
 
-- `POST /practice-i/video`
-- `POST /practice-ii/video`
+Trả file reference video gốc.
 
-## 6. Response Quan Trọng Nhất
+### `GET /playback/reference/{gloss}`
 
-### `segment`
+Trả bản playback H.264 cho browser.
 
-Thời gian đoạn ký hiệu chính trong video user:
+## Segment + playback
 
-```json
-{
-  "start_ms": 133,
-  "end_ms": 2469
-}
-```
+App hiện dùng hướng:
 
-FE dùng dữ liệu này để seek video user.
+- backend chọn `segment`
+- frontend tự seek vào `start_ms/end_ms`
+- frontend tự vẽ overlay
 
-### `reference.segment`
+Segmenter hiện là hybrid:
 
-Thời gian đoạn tương ứng trong video reference.
+- `activity-based`
+- `arm-cycle-based`
 
-FE dùng để seek panel phải.
+Mục tiêu là tránh ăn nhầm cử động rác khi người dùng mới bấm quay hoặc sắp dừng quay.
 
-### `playback`
-
-Chứa:
-
-- `user_video_url`
-- `reference_video_url`
-- `user_segment`
-- `reference_segment`
-
-### `overlay`
-
-Compact payload để FE vẽ:
-
-- `joint_names`
-- `connections`
-- `user_frames`
-- `reference_frames`
-- `bad_joint_indices`
-
-Payload này nhẹ hơn `visualization`.
-
-### `visualization`
-
-Payload đầy đủ hơn, phục vụ debug / analysis:
-
-- `user_pose`
-- `reference_pose`
-- `joint_status`
-- `alignment`
-- `correction_vectors`
-
-Web demo hiện tại chủ yếu dùng `overlay + playback`.
-
-## 7. Cài Môi Trường
-
-Yêu cầu:
+## Cấu trúc thư mục
 
 ```text
-Python 3.11
-Node.js + npm
-Windows PowerShell
+signova_practice_i_final/
+├─ api.py
+├─ gloss.csv
+├─ models/
+│  └─ spoter_v3.0.onnx
+├─ outputs/
+│  └─ reference_bank_20_best_allcam1_fe/
+│     ├─ banks/
+│     ├─ reference_bank_manifest.json
+│     ├─ display_reference_manifest.json
+│     └─ reference_videos/
+├─ requirements_api.txt
+├─ restart_signova.bat
+├─ scripts/
+│  ├─ restart_stack.ps1
+│  ├─ run_api.ps1
+│  ├─ run_web.ps1
+│  └─ setup_venv.ps1
+├─ signova_practice_i/
+└─ web/
 ```
 
-Setup nhanh:
+## Yêu cầu
+
+- Windows
+- Python `3.11`
+- Node.js `18+`
+- `ffmpeg` trong `PATH`
+
+## Setup lần đầu
+
+### Cách gọn nhất cho máy mới
+
+```powershell
+.\restart_signova.bat
+```
+
+Script này sẽ tự:
+
+- kiểm tra `.venv`, nếu chưa có hoặc thiếu thư viện thì tự tạo/cài lại `requirements_api.txt`
+- nếu `.venv` đã đủ thư viện thì bỏ qua cài đặt và chạy thẳng
+- kiểm tra `web/node_modules`, nếu chưa có thì tự chạy `npm ci`
+- dọn process cũ trên port API/Web
+- bật lại API
+- bật lại web
+
+### Setup thủ công nếu muốn
 
 ```powershell
 .\scripts\setup_venv.ps1
 ```
 
-Nếu muốn dựng lại sạch:
+Sau đó có thể chạy riêng API hoặc web bằng các script trong `scripts/`.
+
+## Chạy app
+
+### Cách nhanh nhất
 
 ```powershell
-.\scripts\setup_venv.ps1 -Recreate
+.\restart_signova.bat
 ```
 
-## 8. Chạy API
+Script này sẽ:
 
-Mặc định script sẽ ưu tiên bank 20 gloss:
+- tự setup nếu máy mới chưa có môi trường
+- dọn process cũ trên port API/Web
+- bật lại API
+- bật lại web
+
+Mặc định:
+
+- API: `http://127.0.0.1:8014`
+- Web: `http://127.0.0.1:5175`
+
+### Chạy tay
+
+Terminal 1:
 
 ```powershell
 .\scripts\run_api.ps1
 ```
 
-Mặc định:
-
-```text
-http://127.0.0.1:8010/docs
-```
-
-Đổi port:
-
-```powershell
-.\scripts\run_api.ps1 -Port 8014
-```
-
-Chạy với sign model ngoài repo:
-
-```powershell
-.\scripts\run_api.ps1 `
-  -Port 8014 `
-  -SignModelPath "D:\Project\MultiModel\App\models\spoter_v3.0.onnx" `
-  -SignGlossCsvPath "D:\Project\MultiModel\App\gloss.csv"
-```
-
-Chạy với bank khác:
-
-```powershell
-.\scripts\run_api.ps1 -BankRoot "outputs\reference_bank_30_unique_video_ref20_template"
-```
-
-## 9. Chạy Web Demo
-
-```powershell
-.\scripts\run_web.ps1 -Port 5175
-```
-
-Mở:
-
-```text
-http://127.0.0.1:5175
-```
-
-Web demo hỗ trợ:
-
-- Practice I
-- Practice II
-- random task
-- upload video
-- play segment theo timing từ API
-- panel trái user, panel phải reference
-- overlay skeleton đỏ/xanh
-
-## 10. Chạy End-to-End Nhanh
-
-Terminal 1:
-
-```powershell
-.\scripts\run_api.ps1 -Port 8014 `
-  -SignModelPath "D:\Project\MultiModel\App\models\spoter_v3.0.onnx" `
-  -SignGlossCsvPath "D:\Project\MultiModel\App\gloss.csv"
-```
-
 Terminal 2:
 
 ```powershell
-.\scripts\run_web.ps1 -Port 5175
+.\scripts\run_web.ps1
 ```
 
-Sau đó:
+## Link chạy
 
-1. mở web
-2. chọn `Practice I` hoặc `Practice II`
-3. bấm `Random`
-4. upload video
-5. bấm `Upload Và Phân Tích`
-6. bấm `Play Segment`
+- API docs: `http://127.0.0.1:8014/docs`
+- Landing page: `http://127.0.0.1:5175/`
+- Practice app: `http://127.0.0.1:5175/practice`
 
-## 11. Gọi API Bằng Script
+## Runtime cache
 
-Ví dụ Practice I:
-
-```powershell
-.\scripts\infer_video.ps1 `
-  -VideoPath "C:\path\to\video.mp4" `
-  -TargetGloss "Mũ" `
-  -Port 8014
-```
-
-Ví dụ Practice II:
-
-```powershell
-.\scripts\infer_video.ps1 `
-  -VideoPath "C:\path\to\video.mp4" `
-  -TargetGloss "Mũ" `
-  -Mode practice_ii `
-  -LessonGlosses "Mũ,Cầu lông,Con chó,Thái Lan,Mới" `
-  -Port 8014
-```
-
-## 12. Batch Test
-
-Batch test HTTP trên dataset local:
-
-```powershell
-.\.venv\Scripts\python.exe .\scripts\test_all_cam1_api.py `
-  --api-url http://127.0.0.1:8014 `
-  --manifest-path outputs\reference_bank_20_best_allcam1_fe\reference_bank_manifest.json `
-  --out-dir tests\all_cam1_api_compact_http_140_fs2 `
-  --frame-stride 2 `
-  --overlay-frame-count 24 `
-  --check-reference-routes
-```
-
-Script này dùng để:
-
-- test Practice I
-- test Practice II lesson 5
-- test Practice II lesson 10
-- đo latency
-- đo payload size
-- kiểm tra route reference video
-
-## 13. Build Lại Bank 20 Gloss
-
-Script chọn bank 20 tốt nhất:
-
-```powershell
-.\.venv\Scripts\python.exe .\scripts\build_best20_bank.py
-```
-
-Repo cũng vẫn giữ bank top 30 cũ để tham khảo:
+Backend tự sinh playback H.264 và poster vào:
 
 ```text
-outputs/reference_bank_30_unique_video_ref20_template
+outputs/web_playback_cache/
 ```
 
-## 14. FE Simulator Export
+Thư mục này là runtime cache và đã được ignore.
 
-Script mô phỏng FE và export video side-by-side:
+## Ghi chú
 
-```powershell
-.\.venv\Scripts\python.exe .\scripts\fe_simulate_export.py `
-  --api-url http://127.0.0.1:8014 `
-  --mode practice_i `
-  --target-gloss "Làm bài tập" `
-  --video-path "All_cam1\021128.mp4"
-```
-
-Output gồm:
-
-- `user_overlay.mp4`
-- `reference_overlay.mp4`
-- `fe_side_by_side.mp4`
-- `api_response.json`
-
-## 15. Dữ Liệu Và Reference
-
-Bank dùng để chấm và clip dùng để hiển thị là hai thứ khác nhau:
-
-- `bank_path`: pose/template/tolerance để scoring
-- `display_reference_manifest.json`: chọn 1 clip reference “đẹp” để FE phát ở panel phải
-
-Điều này quan trọng vì:
-
-- scoring cần nhiều reference
-- FE chỉ cần 1 clip minh họa tốt nhất
-
-## 16. Lưu Ý Kỹ Thuật
-
-- Dataset `All_cam1` trong máy local không bắt buộc để chạy API nếu bank đã build sẵn, nhưng hiện display reference của bank 20 đang trỏ vào clip trong `All_cam1`.
-- Browser không phát ổn định `mp4v/mpeg4` gốc, nên backend có route playback H.264 riêng.
-- Auto-segment là heuristic, không phải alignment học máy full.
-- `frame_stride=2` hiện là cấu hình tốt nhất đã test cho bank 20.
-- Backend hiện tối ưu cho flow upload video, chưa tối ưu cho realtime streaming.
-
-## 17. Glosses Hiện Active
-
-Danh sách active gloss FE sẽ thấy từ `/app-config`:
-
-```text
-Làm bài tập
-Không nên
-Tường
-Mới
-Cầu lông
-Thái Lan
-Trường Cao đẳng
-Con chó
-Quần đùi
-Nhân viên phục vụ
-Tháng mười
-Buổi tối
-Mũ
-Nhảy dây
-Bơi lội
-Ngày Quốc tế Lao động
-Hoàng hôn
-Dài
-Dụng cụ học tập
-Giúp đỡ
-```
-
-## 18. File Quan Trọng Nên Xem Trước
-
-- [api.py](/d:/signova_practice_i_final/api.py)
-- [signova_practice_i/pose_utils.py](/d:/signova_practice_i_final/signova_practice_i/pose_utils.py)
-- [signova_practice_i/scoring.py](/d:/signova_practice_i_final/signova_practice_i/scoring.py)
-- [signova_practice_i/video_engine.py](/d:/signova_practice_i_final/signova_practice_i/video_engine.py)
-- [web/src/App.jsx](/d:/signova_practice_i_final/web/src/App.jsx)
-- [web/src/overlay.js](/d:/signova_practice_i_final/web/src/overlay.js)
-
-README này mô tả đúng trạng thái hiện tại của repo với **bank 20 gloss** là default runtime.
+- Repo này đã bỏ dataset lớn, script benchmark cũ, bank 30 gloss cũ, và output test thừa.
+- Nếu đổi API base trong web rồi muốn quay về mặc định, refresh cứng `Ctrl + F5`.
+- Nếu cần restart sạch toàn bộ, dùng lại `restart_signova.bat`.
