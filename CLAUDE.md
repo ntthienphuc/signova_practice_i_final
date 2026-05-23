@@ -162,7 +162,7 @@ React 18 + TypeScript + Vite 5 + Tailwind CSS v3. See `web/CLAUDE.md` for full f
 | `/` | `LandingLayout` → `LandingPage` | Navbar with locale toggle |
 | `/practice` | `PracticePage` | Tab-based shell: practice + learn |
 | `/learn-dashboard` | `PracticePage` | Same shell, different initial tab |
-| `/learn/:topicId/:wordOrder` | `StudyStage` | Flashcard word study view |
+| `/learn/:topicId/:wordOrder` | `LearnWordPage` | Word-level learn + Practice I cycle |
 
 **Component hierarchy**: `PracticePage` is the top-level authenticated shell — it owns the `Sidebar`, `AuthModal`, and switches between `TopicGrid`, `TopicSummary`, `StudyStage`, `PracticeWorkspace`, and `DashboardPlaceholder` tabs. `App.tsx` is the original standalone practice tool; it is composed inside `PracticeWorkspace`.
 
