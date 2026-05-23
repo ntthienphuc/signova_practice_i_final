@@ -89,14 +89,17 @@ def decision_for_practice_ii(
     wrong_word_min_lesson_score: float = 0.45,
     wrong_word_min_margin: float = 0.10,
     target_accept_min_lesson_score: float = 0.95,
+    min_classifier_raw_score: float = 0.01,
+    bank_target_confirm_score: float = 90.0,
     bank_fallback_min_score: float = 95.0,
     bank_fallback_min_gap: float = 5.0,
-    bank_fallback_max_rank: int = 2,
+    bank_fallback_min_target_rank: int = 3,
 ) -> dict[str, Any]:
     base = decision_for_target(target_result, target_rank, top1_score=top1_score)
     top1 = classifier_predictions[0] if classifier_predictions else None
     top2 = classifier_predictions[1] if len(classifier_predictions) > 1 else None
     predicted_gloss = top1["gloss"] if top1 is not None else None
+    predicted_raw_score = float(top1["raw_score"]) if top1 is not None else 0.0
     predicted_lesson_score = float(top1["lesson_score"]) if top1 is not None else 0.0
     predicted_margin = (
         predicted_lesson_score - float(top2["lesson_score"])
@@ -105,12 +108,22 @@ def decision_for_practice_ii(
     )
     classifier_supports_target = bool(
         predicted_gloss == target_gloss
+        and predicted_raw_score >= min_classifier_raw_score
         and predicted_lesson_score >= target_accept_min_lesson_score
+    )
+    bank_supports_target = bool(
+        bank_top1_gloss == target_gloss
+        and top1_score is not None
+        and float(top1_score) >= bank_target_confirm_score
+        and target_rank == 1
     )
 
     classifier_wrong_word = bool(
+        not bank_supports_target
+        and
         predicted_gloss is not None
         and predicted_gloss != target_gloss
+        and predicted_raw_score >= min_classifier_raw_score
         and predicted_lesson_score >= wrong_word_min_lesson_score
         and (
             predicted_gloss == bank_top1_gloss
@@ -123,11 +136,14 @@ def decision_for_practice_ii(
         not classifier_wrong_word
         and bank_top1_gloss is not None
         and bank_top1_gloss != target_gloss
-        and target_rank <= bank_fallback_max_rank
+        and target_rank >= bank_fallback_min_target_rank
         and top1_score is not None
         and float(top1_score) >= bank_fallback_min_score
         and (float(top1_score) - float(target_result["score"])) >= bank_fallback_min_gap
-        and predicted_lesson_score < wrong_word_min_lesson_score
+        and (
+            predicted_lesson_score < wrong_word_min_lesson_score
+            or predicted_raw_score < min_classifier_raw_score
+        )
     )
     wrong_word_detected = classifier_wrong_word or bank_wrong_word_fallback
     possible_wrong_word = wrong_word_detected or (base["possible_wrong_word"] and not classifier_supports_target)
@@ -138,12 +154,13 @@ def decision_for_practice_ii(
         predicted_wrong_gloss = bank_top1_gloss
 
     return {
-        "accept_as_target": (not wrong_word_detected) and (base["accept_as_target"] or classifier_supports_target),
+        "accept_as_target": (not wrong_word_detected) and (base["accept_as_target"] or classifier_supports_target or bank_supports_target),
         "possible_wrong_word": possible_wrong_word,
         "needs_component_feedback": wrong_word_detected or base["needs_component_feedback"],
         "low_tracking_quality": base["low_tracking_quality"],
         "wrong_word_detected": wrong_word_detected,
         "predicted_wrong_gloss": predicted_wrong_gloss,
         "predicted_lesson_score": predicted_lesson_score if top1 is not None else None,
+        "predicted_raw_score": predicted_raw_score if top1 is not None else None,
         "predicted_margin": predicted_margin if top1 is not None else None,
     }

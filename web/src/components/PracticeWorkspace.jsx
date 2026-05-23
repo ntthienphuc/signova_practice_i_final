@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, Play, RotateCcw, UploadCloud, Pause } from "lucide-react";
 import { analyzeAttempt, ensureBaseUrl } from "../api";
 import { drawOverlay, normalizeAnalysis } from "../overlay";
 
@@ -31,18 +32,22 @@ function normalizeSegment(segment) {
 }
 
 const USER_PALETTE = {
-  baseEdge: "rgba(66, 182, 245, 0.34)",
-  baseJoint: "rgba(66, 182, 245, 0.46)",
-  focusEdge: "rgba(244, 78, 78, 0.95)",
-  focusJoint: "rgba(244, 78, 78, 1)",
+  baseEdge: "rgba(85, 206, 255, 0.22)",
+  baseJoint: "rgba(85, 206, 255, 0.38)",
+  focusEdge: "rgba(255, 96, 96, 0.96)",
+  focusJoint: "rgba(255, 120, 120, 1)",
 };
 
 const REFERENCE_PALETTE = {
-  baseEdge: "rgba(52, 214, 112, 0.34)",
-  baseJoint: "rgba(52, 214, 112, 0.46)",
-  focusEdge: "rgba(52, 214, 112, 0.98)",
-  focusJoint: "rgba(52, 214, 112, 1)",
+  baseEdge: "rgba(78, 255, 158, 0.18)",
+  baseJoint: "rgba(78, 255, 158, 0.34)",
+  focusEdge: "rgba(78, 255, 158, 0.98)",
+  focusJoint: "rgba(145, 255, 196, 1)",
 };
+
+function metricDecision(decision) {
+  return decision?.accept_as_target ? "Đúng target" : "Cần sửa thêm";
+}
 
 export function PracticeWorkspace({
   apiBase,
@@ -50,10 +55,13 @@ export function PracticeWorkspace({
   targetGloss,
   lessonGlosses,
   referenceStudy,
+  wordIndex = 0,
+  wordCount = 1,
   title,
   subtitle,
   actionLabel,
   completionLabel,
+  onBackToLearn,
   onComplete,
 }) {
   const [file, setFile] = useState(null);
@@ -88,6 +96,7 @@ export function PracticeWorkspace({
   const referenceSegment = analysis?.referenceSegment ?? referenceFallbackSegment;
   const decision = analysis?.raw?.decision;
   const feedback = analysis?.raw?.feedback;
+  const progressRatio = wordCount > 0 ? ((wordIndex + 1) / wordCount) * 100 : 0;
 
   useEffect(() => {
     setFile(null);
@@ -250,119 +259,128 @@ export function PracticeWorkspace({
   }
 
   return (
-    <section className="practice-workspace">
-      <div className="practice-sidebar card-surface">
-        <p className="eyebrow">Practice Workspace</p>
-        <h2>{title}</h2>
-        <p className="muted">{subtitle}</p>
+    <section className="practice-immersive-screen">
+      <div className="bg-dot-grid pointer-events-none learn-word-grid" />
 
-        <div className="target-pill">{targetGloss}</div>
-        <div className="coach-note">
-          <strong>Overlay guide:</strong> green means your movement is aligned well, red means the model thinks this area still needs correction.
-        </div>
-
-        {mode === "practice_ii" ? (
-          <div className="lesson-chip-grid">
-            {lessonGlosses.map((gloss) => (
-              <span key={gloss} className={gloss === targetGloss ? "lesson-chip active" : "lesson-chip"}>
-                {gloss}
-              </span>
-            ))}
+      <div className="practice-immersive-shell">
+        <div className="learn-word-progress">
+          <div className="learn-word-progress-head">
+            <span>{mode === "practice_i" ? "Practice I" : "Practice II"}</span>
+            <span>
+              Bước {Math.min(wordIndex + 1, wordCount)} / {Math.max(wordCount, 1)}
+            </span>
           </div>
-        ) : null}
-
-        <div className="upload-panel">
-          <label className="upload-drop">
-            <input
-              type="file"
-              accept="video/*"
-              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-            />
-            <div>
-              <strong>{file ? file.name : "Upload attempt"}</strong>
-              <div className="muted">
-                {file ? "Video is ready" : "Choose a video from your device"}
-              </div>
-            </div>
-          </label>
-
-          <button
-            className="primary-button"
-            type="button"
-            disabled={loading || !file}
-            onClick={handleAnalyze}
-          >
-            {loading ? "Đang phân tích..." : actionLabel}
-          </button>
-          {error ? <p className="error-text">{error}</p> : null}
+          <div className="learn-word-progress-track">
+            <div className="learn-word-progress-fill" style={{ width: `${progressRatio}%` }} />
+          </div>
         </div>
 
-        {analysis ? (
-          <div className="result-card">
-            <div className="metric-row">
-              <span>Score</span>
-              <strong>{Math.round(Number(analysis.raw.score ?? 0))}</strong>
+        <div className="learn-word-title practice-word-title">
+          <span className="learn-word-title-vi">{targetGloss}</span>
+          <span className="learn-word-title-slash">/</span>
+          <span className="learn-word-title-en">{mode === "practice_i" ? "Practice I" : "Practice II"}</span>
+        </div>
+
+        <div className="practice-subtitle">
+          <p>{title}</p>
+          <span>{subtitle}</span>
+        </div>
+
+        <div className="practice-immersive-grid">
+          <article className="practice-coach-card">
+            <div className="practice-card-head">
+              <div>
+                <p className="learn-meta-label">COACH NOTE</p>
+                <h3>Luyện theo đúng target</h3>
+              </div>
+              <span className="practice-target-pill">{targetGloss}</span>
             </div>
-            <div className="metric-row">
-              <span>Decision</span>
-              <strong>{decision?.accept_as_target ? "Accepted" : "Needs revision"}</strong>
-            </div>
-            {mode === "practice_ii" && decision?.predicted_wrong_gloss ? (
-              <div className="callout warning">
-                You may have signed: <strong>{decision.predicted_wrong_gloss}</strong>
+
+            {mode === "practice_ii" ? (
+              <div className="practice-lesson-pills">
+                {lessonGlosses.map((gloss) => (
+                  <span key={gloss} className={gloss === targetGloss ? "lesson-chip active" : "lesson-chip"}>
+                    {gloss}
+                  </span>
+                ))}
               </div>
             ) : null}
-            <p className="muted">{feedback?.overall ?? "Feedback is ready from the backend."}</p>
-            <div className="legend-row">
-              <span className="legend-pill legend-pill-good">Green: correct / close</span>
-              <span className="legend-pill legend-pill-fix">Red: needs correction</span>
-            </div>
-            <button className="primary-button" type="button" onClick={handleComplete}>
-              {completionLabel}
-            </button>
-          </div>
-        ) : (
-          <div className="result-card muted">
-            Sau khi phân tích xong, app sẽ hiện phần so sánh video của bạn với video mẫu ở đây.
-          </div>
-        )}
-      </div>
 
-      <div className="practice-stage">
-        <div className="stage-head">
-          <div>
-            <p className="eyebrow">Playback</p>
-            <h3>Compare your attempt with the reference</h3>
-          </div>
-          {analysis ? (
-            <div className="transport-row">
-              <button type="button" className="ghost-button" onClick={playSegments}>Play Segment</button>
-              <button type="button" className="ghost-button" onClick={pauseSegments}>Pause</button>
-              <button type="button" className="ghost-button" onClick={resetSegments}>Reset</button>
-            </div>
-          ) : null}
-        </div>
-
-        <div className="practice-grid">
-          <article className="video-card card-surface">
-            <div className="panel-header">
-              <div>
-                <h4>User attempt</h4>
-                <p className="debug-line">
-                  source: {analysis?.userPlaybackUrl ? "server playback h264" : localUserVideoUrl ? "local blob" : "none"} | status: {userStatus}
-                </p>
+            <label className="practice-upload-card">
+              <input
+                type="file"
+                accept="video/*"
+                onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+              />
+              <div className="practice-upload-icon">
+                <UploadCloud size={20} />
               </div>
-              <span className="debug-line">
-                {userSegment ? `${userSegment.segment_start_ms}ms -> ${userSegment.segment_end_ms}ms` : "chưa có segment"}
+              <div className="practice-upload-copy">
+                <strong>{file ? file.name : "Chọn video để gửi lên"}</strong>
+                <span>{file ? "Video đã sẵn sàng để chấm." : "App sẽ tự cắt segment, so với mẫu và tô đỏ/xanh."}</span>
+              </div>
+            </label>
+
+            <button
+              className="learn-nav-button learn-nav-button-primary practice-analyze-button"
+              type="button"
+              disabled={loading || !file}
+              onClick={handleAnalyze}
+            >
+              <Play size={16} />
+              {loading ? "Đang phân tích..." : actionLabel}
+            </button>
+
+            {error ? <p className="error-text">{error}</p> : null}
+
+            <div className="practice-feedback-card">
+              <div className="practice-feedback-metrics">
+                <div>
+                  <span>Score</span>
+                  <strong>{analysis ? Math.round(Number(analysis.raw.score ?? 0)) : "--"}</strong>
+                </div>
+                <div>
+                  <span>Kết luận</span>
+                  <strong>{analysis ? metricDecision(decision) : "Chờ phân tích"}</strong>
+                </div>
+              </div>
+
+              {mode === "practice_ii" && decision?.predicted_wrong_gloss ? (
+                <div className="practice-callout warning">
+                  Có thể bạn vừa làm sang từ <strong>{decision.predicted_wrong_gloss}</strong>
+                </div>
+              ) : null}
+
+              <p className="practice-feedback-text">
+                {analysis
+                  ? feedback?.overall ?? "Đã có feedback từ backend."
+                  : "Phân tích xong, app sẽ hiện feedback tổng và giữ nút sang bước tiếp theo ở dưới."}
+              </p>
+
+              <div className="practice-legend">
+                <span><i className="legend-dot good" /> Xanh là đang đúng hoặc gần đúng</span>
+                <span><i className="legend-dot fix" /> Đỏ là vùng cần sửa thêm</span>
+              </div>
+            </div>
+          </article>
+
+          <article className="practice-media-panel">
+            <div className="practice-panel-header">
+              <div>
+                <p className="learn-meta-label">USER ATTEMPT</p>
+                <h4>Bài làm của bạn</h4>
+              </div>
+              <span className="practice-panel-status">
+                {userSegment ? `${userSegment.segment_start_ms}ms → ${userSegment.segment_end_ms}ms` : userStatus}
               </span>
             </div>
-            <div className="video-shell">
+            <div className="video-shell practice-video-shell">
               {userVideoUrl ? (
                 <>
                   <video
                     ref={userVideoRef}
                     src={userVideoUrl}
-                    className="video-node"
+                    className="video-node practice-video-node"
                     playsInline
                     muted
                     controls={!analysis}
@@ -371,31 +389,29 @@ export function PracticeWorkspace({
                   {analysis ? <canvas ref={userCanvasRef} className="overlay-canvas" /> : null}
                 </>
               ) : (
-                <div className="empty-state">Upload video để xem bên user.</div>
+                <div className="practice-empty-state">Upload video để xem phần user attempt.</div>
               )}
             </div>
           </article>
 
-          <article className="video-card card-surface">
-            <div className="panel-header">
+          <article className="practice-media-panel">
+            <div className="practice-panel-header">
               <div>
-                <h4>Reference</h4>
-                <p className="debug-line">
-                  source: {referenceVideoUrl ? "server playback h264" : "none"} | status: {referenceStatus}
-                </p>
+                <p className="learn-meta-label">REFERENCE</p>
+                <h4>Video mẫu chuẩn</h4>
               </div>
-              <span className="debug-line">
-                {referenceSegment ? `${referenceSegment.segment_start_ms}ms -> ${referenceSegment.segment_end_ms}ms` : "chưa có segment"}
+              <span className="practice-panel-status">
+                {referenceSegment ? `${referenceSegment.segment_start_ms}ms → ${referenceSegment.segment_end_ms}ms` : referenceStatus}
               </span>
             </div>
-            <div className="video-shell">
+            <div className="video-shell practice-video-shell">
               {referenceVideoUrl ? (
                 <>
                   <video
                     ref={referenceVideoRef}
                     src={referenceVideoUrl}
                     poster={referenceStudy?.poster_url ? new URL(referenceStudy.poster_url, absoluteApiBase).href : undefined}
-                    className="video-node"
+                    className="video-node practice-video-node"
                     playsInline
                     muted
                     controls={!analysis}
@@ -404,10 +420,56 @@ export function PracticeWorkspace({
                   {analysis ? <canvas ref={referenceCanvasRef} className="overlay-canvas" /> : null}
                 </>
               ) : (
-                <div className="empty-state">Reference sẽ hiện ở đây.</div>
+                <div className="practice-empty-state">Reference sẽ hiện ở đây.</div>
               )}
             </div>
           </article>
+        </div>
+
+        <div className="practice-footer">
+          <div className="practice-transport">
+            {onBackToLearn ? (
+              <button type="button" className="learn-nav-button learn-nav-button-secondary" onClick={onBackToLearn}>
+                <ArrowLeft size={16} />
+                Xem lại từ này
+              </button>
+            ) : (
+              <div />
+            )}
+
+            <div className="practice-transport-buttons">
+              <button type="button" className="learn-nav-button learn-nav-button-secondary" onClick={playSegments} disabled={!analysis}>
+                <Play size={16} />
+                Play segment
+              </button>
+              <button type="button" className="learn-nav-button learn-nav-button-secondary" onClick={pauseSegments} disabled={!analysis}>
+                <Pause size={16} />
+                Pause
+              </button>
+              <button type="button" className="learn-nav-button learn-nav-button-secondary" onClick={resetSegments} disabled={!analysis}>
+                <RotateCcw size={16} />
+                Reset
+              </button>
+            </div>
+
+            <button
+              type="button"
+              className="learn-nav-button learn-nav-button-primary"
+              onClick={handleComplete}
+              disabled={!analysis}
+            >
+              {completionLabel}
+              <ArrowRight size={16} />
+            </button>
+          </div>
+
+          <div className="learn-word-next">
+            <span>
+              {analysis
+                ? "Đã xong phần so sánh. Nếu ổn rồi thì sang bước tiếp theo nhé →"
+                : "Upload video và chờ AI phân tích để mở bước tiếp theo."}
+            </span>
+          </div>
         </div>
       </div>
     </section>

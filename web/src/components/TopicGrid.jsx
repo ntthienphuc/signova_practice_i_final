@@ -1,59 +1,141 @@
-export function TopicGrid({ topics, progressByTopic, onOpenTopic }) {
+import { useMemo, useState } from "react";
+import { ChevronDown, ChevronRight, ArrowRight, Sparkles } from "lucide-react";
+
+const TOPIC_STYLES = [
+  {
+    accent: "linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%)",
+    softClass: "learn-dashboard-card-violet",
+    badge: "🌈",
+  },
+  {
+    accent: "linear-gradient(135deg, #06b6d4 0%, #2563eb 100%)",
+    softClass: "learn-dashboard-card-blue",
+    badge: "🪁",
+  },
+];
+
+function TopicWordRow({ word, unlocked }) {
   return (
-    <section className="topic-dashboard">
-      <div className="topic-dashboard-head card-surface">
+    <div className={unlocked ? "topic-word-row active" : "topic-word-row"}>
+      <div className="topic-word-icon">
+        <Sparkles size={14} />
+      </div>
+      <div className="topic-word-copy">
+        <strong>{word.gloss}</strong>
+        <span>Nhóm {word.checkpoint_group} • Từ số {word.order}</span>
+      </div>
+      <div className={unlocked ? "topic-word-state ready" : "topic-word-state"}>
+        {unlocked ? "Tiếp theo" : "Sắp mở"}
+      </div>
+    </div>
+  );
+}
+
+export function TopicGrid({ topics, progressByTopic, onOpenTopic }) {
+  const [expandedTopicId, setExpandedTopicId] = useState(topics[0]?.id ?? null);
+
+  const normalizedTopics = useMemo(
+    () =>
+      topics.map((topic, index) => ({
+        topic,
+        style: TOPIC_STYLES[index % TOPIC_STYLES.length],
+        progress: progressByTopic[topic.id] ?? { completedWords: 0, completed: false },
+      })),
+    [topics, progressByTopic]
+  );
+
+  return (
+    <section className="learn-dashboard-shell">
+      <div className="learn-dashboard-hero card-surface">
         <div>
-          <p className="eyebrow">Learn Dashboard</p>
-          <h2>Pick a topic and continue your learning path</h2>
+          <p className="eyebrow">Learning Journey</p>
+          <h2>Chọn topic rồi học từng từ theo đúng lộ trình</h2>
           <p className="muted">
-            Each topic has 10 words. You will learn one word, practice it, then unlock Practice II after each 5-word block.
+            Mỗi topic có 10 từ. Mình học từng từ một, luyện ngay bằng Practice I, checkpoint ở từ thứ 5, rồi làm Practice II tổng kết khi xong cả topic.
           </p>
+        </div>
+        <div className="learn-dashboard-hero-pills">
+          <span className="lesson-chip active">10 từ / topic</span>
+          <span className="lesson-chip active">Practice I sau mỗi từ</span>
+          <span className="lesson-chip active">Checkpoint sau 5 từ</span>
         </div>
       </div>
 
-      <div className="topic-grid">
-      {topics.map((topic, index) => {
-        const progress = progressByTopic[topic.id] ?? { completedWords: 0, completed: false };
-        const ratio = topic.word_count > 0 ? Math.min(1, progress.completedWords / topic.word_count) : 0;
-        return (
-          <article key={topic.id} className="topic-card card-surface topic-card-dashboard">
-            <div className="topic-card-top">
-              <span className="topic-mini-tag">{progress.completed ? "Completed" : "Ready to learn"}</span>
-              <span className="topic-inline-progress">{progress.completedWords}/{topic.word_count} words</span>
-            </div>
-            <p className="eyebrow">Topic {index + 1}</p>
-            <h3>{topic.title}</h3>
-            <p className="muted">{topic.subtitle}</p>
+      <div className="learn-dashboard-list">
+        {normalizedTopics.map(({ topic, style, progress }, index) => {
+          const isExpanded = expandedTopicId === topic.id;
+          const completedWords = Number(progress.completedWords ?? 0);
+          const ratio = topic.word_count > 0 ? Math.min(1, completedWords / topic.word_count) : 0;
+          const nextWord = topic.words[Math.min(completedWords, topic.words.length - 1)] ?? topic.words[0];
 
-            <div className="topic-metrics">
-              <div>
-                <span className="metric-label">Words</span>
-                <strong>{topic.word_count}</strong>
-              </div>
-              <div>
-                <span className="metric-label">Progress</span>
-                <strong>{progress.completedWords}/{topic.word_count}</strong>
-              </div>
-            </div>
+          return (
+            <article
+              key={topic.id}
+              className={`learn-dashboard-card ${style.softClass} ${isExpanded ? "expanded" : ""}`}
+            >
+              <button
+                type="button"
+                className="learn-dashboard-card-head"
+                style={{ background: style.accent }}
+                onClick={() => setExpandedTopicId((prev) => (prev === topic.id ? null : topic.id))}
+              >
+                <div className="learn-dashboard-card-copy">
+                  <div className="learn-dashboard-card-badges">
+                    <span className="topic-sticker">{style.badge}</span>
+                    <span className="topic-mini-tag">
+                      {progress.completed ? "Đã hoàn thành" : "Đang chờ bắt đầu"}
+                    </span>
+                  </div>
+                  <p className="learn-dashboard-kicker">Topic {index + 1}</p>
+                  <h3>{topic.title}</h3>
+                  <p>{topic.subtitle}</p>
+                </div>
+                <div className="learn-dashboard-card-side">
+                  <div className="learn-dashboard-card-metric">
+                    <span>Từ</span>
+                    <strong>{topic.word_count}</strong>
+                  </div>
+                  <div className="learn-dashboard-card-metric">
+                    <span>Tiến độ</span>
+                    <strong>{completedWords}/{topic.word_count}</strong>
+                  </div>
+                  {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                </div>
+              </button>
 
-            <div className="progress-track">
-              <div className="progress-fill" style={{ width: `${ratio * 100}%` }} />
-            </div>
+              {isExpanded ? (
+                <div className="learn-dashboard-card-body">
+                  <div className="learn-dashboard-card-main">
+                    <div className="learn-dashboard-highlight">
+                      <p className="eyebrow">Từ đang chờ</p>
+                      <h4>{nextWord?.gloss ?? topic.glosses[0]}</h4>
+                      <p className="muted">
+                        Bắt đầu từ đầu topic. Sau mỗi từ, app sẽ mở Practice I ngay, rồi tự chuyển sang từ tiếp theo.
+                      </p>
+                      <div className="progress-track">
+                        <div className="progress-fill" style={{ width: `${ratio * 100}%` }} />
+                      </div>
+                      <button className="primary-button" type="button" onClick={() => onOpenTopic(topic)}>
+                        {progress.completed ? "Học lại topic này" : "Bắt đầu học topic"}
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
 
-            <div className="lesson-chip-grid">
-              {topic.glosses.map((gloss) => (
-                <span key={gloss} className="lesson-chip">
-                  {gloss}
-                </span>
-              ))}
-            </div>
-
-            <button className="primary-button" type="button" onClick={() => onOpenTopic(topic)}>
-              {progress.completed ? "Review topic" : "Open topic"}
-            </button>
-          </article>
-        );
-      })}
+                    <div className="learn-dashboard-word-stack">
+                      {topic.words.map((word, wordIndex) => (
+                        <TopicWordRow
+                          key={`${topic.id}-${word.gloss}`}
+                          word={word}
+                          unlocked={wordIndex <= completedWords}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
       </div>
     </section>
   );

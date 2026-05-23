@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { ensureBaseUrl, loadAppConfig, loadCurriculum } from "./api";
 import { DashboardPlaceholder } from "./components/DashboardPlaceholder";
 import { PracticeWorkspace } from "./components/PracticeWorkspace";
-import { ProgressRail } from "./components/ProgressRail";
 import { Sidebar } from "./components/Sidebar";
 import { StudyStage } from "./components/StudyStage";
 import { TopicGrid } from "./components/TopicGrid";
@@ -47,15 +46,17 @@ function QuizIntro({ scope, topic, onStart, onBack }) {
   const lessonGlosses = topic.words.slice(0, scope).map((word) => word.gloss);
   return (
     <section className="checkpoint-stage">
-      <div className="card-surface checkpoint-card">
-        <p className="eyebrow">Practice II</p>
-        <div className="summary-badge">🏁 Bài kiểm tra nhỏ</div>
-        <h2>{scope === 5 ? "Checkpoint sau 5 từ đầu" : "Bài tổng kết 10 từ"}</h2>
-        <p className="muted">
-          {scope === 5
-            ? "Bạn đã đi qua 5 từ đầu tiên rồi. Giờ mình làm một bài kiểm tra nhỏ để xem đã nhớ được bao nhiêu nhé."
-            : "Bạn đã học xong toàn bộ 10 từ trong topic. Giờ là lúc làm bài tổng kết để xem mình đã sẵn sàng chưa."}
-        </p>
+      <div className="checkpoint-card checkpoint-card-bright">
+        <div className="checkpoint-copy">
+          <p className="eyebrow">Practice II</p>
+          <div className="summary-badge">🏁 Bài kiểm tra nhỏ</div>
+          <h2>{scope === 5 ? "Checkpoint sau 5 từ đầu" : "Bài tổng kết 10 từ"}</h2>
+          <p className="muted">
+            {scope === 5
+              ? "Bạn đã đi qua 5 từ đầu tiên rồi. Giờ mình làm một bài kiểm tra nhỏ để xem đã nhớ được bao nhiêu nhé."
+              : "Bạn đã học xong toàn bộ 10 từ trong topic. Giờ là lúc làm bài tổng kết để xem mình đã sẵn sàng chưa."}
+          </p>
+        </div>
 
         <div className="lesson-chip-grid">
           {lessonGlosses.map((gloss) => (
@@ -79,22 +80,41 @@ function QuizIntro({ scope, topic, onStart, onBack }) {
 function LearnHome({ topics, progressByTopic, onOpenTopic }) {
   return (
     <section className="learn-home">
+      <div className="hero-panel card-surface">
+        <p className="eyebrow">Tab Học</p>
+        <h2>Chọn topic và bắt đầu hành trình học thật vui</h2>
+        <p className="muted">
+          Mỗi topic có 10 từ. Mình sẽ học từng từ một, luyện ngay sau khi học, rồi làm bài kiểm tra
+          nhỏ để nhớ lâu hơn.
+        </p>
+        <div className="lesson-chip-grid">
+          <span className="lesson-chip active">👀 Xem mẫu</span>
+          <span className="lesson-chip active">✋ Tập theo</span>
+          <span className="lesson-chip active">📹 Quay video</span>
+          <span className="lesson-chip active">🎨 So sánh màu sắc</span>
+        </div>
+      </div>
+
       <TopicGrid topics={topics} progressByTopic={progressByTopic} onOpenTopic={onOpenTopic} />
     </section>
   );
 }
 
-export default function PracticePage() {
+export default function PracticePage({ initialTab = "learn" }) {
   const [apiBase, setApiBase] = useState("http://127.0.0.1:8014");
   const [config, setConfig] = useState(null);
   const [curriculum, setCurriculum] = useState(null);
-  const [activeTab, setActiveTab] = useState("learn");
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [bootError, setBootError] = useState("");
   const [session, setSession] = useState(null);
   const [progressByTopic, setProgressByTopic] = useState({});
 
   const absoluteApiBase = ensureBaseUrl(apiBase);
   const topics = curriculum?.topics ?? [];
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   useEffect(() => {
     let active = true;
@@ -151,6 +171,11 @@ export default function PracticePage() {
     return session.topic.words.find((word) => word.gloss === currentQuizGloss) ?? null;
   }, [session, currentQuizGloss]);
 
+  const immersiveStage =
+    activeTab === "learn" &&
+    !!session &&
+    ["learn", "practice_i", "practice_ii"].includes(session.stage);
+
   function updateTopicProgress(topicId, patch) {
     setProgressByTopic((prev) => ({
       ...prev,
@@ -180,6 +205,21 @@ export default function PracticePage() {
 
   function handleStartWordPractice() {
     setSession((prev) => ({ ...prev, stage: "practice_i" }));
+  }
+
+  function handleGoToLearnWord(nextIndex) {
+    setSession((prev) => {
+      if (!prev) {
+        return prev;
+      }
+      const requestedIndex = Number.isFinite(nextIndex) ? nextIndex : prev.wordIndex;
+      const safeIndex = Math.max(0, Math.min(requestedIndex, prev.wordIndex));
+      return {
+        ...prev,
+        wordIndex: safeIndex,
+        stage: "learn",
+      };
+    });
   }
 
   function handlePracticeIComplete(raw) {
@@ -329,6 +369,7 @@ export default function PracticePage() {
           wordIndex={session.wordIndex}
           onStartPractice={handleStartWordPractice}
           onBackToTopics={handleBackToTopics}
+          onPreviousWord={handleGoToLearnWord}
         />
       );
     }
@@ -341,10 +382,19 @@ export default function PracticePage() {
           targetGloss={currentWord.gloss}
           lessonGlosses={[currentWord.gloss]}
           referenceStudy={currentWord.study}
+          wordIndex={session.wordIndex}
+          wordCount={session.topic.word_count}
           title={`Practice I • ${currentWord.gloss}`}
           subtitle="Luyện ngay từ vừa học xong trước khi chuyển sang từ tiếp theo."
           actionLabel="Upload và phân tích"
-          completionLabel={session.wordIndex === session.topic.words.length - 1 ? "Hoàn thành từ cuối" : "Hoàn thành từ này"}
+          completionLabel={
+            session.wordIndex === 4 && session.quiz5Results.length === 0
+              ? "Sang checkpoint 5 từ →"
+              : session.wordIndex === session.topic.words.length - 1
+                ? "Sang bài tổng kết topic →"
+                : "Sang từ tiếp theo →"
+          }
+          onBackToLearn={() => handleGoToLearnWord(session.wordIndex)}
           onComplete={handlePracticeIComplete}
         />
       );
@@ -369,6 +419,8 @@ export default function PracticePage() {
           targetGloss={currentQuizGloss}
           lessonGlosses={quizLessonGlosses}
           referenceStudy={currentQuizWord.study}
+          wordIndex={session.quizRoundIndex}
+          wordCount={session.quizQueue.length}
           title={`Practice II • Vòng ${session.quizRoundIndex + 1}/${session.quizQueue.length}`}
           subtitle={`Target hiện tại: ${currentQuizGloss}. Nếu ký nhầm sang từ khác trong lesson set, backend sẽ cố detect.`}
           actionLabel="Upload và chấm round này"
@@ -397,16 +449,18 @@ export default function PracticePage() {
   }
 
   return (
-    <div className="app-shell flow-shell">
-      <Sidebar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        apiBase={apiBase}
-        onApiBaseChange={setApiBase}
-        curriculumTopics={config?.curriculum_topics ?? []}
-      />
+    <div className={immersiveStage ? "app-shell app-shell-learn-immersive" : "app-shell flow-shell"}>
+      {!immersiveStage ? (
+        <Sidebar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          apiBase={apiBase}
+          onApiBaseChange={setApiBase}
+          curriculumTopics={config?.curriculum_topics ?? []}
+        />
+      ) : null}
 
-      <main className="flow-main flow-main-dashboard">
+      <main className={immersiveStage ? "learn-immersive-main" : "flow-main"}>
         {activeTab === "learn" ? renderLearnTab() : null}
         {activeTab === "family" ? (
           <DashboardPlaceholder
@@ -421,13 +475,6 @@ export default function PracticePage() {
           />
         ) : null}
       </main>
-
-      <ProgressRail
-        activeTab={activeTab}
-        session={session}
-        progressByTopic={progressByTopic}
-        topics={topics}
-      />
     </div>
   );
 }

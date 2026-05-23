@@ -21,5 +21,5 @@ export type {
 } from "./types";
 
 export { ensureBaseUrl } from "./client";
-export { loadAppConfig } from "./endpoints/app";
+export { loadAppConfig, loadCurriculum } from "./endpoints/app";
 export { createRandomTask, analyzeAttempt } from "./endpoints/practice";

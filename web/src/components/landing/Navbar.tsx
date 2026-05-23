@@ -28,7 +28,7 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-dark-bg/90 backdrop-blur-md shadow-lg shadow-black/20"
+          ? "bg-white/88 backdrop-blur-md shadow-lg shadow-slate-200/60 border-b border-slate-200/70"
           : "bg-transparent"
       }`}
     >
@@ -36,10 +36,10 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary flex items-center justify-center">
-              <span className="text-text-main font-bold text-sm leading-none">S</span>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-sm leading-none">S</span>
             </div>
-            <span className="font-bold text-text-main text-lg tracking-tight">Signova</span>
+            <span className="font-bold text-slate-900 text-lg tracking-tight">Signova</span>
           </Link>
 
           {/* Desktop links */}
@@ -49,7 +49,7 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
                 key={link.href}
                 href={link.href}
                 onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
-                className="text-text-muted hover:text-text-main transition-colors text-sm font-medium cursor-pointer"
+                className="text-slate-500 hover:text-slate-900 transition-colors text-sm font-medium cursor-pointer"
               >
                 {link.label}
               </a>
@@ -61,15 +61,15 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
             <button
               type="button"
               onClick={() => onLocaleChange(locale === "vi" ? "en" : "vi")}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 text-text-muted hover:text-text-main text-xs font-semibold tracking-wide transition-colors bg-transparent"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900 text-xs font-semibold tracking-wide transition-colors bg-white/70"
             >
-              <span className={locale === "vi" ? "text-text-main" : "text-text-hint"}>VI</span>
-              <span className="text-text-hint">/</span>
-              <span className={locale === "en" ? "text-text-main" : "text-text-hint"}>EN</span>
+              <span className={locale === "vi" ? "text-slate-900" : "text-slate-400"}>VI</span>
+              <span className="text-slate-400">/</span>
+              <span className={locale === "en" ? "text-slate-900" : "text-slate-400"}>EN</span>
             </button>
             <Link
               to="/practice"
-              className="px-5 py-2 bg-brand-primary hover:bg-brand-primaryHover text-text-main text-sm font-semibold rounded-lg transition-colors"
+              className="px-5 py-2 bg-gradient-to-r from-indigo-500 to-sky-400 hover:opacity-95 text-white text-sm font-semibold rounded-lg transition-colors shadow-md shadow-sky-200"
             >
               {data.cta}
             </Link>
@@ -77,7 +77,7 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
 
           {/* Mobile toggle */}
           <button
-            className="md:hidden p-2 bg-transparent border-0 text-text-muted"
+            className="md:hidden p-2 bg-transparent border-0 text-slate-500"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
             type="button"
@@ -97,13 +97,13 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-dark-bg border-t border-white/5 px-4 pb-4 pt-2">
+        <div className="md:hidden bg-white/95 border-t border-slate-200 px-4 pb-4 pt-2 shadow-lg shadow-slate-100">
           {data.links.map((link) => (
             <a
               key={link.href}
               href={link.href}
               onClick={(e) => { e.preventDefault(); scrollToSection(link.href); setMobileOpen(false); }}
-              className="flex items-center py-3 text-text-muted hover:text-text-main text-sm font-medium border-b border-white/5 last:border-0 transition-colors cursor-pointer"
+              className="flex items-center py-3 text-slate-500 hover:text-slate-900 text-sm font-medium border-b border-slate-100 last:border-0 transition-colors cursor-pointer"
             >
               {link.label}
             </a>
@@ -112,16 +112,16 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
             <button
               type="button"
               onClick={() => onLocaleChange(locale === "vi" ? "en" : "vi")}
-              className="flex items-center justify-center gap-2 py-2.5 rounded-lg border border-white/10 text-sm font-semibold bg-transparent"
+              className="flex items-center justify-center gap-2 py-2.5 rounded-lg border border-slate-200 text-sm font-semibold bg-white"
             >
-              <span className={locale === "vi" ? "text-text-main" : "text-text-hint"}>Tiếng Việt</span>
-              <span className="text-text-hint">/</span>
-              <span className={locale === "en" ? "text-text-main" : "text-text-hint"}>English</span>
+              <span className={locale === "vi" ? "text-slate-900" : "text-slate-400"}>Tiếng Việt</span>
+              <span className="text-slate-400">/</span>
+              <span className={locale === "en" ? "text-slate-900" : "text-slate-400"}>English</span>
             </button>
             <Link
               to="/practice"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center py-3 bg-brand-primary hover:bg-brand-primaryHover text-text-main text-sm font-semibold rounded-lg transition-colors"
+              className="flex items-center justify-center py-3 bg-gradient-to-r from-indigo-500 to-sky-400 hover:opacity-95 text-white text-sm font-semibold rounded-lg transition-colors"
             >
               {data.cta}
             </Link>
