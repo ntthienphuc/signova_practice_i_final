@@ -1,17 +1,20 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronRight, Star, ArrowRight } from "lucide-react";
-import type { Unit } from "../../data/learnDashboardData";
+import type { Topic } from "../../types/learn";
+import { TOPIC_COLORS } from "../../data/learnDashboardData";
 import LessonRow from "./LessonRow";
 
 interface UnitAccordionProps {
-  unit: Unit;
+  topic: Topic;
   isExpanded: boolean;
   onToggle: () => void;
 }
 
-export default function UnitAccordion({ unit, isExpanded, onToggle }: UnitAccordionProps) {
-  const { unitNumber, title, color, lessonCount, lessons } = unit;
+export default function UnitAccordion({ topic, isExpanded, onToggle }: UnitAccordionProps) {
   const navigate = useNavigate();
+  const color = TOPIC_COLORS[topic.id] ?? "#6B7280";
+  const activeWord = topic.words[0];
+  const remainingWords = topic.words.slice(1);
 
   return (
     <div className="flex flex-col gap-2">
@@ -22,10 +25,10 @@ export default function UnitAccordion({ unit, isExpanded, onToggle }: UnitAccord
       >
         <div>
           <p className="m-0 text-[11px] font-bold uppercase tracking-widest text-white/75">
-            Unit {unitNumber}
+            {topic.title}
           </p>
-          <p className="mt-1 text-[17px] font-bold text-white">{title}</p>
-          <p className="mt-1 text-xs text-white/70">0/{lessonCount} lessons</p>
+          <p className="mt-1 text-[17px] font-bold text-white">{topic.subtitle}</p>
+          <p className="mt-1 text-xs text-white/70">0/{topic.word_count} từ</p>
         </div>
         {isExpanded ? (
           <ChevronDown size={20} className="text-white flex-shrink-0" />
@@ -36,47 +39,44 @@ export default function UnitAccordion({ unit, isExpanded, onToggle }: UnitAccord
 
       {isExpanded && (
         <div className="flex flex-col gap-2">
-          {/* Active lesson card (Lesson 1 — index 0) */}
-          <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-4 mb-3">
-              <div>
-                <p className="m-0 text-[11px] font-bold uppercase tracking-widest text-gray-400">
-                  PRACTICE • LESSON 1
-                </p>
-                <p className="mt-1.5 text-base font-bold text-gray-900">Letters A-E</p>
+          {/* Active word card */}
+          {activeWord ? (
+            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <div>
+                  <p className="m-0 text-[11px] font-bold uppercase tracking-widest text-gray-400">
+                    NHÓM {activeWord.checkpoint_group} • TỪ SỐ {activeWord.order}
+                  </p>
+                  <p className="mt-1.5 text-base font-bold text-gray-900">{activeWord.gloss}</p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Star size={15} className="text-amber-400" fill="currentColor" />
+                  <span className="text-xs font-bold text-brand-primary">TIẾP TỤC</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Star size={15} className="text-amber-400" fill="currentColor" />
-                <span className="text-xs font-bold text-brand-primary">CONTINUE</span>
-              </div>
+
+              <p className="text-sm leading-relaxed text-gray-500 mb-4">
+                Luyện tập ký hiệu{" "}
+                <span className="font-semibold text-gray-700">{activeWord.gloss}</span> với video
+                mẫu tham chiếu. Xem kỹ hình dạng bàn tay và cố gắng bắt chước theo.
+              </p>
+
+              <button
+                onClick={() => navigate(`/learn/${topic.id}/${activeWord.order}`)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-brand-primary hover:bg-brand-primaryHover text-white text-sm font-bold border-0 cursor-pointer transition-colors"
+              >
+                Bắt đầu luyện tập <ArrowRight size={14} />
+              </button>
             </div>
+          ) : (
+            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm text-center text-sm text-gray-400">
+              Chưa có từ nào trong chủ đề này.
+            </div>
+          )}
 
-            <p className="text-sm leading-relaxed text-gray-500 mb-4">
-              In this unit, you will learn the letters of the alphabet in ASL format. Watch the
-              handshape carefully and try to mirror it as best as possible. While these letters can
-              be helpful for signing things such as names, addresses, or places, you will learn the
-              entirety of the language as you progress through the curriculum.
-            </p>
-
-            <button
-              onClick={() => navigate(`/learn/${unitNumber}/0`)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-brand-primary hover:bg-brand-primaryHover text-white text-sm font-bold border-0 cursor-pointer transition-colors"
-            >
-              Continue lesson <ArrowRight size={14} />
-            </button>
-          </div>
-
-          {/* Remaining lessons — index starts at 1 since lesson 1 is the active card above */}
-          {lessons.map((lesson, idx) => (
-            <LessonRow
-              key={lesson.title}
-              title={lesson.title}
-              subtitle={lesson.subtitle}
-              type={lesson.type}
-              description={lesson.description}
-              unitNumber={unitNumber}
-              lessonIndex={idx + 1}
-            />
+          {/* Remaining words */}
+          {remainingWords.map((word) => (
+            <LessonRow key={word.order} word={word} topicId={topic.id} />
           ))}
         </div>
       )}

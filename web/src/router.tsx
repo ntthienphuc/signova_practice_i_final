@@ -2,8 +2,8 @@ import { createBrowserRouter } from "react-router-dom";
 import LandingLayout from "./layouts/LandingLayout";
 import LandingPage from "./pages/LandingPage";
 import App from "./App";
-import LearnDashboard from "./pages/LearnDashboard/LearnDashboard";
-import LearnPage from "./pages/LearnPage/LearnPage";
+import LearnDashboard from "./pages/LearnDashboard";
+import LearnPage from "./pages/LearnPage";
 
 export const router = createBrowserRouter([
   {

@@ -1,6 +1,6 @@
-import LeftSidebar from "../../components/learn-dashboard/LeftSidebar";
-import MainContent from "../../components/learn-dashboard/MainContent";
-import RightSidebar from "../../components/learn-dashboard/RightSidebar";
+import LeftSidebar from "../components/learn-dashboard/LeftSidebar";
+import MainContent from "../components/learn-dashboard/MainContent";
+import RightSidebar from "../components/learn-dashboard/RightSidebar";
 
 export default function LearnDashboard() {
   return (

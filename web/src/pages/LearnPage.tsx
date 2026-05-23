@@ -1,8 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { words } from "../../data/learnData";
-import AvatarCard from "../../components/learn/AvatarCard";
-import VideoCard from "../../components/learn/VideoCard";
-import MetaCard from "../../components/learn/MetaCard";
+import { words } from "../data/learnData";
+import AvatarCard from "../components/learn/AvatarCard";
+import VideoCard from "../components/learn/VideoCard";
+import MetaCard from "../components/learn/MetaCard";
 
 
 export default function LearnPage() {
