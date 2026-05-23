@@ -11,11 +11,11 @@ export function TargetUsers({ data }: TargetUsersProps) {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center gap-4 mb-5">
-            <div className="w-10 h-1 rounded-full bg-sky-600" />
-            <span className="text-sm font-semibold text-sky-600 uppercase tracking-widest">
+            <div className="w-10 h-1 rounded-full bg-brand-primary" />
+            <span className="text-sm font-semibold text-brand-primary uppercase tracking-widest">
               Who It's For
             </span>
-            <div className="w-10 h-1 rounded-full bg-sky-600" />
+            <div className="w-10 h-1 rounded-full bg-brand-primary" />
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-5">
             {data.heading}
