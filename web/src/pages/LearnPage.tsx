@@ -46,7 +46,7 @@ export default function LearnPage() {
     }
   }
 
-  const baseUrl = ensureBaseUrl(import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+  const baseUrl = ensureBaseUrl(import.meta.env.VITE_API_BASE_URL ?? "https://thienphuc12339-signova-backend.hf.space").replace(/\/$/, "");
   const posterUrl = detail ? `${baseUrl}${detail.poster_url}` : null;
 
   return (
@@ -146,3 +146,4 @@ export default function LearnPage() {
     </div>
   );
 }
+
