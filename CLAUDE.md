@@ -37,8 +37,7 @@ SIGNOVA_BANK_ROOT=outputs/reference_bank_30_unique_video_ref20_template uvicorn 
 # Run API (default port 8010, bank: outputs/reference_bank_20_best_allcam1_fe)
 .\scripts\run_api.ps1
 
-# Run with custom port (models/spoter_v3.0.onnx and gloss.csv are present locally,
-# so Practice II works without -SignModelPath on this machine)
+# Run with custom port
 .\scripts\run_api.ps1 -Port 8014
 ```
 
@@ -62,6 +61,20 @@ cd web && npx tsc --noEmit
 
 No test runner is configured — type checking and build are the verification path.
 
+### Database Migrations (Alembic)
+
+```bash
+# Apply all pending migrations
+source .venv/bin/activate
+alembic upgrade head
+
+# Create a new migration after editing models
+alembic revision --autogenerate -m "description"
+
+# Seed curriculum data from the reference bank into the DB
+python scripts/seed_curriculum.py
+```
+
 ### Batch Testing
 
 ```powershell
@@ -80,7 +93,15 @@ No test runner is configured — type checking and build are the verification pa
 
 ## Architecture
 
-### Backend Pipeline (`api.py` + `signova_practice_i/`)
+### Backend — Two Layers
+
+The backend has two distinct layers mounted on the same FastAPI `app`:
+
+**1. Signova core (`api.py` + `signova_practice_i/`)** — the CV/ML engine. Handles video upload, pose extraction, scoring, and overlay generation. No authentication required; practice endpoints accept optional auth and save attempts when a user is logged in.
+
+**2. User management (`app/`)** — auth, profiles, progress tracking, and social linking. All routes are prefixed and registered into the same FastAPI app via `app.include_router(...)` in `api.py:create_app()`.
+
+### Core Pipeline (`api.py` + `signova_practice_i/`)
 
 Request flow for `POST /practice-i/analyze-video`:
 
@@ -99,13 +120,34 @@ Request flow for `POST /practice-i/analyze-video`:
 - **`ReferenceBank`** — loaded from `.npz` via `load_reference_bank_npz`; holds multiple reference templates + tolerance arrays for scoring.
 - **`BankStore`** (`bank_store.py`) — lazy-loads `ReferenceBank` per gloss from `reference_bank_manifest.json`; also maps glosses to display reference clips via `display_reference_manifest.json`.
 
+### User Management Layer (`app/`)
+
+All routers live in `app/routers/` and are registered in `api.py:create_app()`:
+
+| Router | Prefix | Purpose |
+|---|---|---|
+| `auth.py` | `/auth` | Register, login, refresh token, `/auth/me`, update-profile |
+| `curriculum.py` | `/curriculum` | Serve curriculum topics/words from DB |
+| `progress.py` | `/progress` | Track learner word/topic progress, XP, resume state |
+| `link.py` | `/links` | Parent↔Learner and School↔Learner connection requests |
+| `dashboard.py` | `/dashboard` | Aggregated dashboard views for parent/school roles |
+
+**User roles**: `learner`, `parent`, `school`, `admin`. Each role gets its own profile model (`LearnerProfile`, `ParentProfile`, `SchoolProfile`). Practice endpoints use `get_current_user_optional` — they work anonymously but persist `PracticeAttempt` records when authenticated.
+
+**Auth**: JWT access tokens (60 min) + refresh tokens (7 days), signed with `JWT_SECRET_KEY` / `JWT_REFRESH_SECRET_KEY`. `app/auth/dependencies.py` exports `get_current_user` (raises 401 if missing) and `get_current_user_optional` (returns None).
+
 ### Configuration via Environment Variables
 
 | Variable | Default | Purpose |
 |---|---|---|
 | `SIGNOVA_BANK_ROOT` | `outputs/reference_bank_20_best_allcam1_fe` | Path to reference bank directory |
-| `SIGNOVA_SIGN_MODEL_PATH` | `models/spoter_v3.0.onnx` if present, else hardcoded Windows path | SPOTER ONNX model for Practice II classifier |
-| `SIGNOVA_SIGN_GLOSS_CSV` | `gloss.csv` if present, else hardcoded Windows path | Gloss label CSV for classifier |
+| `SIGNOVA_SIGN_MODEL_PATH` | `models/spoter_v3.0.onnx` if present | SPOTER ONNX model for Practice II |
+| `SIGNOVA_SIGN_GLOSS_CSV` | `gloss.csv` if present | Gloss label CSV for classifier |
+| `DATABASE_URL` | Neon PostgreSQL connection string in `app/config.py` | PostgreSQL DB for user/progress data |
+| `JWT_SECRET_KEY` | Default in `app/config.py` | Access token signing key |
+| `JWT_REFRESH_SECRET_KEY` | Default in `app/config.py` | Refresh token signing key |
+
+All settings are loaded by `app/config.py` via pydantic-settings; override via `.env` file or shell env. The defaults in `app/config.py` point to the shared Neon instance — set `DATABASE_URL` to a local Postgres for local development. A `docker-compose.yml` at the root starts a local PostgreSQL container on port 5432.
 
 `models/spoter_v3.0.onnx` and `gloss.csv` are committed to this repo — Practice II works out of the box without extra env vars.
 
@@ -113,8 +155,17 @@ Request flow for `POST /practice-i/analyze-video`:
 
 React 18 + TypeScript + Vite 5 + Tailwind CSS v3. See `web/CLAUDE.md` for full frontend architecture details.
 
-- **`router.tsx`** — four routes: `/` (LandingPage), `/practice` (App), `/learn` (LearnDashboard), `/learn/:unitId/:lessonId` (LearnPage).
-- **`App.tsx`** — owns all state/handlers; renders `ControlPanel` (aside) and `StagePanel` (main stage with dual video panels).
+**Routes** (`router.tsx`):
+
+| Path | Component | Notes |
+|---|---|---|
+| `/` | `LandingLayout` → `LandingPage` | Navbar with locale toggle |
+| `/practice` | `PracticePage` | Tab-based shell: practice + learn |
+| `/learn-dashboard` | `PracticePage` | Same shell, different initial tab |
+| `/learn/:topicId/:wordOrder` | `StudyStage` | Flashcard word study view |
+
+**Component hierarchy**: `PracticePage` is the top-level authenticated shell — it owns the `Sidebar`, `AuthModal`, and switches between `TopicGrid`, `TopicSummary`, `StudyStage`, `PracticeWorkspace`, and `DashboardPlaceholder` tabs. `App.tsx` is the original standalone practice tool; it is composed inside `PracticeWorkspace`.
+
 - **`api/`** — Axios-based API layer: `client.ts` (factory + error handler), `endpoints/`, `types.ts` (all API interfaces), `index.ts` (barrel re-export).
 - **`overlay.ts`** — `normalizeAnalysis()` + `drawOverlay()` render the skeleton on canvas, coloring joints red/green based on `bad_joint_indices` from the API.
 - **`data/`** — static data files: `learnDashboardData.ts` (unit/lesson tree), `learnData.ts` (vocabulary flashcards), `landingData.ts` (bilingual vi/en landing content).
@@ -143,3 +194,4 @@ outputs/reference_bank_20_best_allcam1_fe/
 - Reference videos in `display_reference_manifest.json` point to `All_cam1/` dataset clips. API starts without them; `/playback/reference/{gloss}` will 404 if clips are missing.
 - `npm run build` runs `vite build` only — it does **not** run `tsc`. Run `npx tsc --noEmit` separately to type-check.
 - Page UI specs for new pages live in `web/src/guide/` — read the relevant spec before implementing a new page.
+- After editing any `app/models/` SQLAlchemy model, run `alembic revision --autogenerate` and `alembic upgrade head`. The DB schema is never modified manually.
