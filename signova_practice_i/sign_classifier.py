@@ -421,7 +421,7 @@ class JointSelect:
         import torch
 
         total = len(self.pose_idxs) + len(self.hand_idxs) * 2
-        arr = np.zeros((len(poses), total, 2))
+        arr = np.zeros((len(poses), total, 2), dtype=np.float32)
         for i, pose in enumerate(poses):
             arr[i] = np.vstack(
                 [
@@ -542,13 +542,18 @@ class DictToTensor:
     def __call__(self, row):
         import torch
 
-        arr = np.stack([row[landmark] for landmark in LANDMARKS], axis=1)
+        arr = np.stack([row[landmark] for landmark in LANDMARKS], axis=1).astype(np.float32, copy=False)
         return torch.from_numpy(arr)
 
 
 class Shift:
     def __call__(self, data):
+        import torch
+
+        data = data.to(dtype=torch.float32)
         shoulder_avg = (data[:, 6] + data[:, 7]) / 2.0
         for i in range(data.shape[1]):
-            data[:, i] = np.where(data[:, i] != 0, data[:, i] - shoulder_avg, data[:, i])
+            zero_mask = data[:, i] != 0
+            shifted = data[:, i] - shoulder_avg
+            data[:, i] = torch.where(zero_mask, shifted, data[:, i])
         return data

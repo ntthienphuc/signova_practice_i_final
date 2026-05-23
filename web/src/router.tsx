@@ -1,9 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import LandingLayout from "./layouts/LandingLayout";
 import LandingPage from "./pages/LandingPage";
-import App from "./App";
-import LearnDashboard from "./pages/LearnDashboard";
-import LearnPage from "./pages/LearnPage";
+import PracticePage from "./PracticePage";
 
 export const router = createBrowserRouter([
   {
@@ -15,14 +13,18 @@ export const router = createBrowserRouter([
   },
   {
     path: "/practice",
-    element: <App />,
+    element: <PracticePage initialTab="learn" />,
   },
   {
     path: "/learn",
-    element: <LearnDashboard />,
+    element: <PracticePage initialTab="learn" />,
   },
   {
-    path: "/learn/:unitId/:lessonId",
-    element: <LearnPage />,
+    path: "/dashboard/family",
+    element: <PracticePage initialTab="family" />,
+  },
+  {
+    path: "/dashboard/school",
+    element: <PracticePage initialTab="school" />,
   },
 ]);

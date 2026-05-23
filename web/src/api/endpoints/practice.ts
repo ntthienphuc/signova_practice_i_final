@@ -42,7 +42,9 @@ export async function analyzeAttempt({
     if (mode === "practice_ii") {
       form.append("lesson_glosses", lessonGlosses.join(","));
     }
-    const { data } = await client.post<AnalyzeResponse>(endpoint, form);
+    const { data } = await client.post<AnalyzeResponse>(endpoint, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return data;
   } catch (error) {
     handleAxiosError(error);
