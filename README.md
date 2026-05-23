@@ -195,7 +195,8 @@ signova_practice_i_final/
 
 Script này sẽ tự:
 
-- kiểm tra `.venv`, nếu chưa có thì tự tạo và cài `requirements_api.txt`
+- kiểm tra `.venv`, nếu chưa có hoặc thiếu thư viện thì tự tạo/cài lại `requirements_api.txt`
+- nếu `.venv` đã đủ thư viện thì bỏ qua cài đặt và chạy thẳng
 - kiểm tra `web/node_modules`, nếu chưa có thì tự chạy `npm ci`
 - dọn process cũ trên port API/Web
 - bật lại API
