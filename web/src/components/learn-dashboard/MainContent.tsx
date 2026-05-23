@@ -1,17 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BookOpen } from "lucide-react";
 import UnitAccordion from "./UnitAccordion";
-import { MOCK_DASHBOARD } from "../../data/learnDashboardData";
+import { getCurriculumData } from "../../api/client";
+import type { Topic } from "../../types/learn";
 
 export default function MainContent() {
-  const topics = MOCK_DASHBOARD.topics;
-  const [expandedTopicId, setExpandedTopicId] = useState<string | null>(topics[0]?.id ?? null);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
+
+  useEffect(() => {
+    getCurriculumData()
+      .then((data) => {
+        setTopics(data.topics);
+        setExpandedTopicId(data.topics[0]?.id ?? null);
+      })
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : "Không thể tải dữ liệu.");
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   function toggleTopic(id: string) {
     setExpandedTopicId((prev) => (prev === id ? null : id));
   }
 
   const activeTopic = topics.find((t) => t.id === expandedTopicId) ?? topics[0];
+
+  if (loading) {
+    return (
+      <main className="flex-1 overflow-y-auto px-10 py-8 min-w-0 flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Đang tải...</p>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="flex-1 overflow-y-auto px-10 py-8 min-w-0 flex items-center justify-center">
+        <p className="text-red-500 text-sm">{error}</p>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1 overflow-y-auto px-10 py-8 min-w-0">
