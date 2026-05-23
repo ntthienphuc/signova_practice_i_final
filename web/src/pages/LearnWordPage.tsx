@@ -64,7 +64,7 @@ export default function LearnWordPage() {
             <h2>{error || "Không tìm thấy bài học"}</h2>
             <button
               className="border-0 rounded-full min-h-[48px] px-5 transition-all font-extrabold bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white shadow-[0_16px_30px_rgba(83,110,249,0.22)] hover:-translate-y-px cursor-pointer mt-4"
-              onClick={() => navigate("/practice")}
+              onClick={() => navigate("/learn-dashboard")}
             >
               Quay lại
             </button>
@@ -87,7 +87,7 @@ export default function LearnWordPage() {
             wordCount={topic.word_count}
             title={`Practice I • ${word.gloss}`}
             subtitle="Luyện ngay từ vừa học xong trước khi chuyển sang từ tiếp theo."
-            actionLabel="Upload và phân tích"
+            actionLabel="Phân tích"
             completionLabel={
               wordIndex >= topic.words.length - 1 ? "Hoàn thành topic →" : "Sang từ tiếp theo →"
             }

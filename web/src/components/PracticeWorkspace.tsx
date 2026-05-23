@@ -349,7 +349,7 @@ export function PracticeWorkspace({
     <section className="relative min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)] text-[var(--ink)]">
       <div className="bg-dot-grid pointer-events-none absolute inset-0" />
 
-      <div className="relative max-w-[1280px] mx-auto px-8 pt-10 pb-8 grid gap-[26px]">
+      <div className="relative max-w-[1440px] mx-auto px-8 pt-10 pb-8 grid gap-[26px]">
         <button
           type="button"
           onClick={onBackToLearn}
@@ -370,31 +370,20 @@ export function PracticeWorkspace({
         </div>
 
         {/* Title */}
-        <div className="mb-[-6px] text-center">
-          <span className="text-[clamp(2.2rem,5vw,3rem)] font-extrabold leading-[1.08] text-[#233157]">{targetGloss}</span>
-          <span className="text-[clamp(2.2rem,5vw,3rem)] font-extrabold leading-[1.08] mx-3 text-[#90a0bb]">/</span>
-          <span className="text-[clamp(2.2rem,5vw,3rem)] font-extrabold leading-[1.08] text-[#5f8efb]">
+        <div className="mb-[6px] text-center">
+          <span className="text-[clamp(2.2rem,5vw,2rem)] font-extrabold leading-[1.08] text-[#233157]">{targetGloss}</span>
+          <span className="text-[clamp(2.2rem,5vw,2rem)] font-extrabold leading-[1.08] mx-3 text-[#90a0bb]">/</span>
+          <span className="text-[clamp(2.2rem,5vw,2rem)] font-extrabold leading-[1.08] text-[#5f8efb]">
             {mode === "practice_i" ? "Practice I" : "Practice II"}
           </span>
         </div>
 
-        {/* Subtitle */}
-        <div className="grid gap-1.5 justify-items-center text-center">
-          <p className="m-0 text-[1.1rem] font-extrabold text-[#223153]">{title}</p>
-          <span className="max-w-[760px] text-[#6f7d94] leading-[1.65]">{subtitle}</span>
-        </div>
+
 
         {/* Grid */}
-        <div className="grid grid-cols-[minmax(280px,320px)_minmax(0,1fr)_minmax(0,1fr)] gap-[18px]">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-[18px]">
           {/* Coach card */}
           <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-6 grid gap-[18px] content-start">
-            <div className="flex justify-between items-start gap-3">
-              <div>
-                <p className="m-0 mb-1.5 text-[#7c8aa2] text-[0.72rem] font-bold tracking-[0.14em] uppercase">COACH NOTE</p>
-                <h3 className="mt-1.5 mb-0 text-[1.7rem] font-display text-[#223153]">Luyện theo đúng target</h3>
-              </div>
-              <span className="inline-flex items-center py-[9px] px-[14px] rounded-full bg-[rgba(83,110,249,0.12)] text-[#5f8efb] font-extrabold">{targetGloss}</span>
-            </div>
 
             {mode === "practice_ii" ? (
               <div className="flex flex-wrap gap-2">
@@ -419,9 +408,9 @@ export function PracticeWorkspace({
                 <UploadCloud size={20} />
               </div>
               <div className="grid gap-1.5">
-                <strong className="text-[#223153] text-[1rem]">{file ? file.name : "Chọn video để gửi lên"}</strong>
+                <strong className="text-[#223153] text-[1rem]">{file ? file.name : "Chọn video"}</strong>
                 <span className="text-[#6f7d94] leading-[1.55]">
-                  {file ? "Video đã sẵn sàng để chấm." : "App sẽ tự cắt segment, so với mẫu và tô đỏ/xanh."}
+                  {file ? "Video đã sẵn sàng để chấm." : "Vui lòng tải video lên"}
                 </span>
               </div>
             </label>
@@ -439,7 +428,7 @@ export function PracticeWorkspace({
             {error ? <p className="m-0 text-[#b33f47]">{error}</p> : null}
 
             <div className="grid gap-[14px] p-[18px] rounded-[22px] border border-[rgba(83,110,249,0.08)] bg-[rgba(248,250,255,0.96)]">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-3">
                 <div className="grid gap-1.5 p-[14px] rounded-[18px] bg-white/[0.96]">
                   <span className="text-[#6f7d94]">Score</span>
                   <strong className="text-[1.3rem] text-[#223153]">{analysis ? Math.round(Number(analysis.raw.score ?? 0)) : "--"}</strong>
@@ -478,14 +467,8 @@ export function PracticeWorkspace({
           <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-5 grid gap-4">
             <div className="flex justify-between gap-[14px] items-start">
               <div>
-                <p className="m-0 mb-1.5 text-[#7c8aa2] text-[0.72rem] font-bold tracking-[0.14em] uppercase">USER ATTEMPT</p>
                 <h4 className="mt-1.5 mb-0 text-[#223153] text-[1.28rem]">Bài làm của bạn</h4>
               </div>
-              <span className="text-[#6f7d94]">
-                {userSegment
-                  ? `${userSegment.segment_start_ms}ms → ${userSegment.segment_end_ms}ms`
-                  : userStatus}
-              </span>
             </div>
             <div className="relative isolate min-h-[440px] rounded-[24px] overflow-hidden bg-[rgba(242,247,255,0.95)] border border-[rgba(53,84,128,0.08)]">
               {userVideoUrl ? (
@@ -502,7 +485,7 @@ export function PracticeWorkspace({
                   {analysis ? <canvas ref={userCanvasRef} className="absolute inset-0 z-[2] w-full h-full pointer-events-none" /> : null}
                 </>
               ) : (
-                <div className="min-h-[440px] grid place-items-center text-center p-6 text-[#6f7d94]">Upload video để xem phần user attempt.</div>
+                <div className="min-h-[440px] grid place-items-center text-center p-6 text-[#6f7d94]">Upload video để xem phần bài làm.</div>
               )}
             </div>
           </article>
@@ -511,16 +494,10 @@ export function PracticeWorkspace({
           <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-5 grid gap-4">
             <div className="flex justify-between gap-[14px] items-start">
               <div>
-                <p className="m-0 mb-1.5 text-[#7c8aa2] text-[0.72rem] font-bold tracking-[0.14em] uppercase">REFERENCE</p>
                 <h4 className="mt-1.5 mb-0 text-[#223153] text-[1.28rem]">Video mẫu chuẩn</h4>
               </div>
-              <span className="text-[#6f7d94]">
-                {referenceSegment
-                  ? `${referenceSegment.segment_start_ms}ms → ${referenceSegment.segment_end_ms}ms`
-                  : referenceStatus}
-              </span>
             </div>
-            <div className="relative isolate min-h-[440px] rounded-[24px] overflow-hidden bg-[rgba(242,247,255,0.95)] border border-[rgba(53,84,128,0.08)]">
+            <div className="relative isolate min-h-[440px] rounded-[24px] overflow-hidden bg-[rgba(242,247,255,0.95)]">
               {referenceVideoUrl ? (
                 <>
                   <video
@@ -531,7 +508,7 @@ export function PracticeWorkspace({
                         ? new URL(referenceStudy.poster_url, baseUrl).href
                         : undefined
                     }
-                    className="absolute inset-0 z-[1] w-full h-full object-contain block bg-white"
+                    className="absolute inset-0 z-[1] w-full h-full object-contain block bg-white "
                     playsInline
                     muted
                     controls={!analysis}

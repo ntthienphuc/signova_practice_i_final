@@ -37,7 +37,7 @@ export function StudyStage({
     <section className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)] text-[var(--ink)]">
       <div className="bg-dot-grid pointer-events-none absolute inset-0 opacity-100" />
 
-      <div className="relative flex flex-col min-h-screen max-w-[1200px] mx-auto px-8 pt-10 pb-8">
+      <div className="relative flex flex-col min-h-screen max-w-[1440px] mx-auto px-8 pt-10 pb-8">
         <button
           type="button"
           onClick={onBackToTopics}
@@ -89,7 +89,7 @@ export function StudyStage({
             ) : (
               <div className="p-6 text-[rgba(35,49,87,0.12)] text-6xl font-extrabold text-center leading-[1.1]">Chưa có video mẫu</div>
             )}
-            <div className="absolute right-0 bottom-0 left-0 top-0 p-3 text-center">
+            <div className="absolute right-0 bottom-0 left-0 top-0 p-3 text-center pointer-events-none">
               <p className="m-0 text-[#75839a] text-[0.8rem]">Video mẫu</p>
               <strong className="text-[#223153] text-[0.95rem]">{word.gloss}</strong>
             </div>
