@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import csv
+from dataclasses import dataclass
+from math import ceil
 from pathlib import Path
 from typing import Dict, List, Sequence
 
@@ -62,6 +64,243 @@ def load_id2label(csv_path: str | Path) -> Dict[str, str]:
             if len(row) >= 2:
                 id2label[row[0].strip()] = row[1].strip()
     return id2label
+
+
+@dataclass(frozen=True)
+class ClassifierSegment:
+    start_frame: int
+    end_frame: int
+    reason: str
+    score: float
+
+    @property
+    def frame_count(self) -> int:
+        return max(0, int(self.end_frame) - int(self.start_frame))
+
+
+def _calculate_angle(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> float:
+    radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
+    angle = abs(float(radians * 180.0 / np.pi))
+    if angle > 180.0:
+        angle = 360.0 - angle
+    return angle
+
+
+def _arm_angle(results, side: str, visibility: float) -> float | None:
+    pose = getattr(results, "pose_landmarks", None)
+    if pose is None:
+        return None
+    landmarks = pose.landmark
+    if side == "left":
+        shoulder_idx, elbow_idx, wrist_idx = 11, 13, 15
+    else:
+        shoulder_idx, elbow_idx, wrist_idx = 12, 14, 16
+    if wrist_idx >= len(landmarks):
+        return None
+    triplet = [landmarks[shoulder_idx], landmarks[elbow_idx], landmarks[wrist_idx]]
+    if any(float(getattr(item, "visibility", 0.0)) < float(visibility) for item in triplet):
+        return None
+    a = np.asarray([triplet[0].x, triplet[0].y], dtype=np.float32)
+    b = np.asarray([triplet[1].x, triplet[1].y], dtype=np.float32)
+    c = np.asarray([triplet[2].x, triplet[2].y], dtype=np.float32)
+    return _calculate_angle(a, b, c)
+
+
+def _arm_up_fraction(results_list: Sequence[object], start: int, end: int, angle_threshold: float, visibility: float) -> float:
+    if end <= start:
+        return 0.0
+    active = 0
+    total = 0
+    for results in results_list[start:end]:
+        total += 1
+        left_angle = _arm_angle(results, "left", visibility)
+        right_angle = _arm_angle(results, "right", visibility)
+        left_up = left_angle is not None and 0.0 < left_angle < angle_threshold
+        right_up = right_angle is not None and 0.0 < right_angle < angle_threshold
+        if left_up or right_up:
+            active += 1
+    return float(active) / float(total or 1)
+
+
+def list_classifier_segments(
+    results_list: Sequence[object],
+    *,
+    fps: float,
+    frame_stride: int = 1,
+    preferred_start: int | None = None,
+    preferred_end: int | None = None,
+    visibility: float = 0.5,
+    angle_threshold: float = 140.0,
+    min_num_up_frames: int = 10,
+    min_num_down_frames: int = 10,
+    delay_ms: int = 400,
+) -> tuple[list[ClassifierSegment], dict[str, float | int | str | None]]:
+    if not results_list:
+        return [], {
+            "reason": "empty",
+            "start_frame": 0,
+            "end_frame": 0,
+            "frame_count": 0,
+            "score": 0.0,
+        }
+
+    extracted_fps = max(float(fps) / max(int(frame_stride), 1), 1e-6)
+    min_up = max(1, int(ceil(float(min_num_up_frames) / max(int(frame_stride), 1))))
+    min_down = max(1, int(ceil(float(min_num_down_frames) / max(int(frame_stride), 1))))
+    delay_frames = max(0, int(round((float(delay_ms) / 1000.0) * extracted_fps)))
+
+    def new_state() -> dict[str, float | int | bool | None]:
+        return {
+            "is_up": False,
+            "num_up": 0,
+            "num_down": 0,
+            "start_idx": None,
+            "end_idx": None,
+        }
+
+    def step_arm(state: dict[str, float | int | bool | None], angle: float | None, current_idx: int) -> bool:
+        is_up = bool(state["is_up"])
+        if angle is not None and 0.0 < angle < float(angle_threshold):
+            if is_up:
+                state["num_down"] = 0
+                state["end_idx"] = None
+            else:
+                if int(state["num_up"]) >= min_up:
+                    state["is_up"] = True
+                    state["num_up"] = 0
+                else:
+                    if int(state["num_up"]) == 0:
+                        state["start_idx"] = max(0, current_idx - delay_frames)
+                    state["num_up"] = int(state["num_up"]) + 1
+                    return False
+        else:
+            if is_up:
+                if int(state["num_down"]) >= min_down:
+                    state["is_up"] = False
+                    state["num_down"] = 0
+                else:
+                    if int(state["num_down"]) == 0:
+                        state["end_idx"] = min(len(results_list), current_idx + delay_frames)
+                    state["num_down"] = int(state["num_down"]) + 1
+                    return True
+            else:
+                state["num_up"] = 0
+                state["start_idx"] = None
+        return bool(state["is_up"])
+
+    def merged_bounds(left_state: dict[str, float | int | bool | None], right_state: dict[str, float | int | bool | None]) -> tuple[int, int] | None:
+        starts = [value for value in (left_state["start_idx"], right_state["start_idx"]) if value is not None]
+        ends = [value for value in (left_state["end_idx"], right_state["end_idx"]) if value is not None]
+        if not starts or not ends:
+            return None
+        start = int(max(0, min(starts)))
+        end = int(min(len(results_list), max(ends)))
+        if end <= start:
+            return None
+        return start, end
+
+    left_state = new_state()
+    right_state = new_state()
+    segments: list[ClassifierSegment] = []
+
+    for idx, results in enumerate(results_list):
+        left_active = step_arm(left_state, _arm_angle(results, "left", visibility), idx)
+        right_active = step_arm(right_state, _arm_angle(results, "right", visibility), idx)
+        bounds = merged_bounds(left_state, right_state)
+        if bounds is not None and not left_active and not right_active:
+            start, end = bounds
+            up_fraction = _arm_up_fraction(results_list, start, end, angle_threshold, visibility)
+            score = (end - start) + 12.0 * up_fraction
+            segments.append(ClassifierSegment(start, end, "arm_cycle", score))
+            left_state = new_state()
+            right_state = new_state()
+
+    final_bounds = merged_bounds(left_state, right_state)
+    if final_bounds is not None:
+        start, end = final_bounds
+        up_fraction = _arm_up_fraction(results_list, start, end, angle_threshold, visibility)
+        score = (end - start) + 12.0 * up_fraction
+        segments.append(ClassifierSegment(start, end, "arm_cycle_video_end", score))
+
+    return segments, {
+        "preferred_start": int(preferred_start) if preferred_start is not None else None,
+        "preferred_end": int(preferred_end) if preferred_end is not None else None,
+        "num_candidates": int(len(segments)),
+        "reason": "arm_cycle_candidates" if segments else "empty",
+    }
+
+
+def select_classifier_segment(
+    results_list: Sequence[object],
+    *,
+    fps: float,
+    frame_stride: int = 1,
+    preferred_start: int | None = None,
+    preferred_end: int | None = None,
+    visibility: float = 0.5,
+    angle_threshold: float = 140.0,
+    min_num_up_frames: int = 10,
+    min_num_down_frames: int = 10,
+    delay_ms: int = 400,
+) -> tuple[list[object], dict[str, float | int | str | None]]:
+    if not results_list:
+        return [], {
+            "reason": "empty",
+            "start_frame": 0,
+            "end_frame": 0,
+            "frame_count": 0,
+            "score": 0.0,
+        }
+
+    segments, debug = list_classifier_segments(
+        results_list,
+        fps=fps,
+        frame_stride=frame_stride,
+        preferred_start=preferred_start,
+        preferred_end=preferred_end,
+        visibility=visibility,
+        angle_threshold=angle_threshold,
+        min_num_up_frames=min_num_up_frames,
+        min_num_down_frames=min_num_down_frames,
+        delay_ms=delay_ms,
+    )
+    if not segments:
+        if preferred_start is not None and preferred_end is not None and int(preferred_end) > int(preferred_start):
+            start = max(0, int(preferred_start))
+            end = min(len(results_list), int(preferred_end))
+            return list(results_list[start:end]), {
+                "reason": "fallback_preferred_segment",
+                "start_frame": start,
+                "end_frame": end,
+                "frame_count": max(0, end - start),
+                "score": float(end - start),
+            }
+        return list(results_list), {
+            "reason": "fallback_full_video",
+            "start_frame": 0,
+            "end_frame": len(results_list),
+            "frame_count": len(results_list),
+            "score": float(len(results_list)),
+        }
+
+    def ranking_key(segment: ClassifierSegment) -> tuple[float, float, float]:
+        overlap = 0.0
+        if preferred_start is not None and preferred_end is not None:
+            overlap = float(max(0, min(segment.end_frame, int(preferred_end)) - max(segment.start_frame, int(preferred_start))))
+        up_fraction = _arm_up_fraction(results_list, segment.start_frame, segment.end_frame, angle_threshold, visibility)
+        return (overlap, up_fraction, segment.score)
+
+    best = max(segments, key=ranking_key)
+    return list(results_list[best.start_frame:best.end_frame]), {
+        "reason": best.reason,
+        "start_frame": int(best.start_frame),
+        "end_frame": int(best.end_frame),
+        "frame_count": int(best.frame_count),
+        "score": float(best.score),
+        "preferred_start": int(preferred_start) if preferred_start is not None else None,
+        "preferred_end": int(preferred_end) if preferred_end is not None else None,
+        "num_candidates": int(debug["num_candidates"]),
+    }
 
 
 class SPOTERONNXInferer:
@@ -259,54 +498,57 @@ class SingleBodyDictNormalize:
                     continue
                 denom_x = end[0] - start[0]
                 denom_y = start[1] - end[1]
-                if denom_x == 0 or denom_y == 0:
+                if abs(denom_x) < 1e-6 or abs(denom_y) < 1e-6:
                     continue
-                row[landmark][t][0] = (row[landmark][t][0] - start[0]) / denom_x
-                row[landmark][t][1] = (row[landmark][t][1] - end[1]) / denom_y
+                row[landmark][t][0] = np.clip((row[landmark][t][0] - start[0]) / denom_x, 0, 1)
+                row[landmark][t][1] = np.clip((row[landmark][t][1] - end[1]) / denom_y, 0, 1)
         return row
 
 
 class SingleHandDictNormalize:
-    def __call__(self, row):
-        hand_map = {idx: [f"{landmark}_{idx}" for landmark in HAND_LANDMARKS] for idx in range(2)}
-        for hand_idx in range(2):
-            sequence_size = len(row[f"wrist_{hand_idx}"])
-            for t in range(sequence_size):
-                xs = [row[key][t][0] for key in hand_map[hand_idx] if row[key][t][0] != 0]
-                ys = [row[key][t][1] for key in hand_map[hand_idx] if row[key][t][1] != 0]
-                if not xs or not ys:
+    def __init__(self):
+        self.left_hand_landmarks = [f"{landmark}_0" for landmark in HAND_LANDMARKS]
+        self.right_hand_landmarks = [f"{landmark}_1" for landmark in HAND_LANDMARKS]
+
+    def normalize_hand(self, row, landmarks, wrist_index):
+        for t in range(len(row["leftEar"])):
+            wrist = row[wrist_index][t]
+            if wrist[0] == 0:
+                continue
+
+            xs = [row[landmark][t][0] for landmark in landmarks if row[landmark][t][0] != 0]
+            ys = [row[landmark][t][1] for landmark in landmarks if row[landmark][t][1] != 0]
+            if not xs or not ys:
+                continue
+
+            x_min, x_max = min(xs), max(xs)
+            y_min, y_max = min(ys), max(ys)
+            size = max(x_max - x_min, y_max - y_min, 1e-3)
+
+            for landmark in landmarks:
+                if row[landmark][t][0] == 0:
                     continue
-                width = max(xs) - min(xs)
-                height = max(ys) - min(ys)
-                if width > height:
-                    dx = 0.1 * width
-                    dy = dx + (width - height) / 2
-                else:
-                    dy = 0.1 * height
-                    dx = dy + (height - width) / 2
-                start = (min(xs) - dx, min(ys) - dy)
-                end = (max(xs) + dx, max(ys) + dy)
-                for key in hand_map[hand_idx]:
-                    px, py = row[key][t]
-                    if px == 0:
-                        continue
-                    row[key][t][0] = (px - start[0]) / (end[0] - start[0])
-                    row[key][t][1] = (py - start[1]) / (end[1] - start[1])
+                row[landmark][t][0] = np.clip((row[landmark][t][0] - x_min) / size, 0, 1)
+                row[landmark][t][1] = np.clip((row[landmark][t][1] - y_min) / size, 0, 1)
+        return row
+
+    def __call__(self, row):
+        row = self.normalize_hand(row, self.left_hand_landmarks, "leftWrist")
+        row = self.normalize_hand(row, self.right_hand_landmarks, "rightWrist")
         return row
 
 
 class DictToTensor:
-    def __call__(self, data):
+    def __call__(self, row):
         import torch
 
-        frames = len(data["leftEar"])
-        points = len(LANDMARKS)
-        out = np.empty((frames, points, 2))
-        for i, landmark in enumerate(LANDMARKS):
-            out[:, i] = data[landmark]
-        return torch.from_numpy(out)
+        arr = np.stack([row[landmark] for landmark in LANDMARKS], axis=1)
+        return torch.from_numpy(arr)
 
 
 class Shift:
     def __call__(self, data):
-        return data - 0.5
+        shoulder_avg = (data[:, 6] + data[:, 7]) / 2.0
+        for i in range(data.shape[1]):
+            data[:, i] = np.where(data[:, i] != 0, data[:, i] - shoulder_avg, data[:, i])
+        return data

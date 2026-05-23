@@ -9,7 +9,7 @@ def public_result(result: Dict[str, Any]) -> Dict[str, Any]:
     return {
         key: value
         for key, value in result.items()
-        if key not in {"bad_mask", "distance", "ratio", "user_xy", "reference_xy", "tolerance_used"}
+        if key not in {"bad_mask", "valid_mask", "distance", "ratio", "user_xy", "reference_xy", "tolerance_used"}
     }
 
 
@@ -39,23 +39,29 @@ def decision_for_target(
     wrong_word_rank: int = 4,
     wrong_word_low_score: float = 60.0,
     wrong_word_gap: float = 15.0,
+    min_valid_fraction: float = 0.55,
 ) -> dict[str, bool]:
     score = target_result["score"]
+    valid_fraction = float(target_result.get("valid_fraction", 1.0))
     top1_gap = 0.0 if top1_score is None else float(top1_score) - float(score)
+    low_tracking_quality = valid_fraction < min_valid_fraction
     soft_accept = (
-        target_rank <= soft_accept_rank
+        not low_tracking_quality
+        and valid_fraction >= min_valid_fraction
+        and target_rank <= soft_accept_rank
         and score >= soft_accept_score
         and top1_gap <= soft_accept_gap
     )
-    possible_wrong_word = (not soft_accept) and (
+    possible_wrong_word = low_tracking_quality or ((not soft_accept) and (
         target_rank >= wrong_word_rank
         or score < wrong_word_low_score
         or top1_gap >= wrong_word_gap
-    )
+    ))
     return {
         "accept_as_target": soft_accept,
         "possible_wrong_word": possible_wrong_word,
         "needs_component_feedback": score < 95,
+        "low_tracking_quality": low_tracking_quality,
     }
 
 
@@ -135,6 +141,7 @@ def decision_for_practice_ii(
         "accept_as_target": (not wrong_word_detected) and (base["accept_as_target"] or classifier_supports_target),
         "possible_wrong_word": possible_wrong_word,
         "needs_component_feedback": wrong_word_detected or base["needs_component_feedback"],
+        "low_tracking_quality": base["low_tracking_quality"],
         "wrong_word_detected": wrong_word_detected,
         "predicted_wrong_gloss": predicted_wrong_gloss,
         "predicted_lesson_score": predicted_lesson_score if top1 is not None else None,

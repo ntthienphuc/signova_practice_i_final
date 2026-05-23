@@ -1,21 +1,16 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-.coverage
-.coverage.*
-htmlcov/
 
-# Virtual environments
+# Virtual env
 .venv/
 venv/
 env/
-ENV/
 
-# Local temp files
+# Local temp
 .tmp_pypdf/
 tmp/
 temp/
@@ -30,37 +25,17 @@ Thumbs.db
 
 # Logs
 *.log
-tests/*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Web build artifacts
+# Web dependencies / build
 web/node_modules/
 web/dist/
 
-# Local dataset / large raw assets
+# Runtime-generated media cache
+outputs/web_playback_cache/
+
+# Optional local-only large files
 All_cam1/
 All_cam1_metadata.json
-*.zip
-*.7z
-*.rar
-
-# Generated API / demo outputs
-outputs/fe_simulator_exports/
-outputs/web_demo/
-outputs/web_playback_cache/
-outputs/**/*.mp4
-outputs/**/*.avi
-outputs/**/*.mov
-
-# Generated benchmark and test reports
-tests/all_cam1_api_*/
-tests/practice_i_analysis*/
-tests/practice_ii_tuned_v2/
-tests/*.json
-
-# Uvicorn / runtime caches
-*.pid
-*.seed
-
