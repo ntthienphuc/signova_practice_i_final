@@ -1,5 +1,5 @@
 param(
-    [int]$Port = 8010,
+    [int]$Port = 8014,
     [string]$BankRoot = "",
     [string]$SignModelPath = "",
     [string]$SignGlossCsvPath = ""
@@ -15,12 +15,7 @@ if (-not (Test-Path $PythonExe)) {
 
 if ([string]::IsNullOrWhiteSpace($BankRoot)) {
     $Best20Bank = Join-Path $Root "outputs\reference_bank_20_best_allcam1_fe"
-    if (Test-Path $Best20Bank) {
-        $BankRoot = $Best20Bank
-    }
-    else {
-        $BankRoot = Join-Path $Root "outputs\reference_bank_30_unique_video_ref20_template"
-    }
+    $BankRoot = $Best20Bank
 }
 
 if (-not (Test-Path $BankRoot)) {

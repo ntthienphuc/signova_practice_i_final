@@ -11,6 +11,10 @@ export async function loadAppConfig(apiBase) {
   return fetchJson(new URL("/app-config", ensureBaseUrl(apiBase)));
 }
 
+export async function loadCurriculum(apiBase) {
+  return fetchJson(new URL("/curriculum", ensureBaseUrl(apiBase)));
+}
+
 export async function createRandomTask(apiBase, mode, lessonSize) {
   const path =
     mode === "practice_i"
@@ -30,7 +34,7 @@ export async function analyzeAttempt({ apiBase, mode, targetGloss, lessonGlosses
   form.append("segment_pad_frames", "8");
   form.append("overlay_frame_count", "32");
   form.append("return_visualization", "false");
-  if (mode === "practice_ii") {
+  if (lessonGlosses?.length) {
     form.append("lesson_glosses", lessonGlosses.join(","));
   }
   return fetchJson(new URL(endpoint, ensureBaseUrl(apiBase)), {
