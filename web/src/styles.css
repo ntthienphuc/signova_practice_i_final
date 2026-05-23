@@ -1997,14 +1997,45 @@ button {
 }
 
 .practice-callout {
+  display: grid;
+  gap: 4px;
   padding: 14px 16px;
   border-radius: 18px;
   font-weight: 700;
+  border: 1px solid transparent;
 }
 
 .practice-callout.warning {
   background: rgba(245, 158, 11, 0.14);
-  color: #fde68a;
+  border-color: rgba(245, 158, 11, 0.18);
+  color: #9a5b00;
+}
+
+.practice-callout.info {
+  background: rgba(83, 110, 249, 0.1);
+  border-color: rgba(83, 110, 249, 0.14);
+  color: #3f58d8;
+}
+
+.practice-callout.success {
+  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(34, 197, 94, 0.14);
+  color: #1f7a47;
+}
+
+.practice-callout.neutral {
+  background: rgba(111, 125, 148, 0.1);
+  border-color: rgba(111, 125, 148, 0.12);
+  color: #52617f;
+}
+
+.practice-callout strong {
+  font-size: 0.96rem;
+}
+
+.practice-callout span {
+  line-height: 1.55;
+  font-size: 0.94rem;
 }
 
 .practice-feedback-text {

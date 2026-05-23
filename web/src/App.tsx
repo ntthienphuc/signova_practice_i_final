@@ -36,7 +36,7 @@ function useObjectUrl(file: File | null): string {
 }
 
 export default function App() {
-  const [apiBase, setApiBase] = useState("http://127.0.0.1:8014");
+  const [apiBase, setApiBase] = useState("http://127.0.0.1:8010");
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [mode, setMode] = useState<PracticeMode>("practice_i");
   const [lessonSize, setLessonSize] = useState(5);

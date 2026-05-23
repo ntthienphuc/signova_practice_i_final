@@ -7,6 +7,7 @@ export interface AppConfig {
   random_practice_ii_sizes: number[];
   reference_video_available: boolean;
   overlay_strategy: string;
+  curriculum_topics?: Array<{ id: string; title: string; word_count: number }>;
 }
 
 export interface ReferenceDisplayVideo {
@@ -120,6 +121,7 @@ export interface AnalyzeResponse {
   reference: ReferenceBlock;
   target_rank: number;
   top3_bank_matches: BankMatch[];
+  classifier?: unknown;
 }
 
 export interface AnalyzeAttemptParams {

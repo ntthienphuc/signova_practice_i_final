@@ -1,10 +1,21 @@
 import { Play } from "lucide-react";
+import type { Topic, WordItem } from "../types/learn";
 
-function absoluteUrl(apiBase, url) {
+function absoluteUrl(apiBase: string, url?: string | null): string {
   if (!url) {
     return "";
   }
   return new URL(url, apiBase).href;
+}
+
+interface StudyStageProps {
+  apiBase: string;
+  topic: Topic;
+  word: WordItem;
+  wordIndex: number;
+  onStartPractice: () => void;
+  onBackToTopics: () => void;
+  onPreviousWord?: (nextIndex: number) => void;
 }
 
 export function StudyStage({
@@ -15,9 +26,12 @@ export function StudyStage({
   onStartPractice,
   onBackToTopics,
   onPreviousWord,
-}) {
+}: StudyStageProps) {
   const posterUrl = absoluteUrl(apiBase, word.study?.poster_url);
-  const referenceUrl = absoluteUrl(apiBase, word.study?.reference?.playback_url ?? word.study?.reference?.video_url);
+  const referenceUrl = absoluteUrl(
+    apiBase,
+    word.study?.reference?.playback_url ?? word.study?.reference?.video_url
+  );
   const referenceSegment = word.study?.reference?.segment;
   const totalWords = topic.words.length || 1;
   const progressRatio = topic.words.length > 0 ? ((wordIndex + 1) / topic.words.length) * 100 : 0;
@@ -27,7 +41,14 @@ export function StudyStage({
     <section className="learn-word-screen">
       <div className="bg-dot-grid pointer-events-none learn-word-grid" />
 
-      <div className="learn-word-shell">
+      <div className="learn-word-shell relative">
+        <button
+          type="button"
+          onClick={onBackToTopics}
+          className="absolute top-4 right-4 py-2 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 font-bold rounded-xl text-xs transition-all border-0 cursor-pointer flex items-center gap-1 z-10 shadow-sm"
+        >
+          🚪 Thoát
+        </button>
         <div className="learn-word-progress">
           <div className="learn-word-progress-head">
             <span>Học từ ký hiệu</span>
@@ -93,7 +114,8 @@ export function StudyStage({
             <div>
               <p className="learn-meta-label">MÔ TẢ</p>
               <p className="learn-meta-text">
-                Xem kỹ hình minh họa và video mẫu của từ này trước. Sau đó bấm vào nút luyện tập để quay thử và nhận phản hồi AI.
+                Xem kỹ hình minh họa và video mẫu của từ này trước. Sau đó bấm vào nút luyện tập để
+                quay thử và nhận phản hồi AI.
               </p>
             </div>
 
@@ -128,7 +150,11 @@ export function StudyStage({
               ))}
             </div>
 
-            <button type="button" className="learn-nav-button learn-nav-button-primary" onClick={onStartPractice}>
+            <button
+              type="button"
+              className="learn-nav-button learn-nav-button-primary"
+              onClick={onStartPractice}
+            >
               <Play size={16} />
               Luyện tập từ này
             </button>
