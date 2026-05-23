@@ -2,7 +2,7 @@ import { Play } from "lucide-react";
 
 interface VideoCardProps {
   wordVi: string;
-  wordEn: string;
+  wordEn?: string;
 }
 
 export default function VideoCard({ wordVi, wordEn }: VideoCardProps) {
@@ -23,7 +23,7 @@ export default function VideoCard({ wordVi, wordEn }: VideoCardProps) {
       <div className="absolute bottom-0 inset-x-0 px-4 py-3 bg-gradient-to-t from-black/80 to-transparent text-center">
         <p className="m-0 text-xs text-text-hint">Video mẫu</p>
         <p className="m-0 mt-0.5 text-sm font-semibold text-text-main">
-          {wordVi} — {wordEn}
+          {wordVi}{wordEn ? ` — ${wordEn}` : ""}
         </p>
       </div>
     </div>

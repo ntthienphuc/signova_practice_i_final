@@ -6,9 +6,10 @@ import type { WordItem } from "../../types/learn";
 interface LessonRowProps {
   word: WordItem;
   topicId: string;
+  glosses: string[];
 }
 
-export default function LessonRow({ word, topicId }: LessonRowProps) {
+export default function LessonRow({ word, topicId, glosses }: LessonRowProps) {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
 
@@ -53,7 +54,11 @@ export default function LessonRow({ word, topicId }: LessonRowProps) {
             video mẫu tham chiếu. Xem kỹ hình dạng bàn tay và cố gắng bắt chước theo.
           </p>
           <button
-            onClick={() => navigate(`/learn/${topicId}/${word.order}`)}
+            onClick={() =>
+              navigate(`/learn/${topicId}/${encodeURIComponent(word.gloss)}`, {
+                state: { glosses },
+              })
+            }
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-primary hover:bg-brand-primaryHover text-white text-xs font-bold border-0 cursor-pointer transition-colors"
           >
             Bắt đầu luyện tập <ArrowRight size={12} />

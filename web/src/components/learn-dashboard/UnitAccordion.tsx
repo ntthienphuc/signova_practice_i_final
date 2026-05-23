@@ -62,7 +62,11 @@ export default function UnitAccordion({ topic, isExpanded, onToggle }: UnitAccor
               </p>
 
               <button
-                onClick={() => navigate(`/learn/${topic.id}/${activeWord.order}`)}
+                onClick={() =>
+                  navigate(`/learn/${topic.id}/${encodeURIComponent(activeWord.gloss)}`, {
+                    state: { glosses: topic.glosses },
+                  })
+                }
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-brand-primary hover:bg-brand-primaryHover text-white text-sm font-bold border-0 cursor-pointer transition-colors"
               >
                 Bắt đầu luyện tập <ArrowRight size={14} />
@@ -76,7 +80,7 @@ export default function UnitAccordion({ topic, isExpanded, onToggle }: UnitAccor
 
           {/* Remaining words */}
           {remainingWords.map((word) => (
-            <LessonRow key={word.order} word={word} topicId={topic.id} />
+            <LessonRow key={word.order} word={word} topicId={topic.id} glosses={topic.glosses} />
           ))}
         </div>
       )}

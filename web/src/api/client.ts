@@ -134,6 +134,34 @@ export async function analyzeVideoPractice2(
 }
 
 /** ==========================================
+ * VOCABULARY DETAIL
+ * ========================================== */
+
+export interface VocabularyDetail {
+  gloss: string;
+  video_id: string;
+  score: number;
+  poster_url: string;
+  reference: {
+    video_url: string;
+    playback_url: string;
+    segment: string | null;
+    video_filename: string;
+  };
+}
+
+export async function getVocabularyDetail(gloss: string): Promise<VocabularyDetail> {
+  try {
+    const response = await apiClient.get<VocabularyDetail>(
+      `/vocabulary/${encodeURIComponent(gloss)}`
+    );
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+/** ==========================================
  * SYSTEM STATIC CDN ASSET DESPATCH RESOURCE MAP
  * ========================================== */
 export const assetUrls = {
