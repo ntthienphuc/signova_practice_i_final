@@ -136,11 +136,11 @@ export function ReviewTab({
                 key={word.word_id}
                 className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-5 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden"
               >
-                {word.accepted_once && (lastScore === null || lastScore >= 68) ? (
+                {word.accepted_once && (lastScore === null || lastScore >= 60) ? (
                   <div className="absolute top-0 right-0 bg-emerald-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
                     Đã Đạt
                   </div>
-                ) : word.accepted_once && lastScore !== null && lastScore < 68 ? (
+                ) : word.accepted_once && lastScore !== null && lastScore < 60 ? (
                   <div className="absolute top-0 right-0 bg-amber-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
                     Cần Ôn Tập
                   </div>
