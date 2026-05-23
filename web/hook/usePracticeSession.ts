@@ -34,6 +34,22 @@ export function usePracticeSession() {
     }));
   };
 
+  const syncProgressFromServer = (
+    serverTopicProgress: Array<{ topic_id: string; completed_words: number; completed: boolean }>
+  ) => {
+    setProgressByTopic((prev) => {
+      const next = { ...prev };
+      for (const tp of serverTopicProgress) {
+        const existing = next[tp.topic_id];
+        next[tp.topic_id] = {
+          completedWords: Math.max(tp.completed_words, existing?.completedWords ?? 0),
+          completed: tp.completed || (existing?.completed ?? false),
+        };
+      }
+      return next;
+    });
+  };
+
   const handleOpenTopic = (topic: Topic) => {
     setSession(buildInitialSession(topic));
     updateTopicProgress(topic.id, { completed: false });
@@ -152,6 +168,7 @@ export function usePracticeSession() {
   return {
     session,
     progressByTopic,
+    syncProgressFromServer,
     handleOpenTopic,
     handleBackToTopics,
     handleRestartTopic,

@@ -14,6 +14,8 @@ interface StudyStageProps {
   onStartPractice: () => void;
   onBackToTopics: () => void;
   onPreviousWord?: (nextIndex: number) => void;
+  isAlreadyLearned?: boolean;
+  onNextWord?: () => void;
 }
 
 export function StudyStage({
@@ -23,6 +25,8 @@ export function StudyStage({
   onStartPractice,
   onBackToTopics,
   onPreviousWord,
+  isAlreadyLearned,
+  onNextWord,
 }: StudyStageProps) {
   const posterUrl = absoluteUrl(word.study?.poster_url);
   const referenceUrl = absoluteUrl(
@@ -156,18 +160,32 @@ export function StudyStage({
               ))}
             </div>
 
-            <button
-              type="button"
-              className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border-0 rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-gradient-to-br from-[#5c72fb] to-[#67bfff] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)]"
-              onClick={onStartPractice}
-            >
-              <Play size={16} />
-              Luyện tập từ này
-            </button>
+            <div className="flex items-center gap-2">
+              {isAlreadyLearned && onNextWord && (
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.3)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#5c72fb]"
+                  onClick={onNextWord}
+                >
+                  Bỏ qua → Từ tiếp theo
+                </button>
+              )}
+              <button
+                type="button"
+                className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border-0 rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-gradient-to-br from-[#5c72fb] to-[#67bfff] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)]"
+                onClick={onStartPractice}
+              >
+                <Play size={16} />
+                {isAlreadyLearned ? "Luyện lại" : "Luyện tập từ này"}
+              </button>
+            </div>
           </div>
 
           <div className="text-[#6d7b92] text-[0.95rem] text-center">
-            <span>Hoàn thành Practice I của từ này để mở từ tiếp theo →</span>
+            {isAlreadyLearned
+              ? <span>Từ này bạn đã học rồi — bỏ qua hoặc luyện lại tùy ý.</span>
+              : <span>Hoàn thành Practice của từ này để mở từ tiếp theo →</span>
+            }
           </div>
         </div>
       </div>

@@ -378,3 +378,12 @@ export async function getLearnerDashboard(learnerId: string): Promise<any> {
     handleAxiosError(error);
   }
 }
+
+export async function getMyProgress(): Promise<any> {
+  try {
+    const response = await apiClient.get("/progress/me");
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}

@@ -19,11 +19,23 @@ const TOPIC_STYLES = [
 interface TopicWordRowProps {
   word: WordItem;
   unlocked: boolean;
+  learned: boolean;
+  onClick?: () => void;
 }
 
-function TopicWordRow({ word, unlocked }: TopicWordRowProps) {
+function TopicWordRow({ word, unlocked, learned, onClick }: TopicWordRowProps) {
+  const badgeStyle = learned
+    ? "bg-[rgba(34,197,94,0.12)] text-[#16a34a]"
+    : unlocked
+    ? "bg-[rgba(83,110,249,0.12)] text-[var(--brand)]"
+    : "bg-[rgba(30,39,66,0.06)] text-[var(--ink-soft)]";
+  const badgeText = learned ? "Đã học" : unlocked ? "Tiếp theo" : "Sắp mở";
+
   return (
-    <div className={`grid grid-cols-[42px_minmax(0,1fr)_auto] gap-[14px] items-center py-[14px] px-4 rounded-[20px] border ${unlocked ? "border-[rgba(83,110,249,0.2)] bg-[rgba(243,247,255,0.96)]" : "border-[rgba(92,118,184,0.12)] bg-[rgba(248,250,255,0.88)]"}`}>
+    <div
+      className={`grid grid-cols-[42px_minmax(0,1fr)_auto] gap-[14px] items-center py-[14px] px-4 rounded-[20px] border transition-transform ${unlocked ? "border-[rgba(83,110,249,0.2)] bg-[rgba(243,247,255,0.96)] cursor-pointer hover:-translate-y-px" : "border-[rgba(92,118,184,0.12)] bg-[rgba(248,250,255,0.88)]"}`}
+      onClick={unlocked ? onClick : undefined}
+    >
       <div className="w-[42px] h-[42px] grid place-items-center rounded-[16px] bg-[rgba(83,110,249,0.12)] text-[var(--brand)]">
         <Sparkles size={14} />
       </div>
@@ -31,8 +43,8 @@ function TopicWordRow({ word, unlocked }: TopicWordRowProps) {
         <strong className="text-[1.05rem]">{word.gloss}</strong>
         <span className="text-[var(--ink-soft)] text-[0.92rem]">Nhóm {word.checkpoint_group} • Từ số {word.order}</span>
       </div>
-      <div className={`py-2 px-3 rounded-full text-[0.85rem] font-extrabold ${unlocked ? "bg-[rgba(83,110,249,0.12)] text-[var(--brand)]" : "bg-[rgba(30,39,66,0.06)] text-[var(--ink-soft)]"}`}>
-        {unlocked ? "Tiếp theo" : "Sắp mở"}
+      <div className={`py-2 px-3 rounded-full text-[0.85rem] font-extrabold ${badgeStyle}`}>
+        {badgeText}
       </div>
     </div>
   );
@@ -145,6 +157,8 @@ export function TopicGrid({ topics, progressByTopic }: TopicGridProps) {
                           key={`${topic.id}-${word.gloss}`}
                           word={word}
                           unlocked={wordIndex <= completedWords}
+                          learned={wordIndex < completedWords}
+                          onClick={() => navigate(`/learn/${topic.id}/${wordIndex}`)}
                         />
                       ))}
                     </div>
