@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ensureBaseUrl, loadAppConfig, loadCurriculum } from "./api";
 import { DashboardPlaceholder } from "./components/DashboardPlaceholder";
 import { PracticeWorkspace } from "./components/PracticeWorkspace";
+import { ProgressRail } from "./components/ProgressRail";
 import { Sidebar } from "./components/Sidebar";
 import { StudyStage } from "./components/StudyStage";
 import { TopicGrid } from "./components/TopicGrid";
@@ -78,21 +79,6 @@ function QuizIntro({ scope, topic, onStart, onBack }) {
 function LearnHome({ topics, progressByTopic, onOpenTopic }) {
   return (
     <section className="learn-home">
-      <div className="hero-panel card-surface">
-        <p className="eyebrow">Tab Học</p>
-        <h2>Chọn topic và bắt đầu hành trình học thật vui</h2>
-        <p className="muted">
-          Mỗi topic có 10 từ. Mình sẽ học từng từ một, luyện ngay sau khi học, rồi làm bài kiểm tra
-          nhỏ để nhớ lâu hơn.
-        </p>
-        <div className="lesson-chip-grid">
-          <span className="lesson-chip active">👀 Xem mẫu</span>
-          <span className="lesson-chip active">✋ Tập theo</span>
-          <span className="lesson-chip active">📹 Quay video</span>
-          <span className="lesson-chip active">🎨 So sánh màu sắc</span>
-        </div>
-      </div>
-
       <TopicGrid topics={topics} progressByTopic={progressByTopic} onOpenTopic={onOpenTopic} />
     </section>
   );
@@ -420,7 +406,7 @@ export default function PracticePage() {
         curriculumTopics={config?.curriculum_topics ?? []}
       />
 
-      <main className="flow-main">
+      <main className="flow-main flow-main-dashboard">
         {activeTab === "learn" ? renderLearnTab() : null}
         {activeTab === "family" ? (
           <DashboardPlaceholder
@@ -435,6 +421,13 @@ export default function PracticePage() {
           />
         ) : null}
       </main>
+
+      <ProgressRail
+        activeTab={activeTab}
+        session={session}
+        progressByTopic={progressByTopic}
+        topics={topics}
+      />
     </div>
   );
 }

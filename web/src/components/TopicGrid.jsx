@@ -1,27 +1,37 @@
 export function TopicGrid({ topics, progressByTopic, onOpenTopic }) {
   return (
-    <section className="topic-grid">
+    <section className="topic-dashboard">
+      <div className="topic-dashboard-head card-surface">
+        <div>
+          <p className="eyebrow">Learn Dashboard</p>
+          <h2>Pick a topic and continue your learning path</h2>
+          <p className="muted">
+            Each topic has 10 words. You will learn one word, practice it, then unlock Practice II after each 5-word block.
+          </p>
+        </div>
+      </div>
+
+      <div className="topic-grid">
       {topics.map((topic, index) => {
         const progress = progressByTopic[topic.id] ?? { completedWords: 0, completed: false };
         const ratio = topic.word_count > 0 ? Math.min(1, progress.completedWords / topic.word_count) : 0;
-        const icon = index % 2 === 0 ? "🌈" : "🪁";
         return (
-          <article key={topic.id} className={index % 2 === 0 ? "topic-card card-surface topic-card-sun" : "topic-card card-surface topic-card-sky"}>
+          <article key={topic.id} className="topic-card card-surface topic-card-dashboard">
             <div className="topic-card-top">
-              <div className="topic-sticker">{icon}</div>
-              <span className="topic-mini-tag">{progress.completed ? "Đã hoàn thành" : "Sẵn sàng học"}</span>
+              <span className="topic-mini-tag">{progress.completed ? "Completed" : "Ready to learn"}</span>
+              <span className="topic-inline-progress">{progress.completedWords}/{topic.word_count} words</span>
             </div>
-            <p className="eyebrow">Category</p>
+            <p className="eyebrow">Topic {index + 1}</p>
             <h3>{topic.title}</h3>
             <p className="muted">{topic.subtitle}</p>
 
             <div className="topic-metrics">
               <div>
-                <span className="metric-label">Từ</span>
+                <span className="metric-label">Words</span>
                 <strong>{topic.word_count}</strong>
               </div>
               <div>
-                <span className="metric-label">Tiến độ</span>
+                <span className="metric-label">Progress</span>
                 <strong>{progress.completedWords}/{topic.word_count}</strong>
               </div>
             </div>
@@ -39,11 +49,12 @@ export function TopicGrid({ topics, progressByTopic, onOpenTopic }) {
             </div>
 
             <button className="primary-button" type="button" onClick={() => onOpenTopic(topic)}>
-              {progress.completed ? "Học lại topic" : "Bắt đầu học"}
+              {progress.completed ? "Review topic" : "Open topic"}
             </button>
           </article>
         );
       })}
+      </div>
     </section>
   );
 }
