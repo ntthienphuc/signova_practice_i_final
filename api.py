@@ -10,9 +10,14 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from sqlalchemy.orm import Session
+
+from app.db import get_db
+from app.auth import get_current_user_optional
+from app.services.practice import save_practice_attempt
 
 from signova_practice_i.bank_store import BankStore
 from signova_practice_i.pose_utils import (
@@ -70,6 +75,13 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    from app.routers import auth as auth_router, curriculum as curriculum_router, progress as progress_router, link as link_router, dashboard as dashboard_router
+    app.include_router(auth_router.router)
+    app.include_router(curriculum_router.router)
+    app.include_router(progress_router.router)
+    app.include_router(link_router.router)
+    app.include_router(dashboard_router.router)
 
     def get_sign_classifier() -> SPOTERONNXInferer:
         nonlocal sign_classifier, sign_classifier_error
@@ -741,6 +753,8 @@ def create_app() -> FastAPI:
         segment_max_frames: int | None = Form(None),
         segment_pad_frames: int = Form(8),
         return_visualization: bool = Form(False),
+        db: Session = Depends(get_db),
+        current_user: Any = Depends(get_current_user_optional),
     ) -> dict[str, object]:
         lesson = resolve_lesson_glosses(lesson_glosses, require_multi=False)
         analysis = await analyze_target_attempt(
@@ -758,6 +772,10 @@ def create_app() -> FastAPI:
         response = build_practice_i_response(analysis)
         if not return_visualization:
             response.pop("visualization", None)
+            
+        if current_user is not None:
+            save_practice_attempt(db, current_user.id, response, "practice_i")
+            
         return response
 
     @app.post("/practice-ii/analyze-video")
@@ -776,6 +794,8 @@ def create_app() -> FastAPI:
         wrong_word_min_lesson_score: float = Form(0.45),
         wrong_word_min_margin: float = Form(0.10),
         return_visualization: bool = Form(False),
+        db: Session = Depends(get_db),
+        current_user: Any = Depends(get_current_user_optional),
     ) -> dict[str, object]:
         lesson = resolve_lesson_glosses(lesson_glosses, require_multi=True)
         analysis = await analyze_target_attempt(
@@ -799,6 +819,10 @@ def create_app() -> FastAPI:
             )
             if not return_visualization:
                 response.pop("visualization", None)
+                
+            if current_user is not None:
+                save_practice_attempt(db, current_user.id, response, "practice_ii")
+                
             return response
         except Exception as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
@@ -816,6 +840,8 @@ def create_app() -> FastAPI:
         segment_min_frames: int = Form(12),
         segment_max_frames: int | None = Form(None),
         segment_pad_frames: int = Form(8),
+        db: Session = Depends(get_db),
+        current_user: Any = Depends(get_current_user_optional),
     ) -> dict[str, object]:
         lesson = resolve_lesson_glosses(lesson_glosses, require_multi=False)
         analysis = await analyze_target_attempt(
@@ -830,7 +856,10 @@ def create_app() -> FastAPI:
             segment_max_frames=segment_max_frames,
             segment_pad_frames=segment_pad_frames,
         )
-        return build_practice_i_response(analysis)
+        response = build_practice_i_response(analysis)
+        if current_user is not None:
+            save_practice_attempt(db, current_user.id, response, "practice_i")
+        return response
 
     @app.post("/practice-ii/video")
     async def practice_ii_video(
@@ -847,6 +876,8 @@ def create_app() -> FastAPI:
         classifier_top_k: int = Form(3),
         wrong_word_min_lesson_score: float = Form(0.45),
         wrong_word_min_margin: float = Form(0.10),
+        db: Session = Depends(get_db),
+        current_user: Any = Depends(get_current_user_optional),
     ) -> dict[str, object]:
         lesson = resolve_lesson_glosses(lesson_glosses, require_multi=True)
         analysis = await analyze_target_attempt(
@@ -862,12 +893,15 @@ def create_app() -> FastAPI:
             segment_pad_frames=segment_pad_frames,
         )
         try:
-            return build_practice_ii_response(
+            response = build_practice_ii_response(
                 analysis,
                 classifier_top_k=classifier_top_k,
                 wrong_word_min_lesson_score=wrong_word_min_lesson_score,
                 wrong_word_min_margin=wrong_word_min_margin,
             )
+            if current_user is not None:
+                save_practice_attempt(db, current_user.id, response, "practice_ii")
+            return response
         except Exception as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
 

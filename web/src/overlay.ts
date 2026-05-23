@@ -104,13 +104,53 @@ function normalizeSegment(segment: SegmentTiming | null | undefined): Normalized
   };
 }
 
+function smoothBadByFrame(frames: Set<number>[]): Set<number>[] {
+  if (!frames.length) {
+    return [];
+  }
+
+  const jointIds = new Set<number>();
+  for (const frame of frames) {
+    for (const jointId of frame) {
+      jointIds.add(jointId);
+    }
+  }
+
+  const smoothed = frames.map((frame) => new Set<number>(frame));
+
+  for (const jointId of jointIds) {
+    for (let frameIndex = 0; frameIndex < frames.length; frameIndex += 1) {
+      const prev = frameIndex > 0 && frames[frameIndex - 1].has(jointId);
+      const curr = frames[frameIndex].has(jointId);
+      const next = frameIndex < frames.length - 1 && frames[frameIndex + 1].has(jointId);
+
+      // Bridge 1-frame gaps so red feedback does not blink when tracking drops briefly.
+      if (!curr && prev && next) {
+        smoothed[frameIndex].add(jointId);
+      }
+
+      // Keep a short tail if the joint is marked bad in two consecutive frames.
+      if (
+        curr &&
+        next &&
+        frameIndex < frames.length - 2 &&
+        !frames[frameIndex + 2].has(jointId)
+      ) {
+        smoothed[frameIndex + 2].add(jointId);
+      }
+    }
+  }
+
+  return smoothed;
+}
+
 export function normalizeAnalysis(raw: AnalyzeResponse, apiBase: string): NormalizedAnalysis {
   const overlay = raw.overlay ?? ({} as Partial<typeof raw.overlay>);
   const playback = raw.playback ?? ({} as Partial<typeof raw.playback>);
   const jointNames = overlay.joint_names ?? [];
   const connections = overlay.connections ?? [];
   const jointIndexByName = Object.fromEntries(jointNames.map((name, index) => [name, index]));
-  const badByFrame: Set<number>[] = Array.from(
+  const rawBadByFrame: Set<number>[] = Array.from(
     { length: overlay.frame_count ?? 0 },
     (_, frameIndex) => {
       const frameBad = overlay.bad_joint_indices?.[frameIndex] ?? [];
@@ -124,12 +164,13 @@ export function normalizeAnalysis(raw: AnalyzeResponse, apiBase: string): Normal
         continue;
       }
       const jointIndex = jointIndexByName[item.body_part];
-      if (jointIndex === undefined || !badByFrame[item.frame]) {
+      if (jointIndex === undefined || !rawBadByFrame[item.frame]) {
         continue;
       }
-      badByFrame[item.frame].add(jointIndex);
+      rawBadByFrame[item.frame].add(jointIndex);
     }
   }
+  const badByFrame = smoothBadByFrame(rawBadByFrame);
 
   const referenceVideoUrl = raw.reference?.display_video?.video_url
     ? new URL(raw.reference.display_video.video_url, apiBase).href
@@ -196,8 +237,10 @@ export function drawOverlay({
       continue;
     }
     const highlight = badSet.has(a) || badSet.has(b);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     ctx.strokeStyle = highlight ? palette.focusEdge : palette.baseEdge;
-    ctx.lineWidth = highlight ? 4 : 3;
+    ctx.lineWidth = highlight ? 5.5 : 3;
     ctx.beginPath();
     ctx.moveTo(pa[0], pa[1]);
     ctx.lineTo(pb[0], pb[1]);

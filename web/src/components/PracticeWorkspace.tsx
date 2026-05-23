@@ -1,80 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEventHandler } from "react";
 import { ArrowLeft, ArrowRight, Play, RotateCcw, UploadCloud, Pause } from "lucide-react";
-import { analyzeAttempt, ensureBaseUrl } from "../api";
-import { drawOverlay, normalizeAnalysis } from "../overlay";
-import type { PracticeMode, SegmentTiming, AnalyzeResponse } from "../api";
-import type { NormalizedAnalysis, NormalizedSegment, Palette } from "../overlay";
+import {
+  analyzeAttempt,
+  ensureBaseUrl,
+  type AnalyzeResponse,
+  type Decision,
+  type SegmentTiming,
+} from "../api";
+import { drawOverlay, normalizeAnalysis, type NormalizedAnalysis, type NormalizedSegment } from "../overlay";
+import type { StudyMetadata } from "../types/learn";
 
-interface ReferenceStudy {
-  poster_url?: string | null;
-  reference?: {
-    playback_url?: string | null;
-    video_url?: string | null;
-    segment?: SegmentTiming | null;
-  } | null;
-}
-
-interface PracticeWorkspaceProps {
-  apiBase: string;
-  mode: PracticeMode;
-  targetGloss: string;
-  lessonGlosses: string[];
-  referenceStudy?: ReferenceStudy | null;
-  wordIndex?: number;
-  wordCount?: number;
-  title?: string;
-  subtitle?: string;
-  actionLabel?: string;
-  completionLabel?: string;
-  onBackToLearn?: () => void;
-  onComplete?: (raw: AnalyzeResponse) => void;
-}
-
-interface VideoHandlers {
-  onLoadStart: () => void;
-  onLoadedMetadata: () => void;
-  onLoadedData: () => void;
-  onCanPlay: () => void;
-  onCanPlayThrough: () => void;
-  onTimeUpdate: () => void;
-  onWaiting: () => void;
-  onPause: () => void;
-  onSeeked: () => void;
-  onError: () => void;
-}
-
-const USER_PALETTE: Palette = {
-  baseEdge: "rgba(85, 206, 255, 0.22)",
-  baseJoint: "rgba(85, 206, 255, 0.38)",
-  focusEdge: "rgba(255, 96, 96, 0.96)",
-  focusJoint: "rgba(255, 120, 120, 1)",
-};
-
-const REFERENCE_PALETTE: Palette = {
-  baseEdge: "rgba(78, 255, 158, 0.18)",
-  baseJoint: "rgba(78, 255, 158, 0.34)",
-  focusEdge: "rgba(78, 255, 158, 0.98)",
-  focusJoint: "rgba(145, 255, 196, 1)",
-};
-
-const NAV_BTN_BASE = "inline-flex items-center justify-center gap-2 min-h-[44px] px-5 rounded-full text-[0.95rem] font-bold transition-all duration-[160ms] hover:-translate-y-px";
-const NAV_BTN_SECONDARY = `${NAV_BTN_BASE} border border-[rgba(83,110,249,0.14)] bg-white/[0.84] text-[#657594]`;
-const NAV_BTN_PRIMARY = `${NAV_BTN_BASE} border-0 bg-[linear-gradient(135deg,#5c72fb,#67bfff)] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)]`;
-
-function metricDecision(decision: AnalyzeResponse["decision"] | undefined): string {
-  return decision?.accept_as_target ? "Đúng target" : "Cần sửa thêm";
-}
-
-function localNormalizeSegment(segment: SegmentTiming | null | undefined): NormalizedSegment | null {
-  if (!segment) return null;
-  const startMs = Number(segment.segment_start_ms ?? segment.start_ms ?? 0);
-  const endMs = Number(segment.segment_end_ms ?? segment.end_ms ?? startMs);
-  return {
-    ...segment,
-    segment_start_ms: startMs,
-    segment_end_ms: endMs,
-    segment_duration_ms: Math.max(1, Number(segment.segment_duration_ms ?? (endMs - startMs))),
-  };
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Đã có lỗi xảy ra.";
 }
 
 function useObjectUrl(file: File | null): string {
@@ -90,6 +27,99 @@ function useObjectUrl(file: File | null): string {
   }, [file]);
   return url;
 }
+
+function normalizeSegment(segment: SegmentTiming | null | undefined): NormalizedSegment | null {
+  if (!segment) {
+    return null;
+  }
+  const startMs = Number(segment.segment_start_ms ?? segment.start_ms ?? 0);
+  const endMs = Number(segment.segment_end_ms ?? segment.end_ms ?? startMs);
+  return {
+    ...segment,
+    segment_start_ms: startMs,
+    segment_end_ms: endMs,
+    segment_duration_ms: Math.max(1, Number(segment.segment_duration_ms ?? endMs - startMs)),
+  };
+}
+
+const USER_PALETTE = {
+  baseEdge: "rgba(85, 206, 255, 0.22)",
+  baseJoint: "rgba(85, 206, 255, 0.38)",
+  focusEdge: "rgba(255, 96, 96, 0.96)",
+  focusJoint: "rgba(255, 120, 120, 1)",
+};
+
+const REFERENCE_PALETTE = {
+  baseEdge: "rgba(78, 255, 158, 0.18)",
+  baseJoint: "rgba(78, 255, 158, 0.34)",
+  focusEdge: "rgba(78, 255, 158, 0.98)",
+  focusJoint: "rgba(145, 255, 196, 1)",
+};
+
+type PracticeIITone = "warning" | "info" | "success" | "neutral";
+
+interface PracticeIIFeedbackState {
+  tone: PracticeIITone;
+  title: string;
+  message: string;
+}
+
+function metricDecision(decision?: Decision): string {
+  return decision?.accept_as_target ? "Đúng target" : "Cần sửa thêm";
+}
+
+function practiceIIFeedback(
+  decision: Decision | undefined,
+  targetGloss: string
+): PracticeIIFeedbackState | null {
+  if (!decision) {
+    return null;
+  }
+  if (decision.wrong_word_detected && decision.predicted_wrong_gloss) {
+    return {
+      tone: "warning",
+      title: "Phát hiện nhầm từ",
+      message: `Có thể bạn vừa ký sang từ "${decision.predicted_wrong_gloss}" thay vì "${targetGloss}".`,
+    };
+  }
+  if (decision.possible_wrong_word && decision.predicted_wrong_gloss) {
+    return {
+      tone: "info",
+      title: "Có khả năng nhầm từ",
+      message: `AI thấy bài làm đang nghiêng về "${decision.predicted_wrong_gloss}". Bạn nên xem lại target "${targetGloss}".`,
+    };
+  }
+  if (decision.accept_as_target) {
+    return {
+      tone: "success",
+      title: "Đúng target",
+      message: `Bài làm hiện vẫn bám đúng target "${targetGloss}". Bạn chỉ cần tinh chỉnh các vùng đang bị tô đỏ nếu còn có.`,
+    };
+  }
+  return {
+    tone: "neutral",
+    title: "Tiếp tục so lại target",
+    message: `AI chưa thấy dấu hiệu nhầm sang từ khác, nhưng bài làm vẫn chưa khớp đủ với "${targetGloss}".`,
+  };
+}
+
+interface PracticeWorkspaceProps {
+  apiBase: string;
+  mode: "practice_i" | "practice_ii";
+  targetGloss: string;
+  lessonGlosses: string[];
+  referenceStudy: StudyMetadata;
+  wordIndex?: number;
+  wordCount?: number;
+  title: string;
+  subtitle: string;
+  actionLabel: string;
+  completionLabel: string;
+  onBackToLearn?: () => void;
+  onComplete?: (raw: AnalyzeResponse) => void;
+}
+
+type PlaybackStatus = "idle" | "loading" | "metadata" | "ready" | "buffering" | "paused" | "error";
 
 export function PracticeWorkspace({
   apiBase,
@@ -111,8 +141,8 @@ export function PracticeWorkspace({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [playing, setPlaying] = useState(false);
-  const [userStatus, setUserStatus] = useState("idle");
-  const [referenceStatus, setReferenceStatus] = useState("idle");
+  const [userStatus, setUserStatus] = useState<PlaybackStatus>("idle");
+  const [referenceStatus, setReferenceStatus] = useState<PlaybackStatus>("idle");
 
   const userVideoRef = useRef<HTMLVideoElement | null>(null);
   const referenceVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -128,7 +158,7 @@ export function PracticeWorkspace({
   }, [absoluteApiBase, referenceStudy]);
 
   const referenceFallbackSegment = useMemo(
-    () => localNormalizeSegment(referenceStudy?.reference?.segment),
+    () => normalizeSegment(referenceStudy?.reference?.segment),
     [referenceStudy]
   );
 
@@ -139,8 +169,8 @@ export function PracticeWorkspace({
   const decision = analysis?.raw?.decision;
   const feedback = analysis?.raw?.feedback;
   const progressRatio = wordCount > 0 ? ((wordIndex + 1) / wordCount) * 100 : 0;
+  const practiceIIStatus = mode === "practice_ii" ? practiceIIFeedback(decision, targetGloss) : null;
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setFile(null);
     setAnalysis(null);
@@ -150,8 +180,10 @@ export function PracticeWorkspace({
     setReferenceStatus("idle");
   }, [mode, targetGloss, lessonGlosses.join("|")]);
 
-  function redrawOverlays() {
-    if (!analysis) return;
+  function redrawOverlays(): void {
+    if (!analysis) {
+      return;
+    }
     drawOverlay({
       canvas: userCanvasRef.current,
       video: userVideoRef.current,
@@ -173,10 +205,14 @@ export function PracticeWorkspace({
   }
 
   useEffect(() => {
-    if (!analysis) return undefined;
+    if (!analysis) {
+      return undefined;
+    }
     const userVideo = userVideoRef.current;
     const referenceVideo = referenceVideoRef.current;
-    if (!userVideo || !referenceVideo) return undefined;
+    if (!userVideo || !referenceVideo) {
+      return undefined;
+    }
     let frameId = 0;
     const tick = () => {
       if (playing) {
@@ -201,13 +237,15 @@ export function PracticeWorkspace({
     return () => window.removeEventListener("resize", handleResize);
   }, [analysis]);
 
-  function buildVideoHandlers(kind: "user" | "reference"): VideoHandlers {
+  function buildVideoHandlers(kind: "user" | "reference") {
     const setStatus = kind === "user" ? setUserStatus : setReferenceStatus;
     return {
       onLoadStart: () => setStatus("loading"),
       onLoadedMetadata: () => {
         setStatus("metadata");
-        if (analysis) resetSegments();
+        if (analysis) {
+          resetSegments();
+        }
       },
       onLoadedData: () => redrawOverlays(),
       onCanPlay: () => setStatus("ready"),
@@ -223,7 +261,11 @@ export function PracticeWorkspace({
     };
   }
 
-  async function handleAnalyze() {
+  const handleFileChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+    setFile(event.target.files?.[0] ?? null);
+  };
+
+  async function handleAnalyze(): Promise<void> {
     if (!file) {
       setError("Chọn video trước khi phân tích.");
       return;
@@ -242,16 +284,18 @@ export function PracticeWorkspace({
       });
       setAnalysis(normalizeAnalysis(payload, absoluteApiBase));
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Lỗi không xác định.");
+      setError(getErrorMessage(nextError));
     } finally {
       setLoading(false);
     }
   }
 
-  async function playSegments() {
+  async function playSegments(): Promise<void> {
     const userVideo = userVideoRef.current;
     const referenceVideo = referenceVideoRef.current;
-    if (!analysis || !userVideo || !referenceVideo || !userSegment || !referenceSegment) return;
+    if (!analysis || !userVideo || !referenceVideo || !userSegment || !referenceSegment) {
+      return;
+    }
     const commonDuration = Math.max(
       userSegment.segment_duration_ms,
       referenceSegment.segment_duration_ms,
@@ -267,89 +311,89 @@ export function PracticeWorkspace({
     setPlaying(true);
   }
 
-  function pauseSegments() {
+  function pauseSegments(): void {
     userVideoRef.current?.pause();
     referenceVideoRef.current?.pause();
     setPlaying(false);
     redrawOverlays();
   }
 
-  function resetSegments() {
+  function resetSegments(): void {
     pauseSegments();
-    if (!analysis || !userVideoRef.current || !referenceVideoRef.current || !userSegment || !referenceSegment) return;
+    if (
+      !analysis ||
+      !userVideoRef.current ||
+      !referenceVideoRef.current ||
+      !userSegment ||
+      !referenceSegment
+    ) {
+      return;
+    }
     userVideoRef.current.currentTime = userSegment.segment_start_ms / 1000;
     referenceVideoRef.current.currentTime = referenceSegment.segment_start_ms / 1000;
     redrawOverlays();
   }
 
-  function handleComplete() {
-    if (!analysis) return;
+  function handleComplete(): void {
+    if (!analysis) {
+      return;
+    }
     onComplete?.(analysis.raw);
   }
 
   return (
-    <section className="relative min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)] text-[#1e2742]">
-      <div className="bg-dot-grid pointer-events-none absolute inset-0" />
+    <section className="practice-immersive-screen">
+      <div className="bg-dot-grid pointer-events-none learn-word-grid" />
 
-      <div className="relative max-w-[1280px] mx-auto p-[40px_32px_32px] grid gap-[26px] max-[860px]:p-[28px_18px_24px]">
-        {/* Progress */}
-        <div className="pt-2 pb-6">
-          <div className="flex items-center justify-between mb-3 text-[#7b8aa3] text-[0.8rem] font-bold tracking-[0.08em] uppercase">
+      <div className="practice-immersive-shell relative">
+        <button
+          type="button"
+          onClick={onBackToLearn}
+          className="absolute top-4 right-4 py-2 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 font-bold rounded-xl text-xs transition-all border-0 cursor-pointer flex items-center gap-1 z-10 shadow-sm"
+        >
+          🚪 Thoát
+        </button>
+        <div className="learn-word-progress">
+          <div className="learn-word-progress-head">
             <span>{mode === "practice_i" ? "Practice I" : "Practice II"}</span>
-            <span>Bước {Math.min(wordIndex + 1, wordCount)} / {Math.max(wordCount, 1)}</span>
+            <span>
+              Bước {Math.min(wordIndex + 1, wordCount)} / {Math.max(wordCount, 1)}
+            </span>
           </div>
-          <div className="w-full h-1 overflow-hidden rounded-full bg-[rgba(83,110,249,0.12)]">
-            <div
-              className="h-full rounded-[inherit] bg-[#0284c7] transition-[width_180ms_ease]"
-              style={{ width: `${progressRatio}%` }}
-            />
+          <div className="learn-word-progress-track">
+            <div className="learn-word-progress-fill" style={{ width: `${progressRatio}%` }} />
           </div>
         </div>
 
-        {/* Title */}
-        <div className="text-center -mb-[6px]">
-          <span className="text-[clamp(2.2rem,5vw,3rem)] font-extrabold leading-[1.08] text-[#233157]">{targetGloss}</span>
-          <span className="text-[clamp(2.2rem,5vw,3rem)] font-extrabold leading-[1.08] mx-3 text-[#90a0bb]">/</span>
-          <span className="text-[clamp(2.2rem,5vw,3rem)] font-extrabold leading-[1.08] text-[#5f8efb]">
+        <div className="learn-word-title practice-word-title">
+          <span className="learn-word-title-vi">{targetGloss}</span>
+          <span className="learn-word-title-slash">/</span>
+          <span className="learn-word-title-en">
             {mode === "practice_i" ? "Practice I" : "Practice II"}
           </span>
         </div>
 
-        {/* Subtitle */}
-        <div className="grid gap-[6px] justify-items-center text-center">
-          <p className="m-0 text-[1.1rem] font-extrabold text-[#223153]">{title}</p>
-          <span className="max-w-[760px] text-[#6f7d94] leading-[1.65]">{subtitle}</span>
+        <div className="practice-subtitle">
+          <p>{title}</p>
+          <span>{subtitle}</span>
         </div>
 
-        {/* Main grid */}
-        <div className="grid grid-cols-[minmax(280px,320px)_minmax(0,1fr)_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-cols-1">
-          {/* Coach card */}
-          <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-6 grid gap-[18px] content-start">
-            <div className="flex justify-between items-start gap-3 max-[860px]:grid max-[860px]:grid-cols-1">
+        <div className="practice-immersive-grid">
+          <article className="practice-coach-card">
+            <div className="practice-card-head">
               <div>
-                <p className="m-0 mb-[6px] text-[#7c8aa2] text-[0.72rem] font-bold tracking-[0.14em] uppercase">COACH NOTE</p>
-                <h3
-                  className="mt-[6px] mb-0 text-[1.7rem] text-[#223153]"
-                  style={{ fontFamily: '"Baloo 2", Nunito, sans-serif' }}
-                >
-                  Luyện theo đúng target
-                </h3>
+                <p className="learn-meta-label">COACH NOTE</p>
+                <h3>Luyện theo đúng target</h3>
               </div>
-              <span className="inline-flex items-center px-[14px] py-[9px] rounded-full bg-[rgba(83,110,249,0.12)] text-[#5f8efb] font-extrabold">
-                {targetGloss}
-              </span>
+              <span className="practice-target-pill">{targetGloss}</span>
             </div>
 
             {mode === "practice_ii" ? (
-              <div className="flex flex-wrap gap-2">
+              <div className="practice-lesson-pills">
                 {lessonGlosses.map((gloss) => (
                   <span
                     key={gloss}
-                    className={`inline-flex items-center px-[14px] py-[10px] rounded-full font-bold text-base ${
-                      gloss === targetGloss
-                        ? "bg-[linear-gradient(135deg,#536ef9,#68c6ff)] text-white"
-                        : "bg-white/[0.78] border border-[rgba(53,84,128,0.08)] text-[#4d5970]"
-                    }`}
+                    className={gloss === targetGloss ? "lesson-chip active" : "lesson-chip"}
                   >
                     {gloss}
                   </span>
@@ -357,19 +401,14 @@ export function PracticeWorkspace({
               </div>
             ) : null}
 
-            <label className="grid grid-cols-[48px_minmax(0,1fr)] gap-[14px] items-start p-[18px] rounded-[22px] border border-dashed border-[rgba(83,110,249,0.2)] bg-[rgba(247,250,255,0.94)] cursor-pointer">
-              <input
-                type="file"
-                accept="video/*"
-                className="hidden"
-                onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-              />
-              <div className="w-[48px] h-[48px] grid place-items-center rounded-[18px] bg-[rgba(83,110,249,0.12)] text-[#5f8efb]">
+            <label className="practice-upload-card">
+              <input type="file" accept="video/*" onChange={handleFileChange} />
+              <div className="practice-upload-icon">
                 <UploadCloud size={20} />
               </div>
-              <div className="grid gap-[6px]">
-                <strong className="text-[#223153] text-base">{file ? file.name : "Chọn video để gửi lên"}</strong>
-                <span className="text-[#6f7d94] leading-[1.55]">
+              <div className="practice-upload-copy">
+                <strong>{file ? file.name : "Chọn video để gửi lên"}</strong>
+                <span>
                   {file
                     ? "Video đã sẵn sàng để chấm."
                     : "App sẽ tự cắt segment, so với mẫu và tô đỏ/xanh."}
@@ -378,7 +417,7 @@ export function PracticeWorkspace({
             </label>
 
             <button
-              className={`${NAV_BTN_PRIMARY} justify-self-start disabled:opacity-55 disabled:cursor-not-allowed`}
+              className="learn-nav-button learn-nav-button-primary practice-analyze-button"
               type="button"
               disabled={loading || !file}
               onClick={handleAnalyze}
@@ -387,101 +426,89 @@ export function PracticeWorkspace({
               {loading ? "Đang phân tích..." : actionLabel}
             </button>
 
-            {error ? <p className="text-[#b33f47]">{error}</p> : null}
+            {error ? <p className="error-text">{error}</p> : null}
 
-            <div className="grid gap-[14px] p-[18px] rounded-[22px] border border-[rgba(83,110,249,0.08)] bg-[rgba(248,250,255,0.96)]">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-[6px] p-[14px] rounded-[18px] bg-white/[0.96]">
-                  <span className="text-[#6f7d94]">Score</span>
-                  <strong className="text-[1.3rem] text-[#223153]">
-                    {analysis ? Math.round(Number(analysis.raw.score ?? 0)) : "--"}
-                  </strong>
+            <div className="practice-feedback-card">
+              <div className="practice-feedback-metrics">
+                <div>
+                  <span>Score</span>
+                  <strong>{analysis ? Math.round(Number(analysis.raw.score ?? 0)) : "--"}</strong>
                 </div>
-                <div className="grid gap-[6px] p-[14px] rounded-[18px] bg-white/[0.96]">
-                  <span className="text-[#6f7d94]">Kết luận</span>
-                  <strong className="text-[1.3rem] text-[#223153]">
-                    {analysis ? metricDecision(decision) : "Chờ phân tích"}
-                  </strong>
+                <div>
+                  <span>Kết luận</span>
+                  <strong>{analysis ? metricDecision(decision) : "Chờ phân tích"}</strong>
                 </div>
               </div>
 
-              {mode === "practice_ii" && decision?.predicted_wrong_gloss ? (
-                <div className="p-[14px_16px] rounded-[18px] font-bold bg-[rgba(245,158,11,0.14)] text-[#fde68a]">
-                  Có thể bạn vừa làm sang từ{" "}
-                  <strong>{decision.predicted_wrong_gloss}</strong>
+              {practiceIIStatus ? (
+                <div className={`practice-callout ${practiceIIStatus.tone}`}>
+                  <strong>{practiceIIStatus.title}</strong>
+                  <span>{practiceIIStatus.message}</span>
                 </div>
               ) : null}
 
-              <p className="m-0 text-[#6f7d94] leading-[1.65]">
+              <p className="practice-feedback-text">
                 {analysis
                   ? feedback?.overall ?? "Đã có feedback từ backend."
                   : "Phân tích xong, app sẽ hiện feedback tổng và giữ nút sang bước tiếp theo ở dưới."}
               </p>
 
-              <div className="grid gap-2">
-                <span className="inline-flex items-center gap-[10px] text-[#52617f] text-[0.95rem]">
-                  <i className="w-[10px] h-[10px] rounded-full inline-block bg-[#4ade80]" />
-                  Xanh là đang đúng hoặc gần đúng
+              <div className="practice-legend">
+                <span>
+                  <i className="legend-dot good" /> Xanh là đang đúng hoặc gần đúng
                 </span>
-                <span className="inline-flex items-center gap-[10px] text-[#52617f] text-[0.95rem]">
-                  <i className="w-[10px] h-[10px] rounded-full inline-block bg-[#fb7185]" />
-                  Đỏ là vùng cần sửa thêm
+                <span>
+                  <i className="legend-dot fix" /> Đỏ là vùng cần sửa thêm
                 </span>
               </div>
             </div>
           </article>
 
-          {/* User video panel */}
-          <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-5 grid gap-4">
-            <div className="flex justify-between gap-[14px] items-start">
+          <article className="practice-media-panel">
+            <div className="practice-panel-header">
               <div>
-                <p className="m-0 mb-[6px] text-[#7c8aa2] text-[0.72rem] font-bold tracking-[0.14em] uppercase">USER ATTEMPT</p>
-                <h4 className="mt-[6px] mb-0 text-[#223153] text-[1.28rem]">Bài làm của bạn</h4>
+                <p className="learn-meta-label">USER ATTEMPT</p>
+                <h4>Bài làm của bạn</h4>
               </div>
-              <span className="text-[#6f7d94] text-sm">
+              <span className="practice-panel-status">
                 {userSegment
                   ? `${userSegment.segment_start_ms}ms → ${userSegment.segment_end_ms}ms`
                   : userStatus}
               </span>
             </div>
-            <div className="relative isolate min-h-[440px] rounded-[24px] overflow-hidden bg-[rgba(242,247,255,0.95)] border border-[rgba(53,84,128,0.08)]">
+            <div className="video-shell practice-video-shell">
               {userVideoUrl ? (
                 <>
                   <video
                     ref={userVideoRef}
                     src={userVideoUrl}
-                    className="absolute inset-0 z-[1] w-full h-full object-contain block bg-white"
+                    className="video-node practice-video-node"
                     playsInline
                     muted
                     controls={!analysis}
                     {...buildVideoHandlers("user")}
                   />
-                  {analysis ? (
-                    <canvas ref={userCanvasRef} className="absolute inset-0 z-[2] w-full h-full pointer-events-none" />
-                  ) : null}
+                  {analysis ? <canvas ref={userCanvasRef} className="overlay-canvas" /> : null}
                 </>
               ) : (
-                <div className="min-h-[440px] grid place-items-center text-center p-6 text-[#6f7d94]">
-                  Upload video để xem phần user attempt.
-                </div>
+                <div className="practice-empty-state">Upload video để xem phần user attempt.</div>
               )}
             </div>
           </article>
 
-          {/* Reference video panel */}
-          <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-5 grid gap-4">
-            <div className="flex justify-between gap-[14px] items-start">
+          <article className="practice-media-panel">
+            <div className="practice-panel-header">
               <div>
-                <p className="m-0 mb-[6px] text-[#7c8aa2] text-[0.72rem] font-bold tracking-[0.14em] uppercase">REFERENCE</p>
-                <h4 className="mt-[6px] mb-0 text-[#223153] text-[1.28rem]">Video mẫu chuẩn</h4>
+                <p className="learn-meta-label">REFERENCE</p>
+                <h4>Video mẫu chuẩn</h4>
               </div>
-              <span className="text-[#6f7d94] text-sm">
+              <span className="practice-panel-status">
                 {referenceSegment
                   ? `${referenceSegment.segment_start_ms}ms → ${referenceSegment.segment_end_ms}ms`
                   : referenceStatus}
               </span>
             </div>
-            <div className="relative isolate min-h-[440px] rounded-[24px] overflow-hidden bg-[rgba(242,247,255,0.95)] border border-[rgba(53,84,128,0.08)]">
+            <div className="video-shell practice-video-shell">
               {referenceVideoUrl ? (
                 <>
                   <video
@@ -492,30 +519,31 @@ export function PracticeWorkspace({
                         ? new URL(referenceStudy.poster_url, absoluteApiBase).href
                         : undefined
                     }
-                    className="absolute inset-0 z-[1] w-full h-full object-contain block bg-white"
+                    className="video-node practice-video-node"
                     playsInline
                     muted
                     controls={!analysis}
                     {...buildVideoHandlers("reference")}
                   />
                   {analysis ? (
-                    <canvas ref={referenceCanvasRef} className="absolute inset-0 z-[2] w-full h-full pointer-events-none" />
+                    <canvas ref={referenceCanvasRef} className="overlay-canvas" />
                   ) : null}
                 </>
               ) : (
-                <div className="min-h-[440px] grid place-items-center text-center p-6 text-[#6f7d94]">
-                  Reference sẽ hiện ở đây.
-                </div>
+                <div className="practice-empty-state">Reference sẽ hiện ở đây.</div>
               )}
             </div>
           </article>
         </div>
 
-        {/* Footer */}
-        <div className="grid gap-[14px]">
-          <div className="flex justify-between gap-4 items-center max-[1180px]:flex-col max-[1180px]:items-stretch">
+        <div className="practice-footer">
+          <div className="practice-transport">
             {onBackToLearn ? (
-              <button type="button" className={NAV_BTN_SECONDARY} onClick={onBackToLearn}>
+              <button
+                type="button"
+                className="learn-nav-button learn-nav-button-secondary"
+                onClick={onBackToLearn}
+              >
                 <ArrowLeft size={16} />
                 Xem lại từ này
               </button>
@@ -523,10 +551,10 @@ export function PracticeWorkspace({
               <div />
             )}
 
-            <div className="flex gap-[10px] flex-wrap justify-center max-[1180px]:justify-stretch">
+            <div className="practice-transport-buttons">
               <button
                 type="button"
-                className={`${NAV_BTN_SECONDARY} disabled:opacity-55 disabled:cursor-not-allowed`}
+                className="learn-nav-button learn-nav-button-secondary"
                 onClick={playSegments}
                 disabled={!analysis}
               >
@@ -535,7 +563,7 @@ export function PracticeWorkspace({
               </button>
               <button
                 type="button"
-                className={`${NAV_BTN_SECONDARY} disabled:opacity-55 disabled:cursor-not-allowed`}
+                className="learn-nav-button learn-nav-button-secondary"
                 onClick={pauseSegments}
                 disabled={!analysis}
               >
@@ -544,7 +572,7 @@ export function PracticeWorkspace({
               </button>
               <button
                 type="button"
-                className={`${NAV_BTN_SECONDARY} disabled:opacity-55 disabled:cursor-not-allowed`}
+                className="learn-nav-button learn-nav-button-secondary"
                 onClick={resetSegments}
                 disabled={!analysis}
               >
@@ -555,7 +583,7 @@ export function PracticeWorkspace({
 
             <button
               type="button"
-              className={`${NAV_BTN_PRIMARY} disabled:opacity-55 disabled:cursor-not-allowed`}
+              className="learn-nav-button learn-nav-button-primary"
               onClick={handleComplete}
               disabled={!analysis}
             >
@@ -564,7 +592,7 @@ export function PracticeWorkspace({
             </button>
           </div>
 
-          <div className="text-[#6d7b92] text-[0.95rem] text-center">
+          <div className="learn-word-next">
             <span>
               {analysis
                 ? "Đã xong phần so sánh. Nếu ổn rồi thì sang bước tiếp theo nhé →"

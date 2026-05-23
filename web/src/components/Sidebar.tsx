@@ -1,65 +1,159 @@
-import type { Topic } from "../types/learn";
-
-const TABS = [
-  { id: "learn", label: "Học" },
-  { id: "practice", label: "Luyện Tập" },
-] as const;
+import type { ChangeEvent } from "react";
+import type { AppTab, CurriculumTopicSummary } from "../types/learn";
 
 interface SidebarProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
+  activeTab: AppTab;
+  onTabChange: (tab: AppTab) => void;
   apiBase: string;
   onApiBaseChange: (value: string) => void;
-  curriculumTopics: Topic[];
+  curriculumTopics: CurriculumTopicSummary[];
+  currentUser: any;
+  onOpenAuth: () => void;
+  onLogout: () => void;
 }
 
-export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export function Sidebar({
+  activeTab,
+  onTabChange,
+  apiBase,
+  onApiBaseChange,
+  curriculumTopics,
+  currentUser,
+  onOpenAuth,
+  onLogout,
+}: SidebarProps) {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onApiBaseChange(event.target.value);
+  };
+
+  // Dynamically filter tabs based on role
+  const role = currentUser?.role;
+  const tabs: Array<{ id: AppTab; label: string }> = [];
+
+  if (role === "learner") {
+    tabs.push({ id: "learn", label: "Học" });
+    tabs.push({ id: "review", label: "Luyện tập" });
+    tabs.push({ id: "progress", label: "Tiến độ" });
+    tabs.push({ id: "account", label: "Tài khoản" });
+  } else if (role === "parent") {
+    tabs.push({ id: "family", label: "Dashboard Gia đình" });
+    tabs.push({ id: "progress", label: "Tiến độ con" });
+    tabs.push({ id: "account", label: "Tài khoản" });
+  } else if (role === "school") {
+    tabs.push({ id: "school", label: "Dashboard Trường học" });
+    tabs.push({ id: "custom_package", label: "Gói học tùy chỉnh" });
+    tabs.push({ id: "account", label: "Tài khoản" });
+  } else {
+    // Guest
+    tabs.push({ id: "learn", label: "Học" });
+    tabs.push({ id: "account", label: "Đăng nhập" });
+  }
+
+  const handleTabClick = (tabId: AppTab) => {
+    if (!currentUser && tabId !== "learn") {
+      onOpenAuth();
+      return;
+    }
+    onTabChange(tabId);
+  };
+
   return (
-    <aside className="sticky top-0 h-screen overflow-auto px-6 py-8 border-r border-[rgba(53,84,128,0.08)] backdrop-blur-[14px] bg-[radial-gradient(circle_at_top_left,rgba(255,220,242,0.6),transparent_28%),linear-gradient(180deg,rgba(255,252,247,0.96),rgba(238,247,255,0.96))]">
-      <div className="mb-[22px]">
-        <div className="flex items-center gap-[10px] flex-wrap">
-          <div className="w-[66px] h-[66px] rounded-[22px] grid place-items-center bg-white/90 shadow-[0_14px_28px_rgba(83,110,249,0.12)] overflow-hidden">
-            <img src="/signova-mascot.png" alt="Signova mascot" className="w-full h-full object-cover" />
+    <aside className="sidebar">
+      <div className="brand-block">
+        <div className="brand-mark-row">
+          <div className="brand-mark">
+            <img src="/signova-mascot.png" alt="Signova mascot" className="brand-mark-image" />
           </div>
-          <span className="mt-[10px] bg-[#fff0c4] text-[#9a6213] inline-flex items-center rounded-full px-3 py-2 font-bold text-[0.92rem]">
-            20 từ • 2 topic
-          </span>
+          <div className="brand-badge">20 từ • 2 topic</div>
         </div>
-        <p className="m-0 mt-4 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">SIGNOVA</p>
-        <h1
-          className="mt-[10px] mb-3 text-[clamp(2.15rem,3vw,3.15rem)] leading-[1.04] tracking-[-0.03em]"
-          style={{ fontFamily: '"Baloo 2", Nunito, sans-serif' }}
-        >
-          Học ký hiệu cùng mascot Signova
-        </h1>
-        <p className="text-[#66758a] leading-[1.62]">
-          Xem mẫu, học từng từ, quay video và nhận phản hồi màu sắc thật dễ hiểu.
-        </p>
+        <p className="eyebrow">SIGNOVA</p>
+        <h1>Học ký hiệu cùng mascot Signova</h1>
       </div>
 
-      <div className="grid gap-[10px] mb-[18px]">
-        {TABS.map((tab) => (
+      {/* User Auth Section */}
+      <div className="card-surface" style={{ padding: "12px", marginBottom: "16px" }}>
+        {currentUser ? (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-400 flex items-center justify-center text-white font-bold shadow-sm flex-shrink-0">
+                {currentUser.username[0].toUpperCase()}
+              </div>
+              <div className="overflow-hidden">
+                <h4 className="font-semibold text-slate-800 text-sm leading-tight truncate">
+                  {currentUser.username}
+                </h4>
+                <span className="text-[10px] text-indigo-600 font-bold capitalize bg-indigo-50 px-2 py-0.5 rounded-full inline-block mt-0.5">
+                  {role === "learner" ? "Học sinh" : role === "parent" ? "Phụ huynh" : "Trường học"}
+                </span>
+              </div>
+            </div>
+            {role === "learner" && currentUser.learner_profile && (
+              <div className="text-xs text-slate-600 bg-slate-50 p-2 rounded-lg mt-1 flex justify-between">
+                <span>🔥 Streak: <strong>{currentUser.learner_profile.learning_streak} ngày</strong></span>
+                <span>⭐ XP: <strong>{currentUser.learner_profile.xp}</strong></span>
+              </div>
+            )}
+            <button
+              onClick={onLogout}
+              type="button"
+              className="w-full mt-2 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 font-bold rounded-lg border-0 cursor-pointer transition-colors text-xs"
+            >
+              Đăng xuất
+            </button>
+          </div>
+        ) : (
+          <div className="text-center py-1">
+            <p className="text-xs text-slate-500 mb-2.5 font-medium">Đăng nhập để lưu tiến độ và thi đua nhé!</p>
+            <button
+              onClick={onOpenAuth}
+              type="button"
+              className="w-full py-2 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold rounded-lg border-0 cursor-pointer hover:opacity-95 transition-all text-xs shadow-md shadow-indigo-100"
+            >
+              🔑 Đăng nhập / Đăng ký
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="tab-list">
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
-            className={
-              activeTab === tab.id
-                ? "w-full border border-transparent py-4 px-[18px] rounded-full text-left transition-all duration-[160ms] font-bold text-[1.02rem] bg-[linear-gradient(135deg,#536ef9,#68c6ff)] text-white shadow-[0_12px_34px_rgba(83,110,249,0.1)]"
-                : "w-full border border-transparent bg-white/[0.72] text-[#1e2742] py-4 px-[18px] rounded-full text-left transition-all duration-[160ms] font-bold text-[1.02rem] hover:-translate-y-px"
-            }
-            onClick={() => onTabChange(tab.id)}
+            className={activeTab === tab.id ? "nav-tab active" : "nav-tab"}
+            onClick={() => handleTabClick(tab.id)}
           >
             {tab.label}
           </button>
         ))}
       </div>
 
-      <div className="mt-[14px] p-[18px] bg-[rgba(255,252,248,0.92)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px]">
-        <p className="m-0 mb-2 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Cách chơi</p>
-        <ul className="grid gap-[10px] m-0 pl-[18px] list-disc">
-          <li className="text-base leading-[1.65]">Xem hình và video mẫu trước.</li>
-          <li className="text-base leading-[1.65]">Học xong một từ thì luyện ngay.</li>
-          <li className="text-base leading-[1.65]">Mỗi 5 từ sẽ có một bài kiểm tra nhỏ.</li>
+      <label className="field">
+        <span>API Base</span>
+        <input value={apiBase} onChange={handleChange} />
+      </label>
+
+      <div className="card-surface">
+        <p className="eyebrow">Lộ trình học</p>
+        <div className="sidebar-topic-list">
+          {curriculumTopics.map((topic) => (
+            <div key={topic.id} className="sidebar-topic-item">
+              <div className="sidebar-topic-copy">
+                <strong>{topic.title}</strong>
+                <div className="sidebar-topic-subtitle">5 từ đầu → checkpoint → 5 từ sau</div>
+              </div>
+              <span className="sidebar-topic-count">{topic.word_count} từ</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card-surface sidebar-helper-card">
+        <p className="eyebrow">Cách chơi</p>
+        <ul className="helper-list">
+          <li>Xem hình và video mẫu trước.</li>
+          <li>Học xong một từ thì luyện ngay.</li>
+          <li>Mỗi 5 từ sẽ có một bài kiểm tra nhỏ.</li>
         </ul>
       </div>
     </aside>

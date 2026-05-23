@@ -3,7 +3,8 @@ param(
     [int]$WebPort = 5175,
     [string]$SignModelPath = "",
     [string]$SignGlossCsvPath = "",
-    [string]$BankRoot = ""
+    [string]$BankRoot = "",
+    [switch]$KeepDb
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,6 +35,26 @@ function Stop-PortListeners {
 Write-Host "Cleaning old listeners on ports $ApiPort and $WebPort ..."
 Stop-PortListeners -Ports @($ApiPort, $WebPort)
 Start-Sleep -Seconds 1
+
+if (-not $KeepDb) {
+    Write-Host "Cleaning database signova.db if exists..."
+    $dbFile = Join-Path $Root "signova.db"
+    if (Test-Path $dbFile) {
+        Remove-Item -Path $dbFile -Force
+        Write-Host "Deleted existing signova.db"
+    }
+} else {
+    Write-Host "Keeping existing database signova.db."
+}
+
+Write-Host "Running database migrations..."
+$alembicExe = Join-Path $Root ".venv\Scripts\alembic.exe"
+& $alembicExe upgrade head
+
+Write-Host "Seeding curriculum and default badges..."
+$pythonExe = Join-Path $Root ".venv\Scripts\python.exe"
+$seedScript = Join-Path $Root "scripts\seed_curriculum.py"
+& $pythonExe $seedScript
 
 $apiArgs = @(
     "-NoExit",

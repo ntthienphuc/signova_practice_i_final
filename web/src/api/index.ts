@@ -20,6 +20,27 @@ export type {
   AnalyzeAttemptParams
 } from "./types";
 
-export { ensureBaseUrl } from "./client";
+export { 
+  ensureBaseUrl, 
+  registerUser, 
+  loginUser, 
+  getCurrentUser, 
+  getReviewWords, 
+  markWordViewed, 
+  updateResumeState,
+  getParentDashboard,
+  getSchoolDashboard,
+  getVocabularyDetail,
+  updateProfile,
+  searchLearners,
+  requestParentLink,
+  requestSchoolLink,
+  getPendingLinks,
+  approveParentLink,
+  rejectParentLink,
+  approveSchoolLink,
+  rejectSchoolLink,
+  getLearnerDashboard
+} from "./client";
 export { loadAppConfig, loadCurriculum } from "./endpoints/app";
 export { createRandomTask, analyzeAttempt } from "./endpoints/practice";

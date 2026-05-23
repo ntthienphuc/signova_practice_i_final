@@ -1,4 +1,12 @@
-import type { SegmentTiming } from "../api/types";
+import type {
+  AnalyzeResponse,
+  Decision,
+  FeedbackBlock,
+  SegmentTiming,
+} from "../api";
+
+export type AppTab = "learn" | "review" | "progress" | "family" | "school" | "account" | "custom_package";
+export type SessionStage = "learn" | "practice_i" | "quiz_intro" | "practice_ii" | "summary";
 
 export interface VideoReference {
   video_url: string;
@@ -34,4 +42,39 @@ export interface Topic {
 
 export interface DashboardPayload {
   topics: Topic[];
+}
+
+export interface TopicProgress {
+  completedWords: number;
+  completed: boolean;
+}
+
+export type ProgressByTopic = Record<string, TopicProgress>;
+
+export interface AnalysisSummary {
+  target_gloss: string;
+  practice_mode: AnalyzeResponse["practice_mode"];
+  score: number;
+  decision: Decision;
+  feedback: FeedbackBlock;
+  classifier: AnalyzeResponse["classifier"] | null;
+}
+
+export interface PracticeSession {
+  topic: Topic;
+  wordIndex: number;
+  stage: SessionStage;
+  quizScope: 5 | 10 | null;
+  quizQueue: string[];
+  quizRoundIndex: number;
+  currentQuizResults: AnalysisSummary[];
+  quiz5Results: AnalysisSummary[];
+  finalQuizResults: AnalysisSummary[];
+  practiceResults: Record<string, AnalysisSummary>;
+}
+
+export interface CurriculumTopicSummary {
+  id: string;
+  title: string;
+  word_count: number;
 }

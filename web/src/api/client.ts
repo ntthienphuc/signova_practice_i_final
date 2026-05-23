@@ -32,18 +32,33 @@ export interface AnalysisResponse {
 
 export function ensureBaseUrl(value: string): string {
   if (!value) {
-    return "http://127.0.0.1:8014/"; // Default port updated dynamically if needed
+    return "http://127.0.0.1:8010/"; // Default port updated dynamically if needed
   }
   return value.endsWith("/") ? value : `${value}/`;
 }
 
 export function createApiClient(baseUrl: string): AxiosInstance {
-  return axios.create({ 
+  const client = axios.create({ 
     baseURL: ensureBaseUrl(baseUrl),
     headers: {
       "Content-Type": "application/json",
     },
   });
+  
+  client.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem("signova_token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+  
+  return client;
 }
 
 export function handleAxiosError(error: unknown): never {
@@ -174,3 +189,189 @@ export const assetUrls = {
   getPlaybackUrl: (gloss: string) => 
     `${apiClient.defaults.baseURL}playback/reference/${encodeURIComponent(gloss)}`,
 };
+
+/** ==========================================
+ * USER AUTHENTICATION & PROGRESS API SERVICES LAYER
+ * ========================================== */
+
+export async function registerUser(username: string, password: string, role: string = "learner"): Promise<any> {
+  try {
+    const response = await apiClient.post("/auth/register", { username, password, role });
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function loginUser(username: string, password: string): Promise<any> {
+  try {
+    const params = new URLSearchParams();
+    params.append("username", username);
+    params.append("password", password);
+    const response = await apiClient.post("/auth/login", params, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function getCurrentUser(): Promise<any> {
+  try {
+    const response = await apiClient.get("/auth/me");
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function getReviewWords(): Promise<any> {
+  try {
+    const response = await apiClient.get("/progress/review-words");
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function markWordViewed(wordId: string): Promise<any> {
+  try {
+    const response = await apiClient.post("/progress/word-viewed", { word_id: wordId });
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function updateResumeState(topicId: string, lastActiveStage: string, currentWordIndex: number): Promise<any> {
+  try {
+    const response = await apiClient.post("/progress/resume", {
+      topic_id: topicId,
+      last_active_stage: lastActiveStage,
+      current_word_index: currentWordIndex
+    });
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function getParentDashboard(): Promise<any> {
+  try {
+    const response = await apiClient.get("/dashboard/parent");
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function getSchoolDashboard(): Promise<any> {
+  try {
+    const response = await apiClient.get("/dashboard/school");
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function updateProfile(data: {
+  display_name?: string;
+  dob?: string;
+  phone?: string;
+  school_name?: string;
+  contact_name?: string;
+  contact_phone?: string;
+}): Promise<any> {
+  try {
+    const response = await apiClient.post("/auth/update-profile", data);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function searchLearners(query: string): Promise<any> {
+  try {
+    const response = await apiClient.get(`/links/search-learner?query=${encodeURIComponent(query)}`);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function requestParentLink(learnerUsername: string): Promise<any> {
+  try {
+    const response = await apiClient.post("/links/parent/request", { learner_username: learnerUsername });
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function requestSchoolLink(learnerUsername: string, className: string, studentCode: string): Promise<any> {
+  try {
+    const response = await apiClient.post("/links/school/request", {
+      learner_username: learnerUsername,
+      class_name: className,
+      student_code: studentCode
+    });
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function getPendingLinks(): Promise<any> {
+  try {
+    const response = await apiClient.get("/links/pending");
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function approveParentLink(id: string): Promise<any> {
+  try {
+    const response = await apiClient.post(`/links/parent/${id}/approve`);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function rejectParentLink(id: string): Promise<any> {
+  try {
+    const response = await apiClient.post(`/links/parent/${id}/reject`);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function approveSchoolLink(id: string): Promise<any> {
+  try {
+    const response = await apiClient.post(`/links/school/${id}/approve`);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function rejectSchoolLink(id: string): Promise<any> {
+  try {
+    const response = await apiClient.post(`/links/school/${id}/reject`);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function getLearnerDashboard(learnerId: string): Promise<any> {
+  try {
+    const response = await apiClient.get(`/dashboard/learner/${learnerId}`);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
