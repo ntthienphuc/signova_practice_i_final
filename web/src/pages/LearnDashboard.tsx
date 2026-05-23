@@ -3,7 +3,8 @@ import {
   loadAppConfig, loadCurriculum, getReviewWords,
   getVocabularyDetail, getParentDashboard, getSchoolDashboard,
   getPendingLinks, approveParentLink, rejectParentLink,
-  approveSchoolLink, rejectSchoolLink, getLearnerDashboard
+  approveSchoolLink, rejectSchoolLink, getLearnerDashboard,
+  getMyProgress
 } from "../api";
 import { Sidebar } from "../components/learn-dashboard/Sidebar";
 import { AuthModal } from "../components/AuthModal";
@@ -82,6 +83,20 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
     boot();
     return () => { active = false; };
   }, []);
+
+  // Hydrate progressByTopic from DB on auth
+  useEffect(() => {
+    if (!auth.currentUser || auth.currentUser.role !== "learner") return;
+    let active = true;
+    getMyProgress()
+      .then((data: any) => {
+        if (active && data?.topic_progress) {
+          practice.syncProgressFromServer(data.topic_progress);
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [auth.currentUser?.id]);
 
   // Load Review Data
   const loadReviewData = async () => {

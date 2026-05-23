@@ -45,21 +45,21 @@ export function TopicSummary({
       </div>
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-[18px]">
-        <article className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 rounded-[24px] shadow-[0_18px_42px_rgba(62,88,149,0.1)]">
+        <article className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6">
           <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Practice I</span>
           <strong>
             {practiceOnePassed}/{practiceOneResults.length || topic.word_count}
           </strong>
           <p className="text-[var(--ink-soft)] leading-[1.62]">Số từ được accept trực tiếp khi luyện từng từ.</p>
         </article>
-        <article className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 rounded-[24px] shadow-[0_18px_42px_rgba(62,88,149,0.1)]">
+        <article className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6">
           <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Practice II - 5 từ</span>
           <strong>
             {quiz5Passed}/{quiz5.length || 5}
           </strong>
           <p className="text-[var(--ink-soft)] leading-[1.62]">Checkpoint sau khi học xong 5 từ đầu.</p>
         </article>
-        <article className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 rounded-[24px] shadow-[0_18px_42px_rgba(62,88,149,0.1)]">
+        <article className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6">
           <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Practice II - 10 từ</span>
           <strong>
             {quiz10Passed}/{quiz10.length || 10}
@@ -68,7 +68,7 @@ export function TopicSummary({
         </article>
       </div>
 
-      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 shadow-[0_18px_42px_rgba(62,88,149,0.1)]">
+      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6">
         <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Danh sách từ</p>
         <div className="flex flex-wrap gap-[10px]">
           {topic.glosses.map((gloss) => (

@@ -40,7 +40,8 @@ export {
   rejectParentLink,
   approveSchoolLink,
   rejectSchoolLink,
-  getLearnerDashboard
+  getLearnerDashboard,
+  getMyProgress
 } from "./client";
 export { loadAppConfig, loadCurriculum } from "./endpoints/app";
 export { createRandomTask, analyzeAttempt } from "./endpoints/practice";
