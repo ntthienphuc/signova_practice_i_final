@@ -34,7 +34,7 @@ const landingData = {
           description:
             'Ứng dụng học NNKH tích hợp AI cho người khiếm thính, phụ huynh và học sinh. Học từng từ, luyện tập trước camera, nhận phản hồi màu đỏ/xanh chính xác từng lỗi sai.',
           tag: 'Người học',
-          path: '/learn',
+          path: '/learn-dashboard',
         },
         {
           icon: '👨‍👩‍👧',
@@ -279,7 +279,7 @@ const landingData = {
           description:
             'AI-powered sign language learning app for deaf learners, parents, and students. Learn word-by-word, practice in front of camera, get red/green color-coded feedback on exactly what\'s wrong.',
           tag: 'Learner',
-          path: '/learn',
+          path: '/learn-dashboard',
         },
         {
           icon: '👨‍👩‍👧',

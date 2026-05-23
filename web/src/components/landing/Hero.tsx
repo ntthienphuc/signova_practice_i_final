@@ -43,7 +43,7 @@ export function Hero({ data }: HeroProps) {
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
-            to="/practice"
+            to="/learn-dashboard"
             className="px-9 py-4 bg-gradient-to-r from-indigo-500 to-sky-400 hover:opacity-95 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-sky-200 text-base"
           >
             {data.ctaPrimary}
