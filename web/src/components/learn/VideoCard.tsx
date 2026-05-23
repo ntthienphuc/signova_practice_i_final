@@ -7,10 +7,7 @@ interface VideoCardProps {
 
 export default function VideoCard({ wordVi, wordEn }: VideoCardProps) {
   return (
-    <div
-      className="w-80 h-80 rounded-2xl overflow-hidden border border-white/10 relative bg-black flex-shrink-0"
-      style={{ minWidth: 400 }}
-    >
+    <div className="w-56 sm:w-64 lg:w-80 aspect-square rounded-2xl overflow-hidden border border-white/10 relative bg-black">
       {/* Gradient background mimicking a dark video frame */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-black" />
       <div className="absolute inset-0 bg-dot-grid opacity-40" />

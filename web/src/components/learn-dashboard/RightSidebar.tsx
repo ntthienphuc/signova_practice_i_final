@@ -102,7 +102,7 @@ function StatsGrid() {
 
 export default function RightSidebar() {
   return (
-    <aside className="w-72 flex-shrink-0 flex flex-col gap-3 h-full overflow-y-auto py-8 px-6 border-l border-gray-100">
+    <aside className="hidden xl:flex w-72 flex-shrink-0 flex-col gap-3 h-full overflow-y-auto py-8 px-6 border-l border-gray-100">
       <StreakPanel />
       <DailyGoalPanel />
       <LevelPanel />
