@@ -15,16 +15,35 @@ No test runner is configured. Type checking and build are the verification path.
 
 ## Tech Stack
 
-React 18 · TypeScript · Vite 5 · Tailwind CSS v3 · Axios · React Router v7
+React 18 · TypeScript · Vite 5 · Tailwind CSS v3 · Axios · React Router v7 · lucide-react
 
 ## Routing
 
-`router.tsx` defines two top-level routes via `createBrowserRouter`:
+`router.tsx` defines four top-level routes via `createBrowserRouter`:
 
-- `/` — `LandingLayout` (wraps `Navbar` + `<Outlet>`), renders `LandingPage` as the index child.
-- `/practice` — `App` (the sign-language practice tool), rendered standalone with no layout wrapper.
+| Path | Component | Notes |
+|---|---|---|
+| `/` | `LandingLayout` → `LandingPage` | Navbar persists via layout |
+| `/practice` | `App` | Standalone, no layout wrapper |
+| `/learn` | `LearnDashboard` | 3-column gamified dashboard |
+| `/learn/:unitId/:lessonId` | `LearnPage` | Flashcard word view |
 
 `LandingLayout` owns the `locale` state (`"vi" | "en"`) and passes it down via `useOutletContext<LandingOutletContext>()`. All landing child pages must call `useOutletContext` to get the locale.
+
+## Component & Data Conventions
+
+### Component folders by feature
+- `components/` — practice app components (`ControlPanel`, `StagePanel`, etc.)
+- `components/landing/` — landing page section components
+- `components/learn-dashboard/` — LearnDashboard sub-components
+- `components/learn/` — LearnPage sub-components (`AvatarCard`, `VideoCard`, `MetaCard`)
+
+Pages are flat files directly in `pages/` (`LearnDashboard.tsx`, `LearnPage.tsx`, etc.).
+
+### Data files (`src/data/`)
+- `learnDashboardData.ts` — exports `LEARN_UNITS: Unit[]` and types `Unit`, `Lesson`, `LessonType`. Single source of truth for the unit/lesson tree.
+- `learnData.ts` — exports `words` array (Vietnamese vocabulary with images, descriptions, difficulty) used by `LearnPage` for flashcard content.
+- `landingData.ts` — bilingual `vi`/`en` content for the landing page. `LandingData` type is in `types/landing.ts`.
 
 ## Practice App (`App.tsx`)
 
@@ -37,11 +56,24 @@ React 18 · TypeScript · Vite 5 · Tailwind CSS v3 · Axios · React Router v7
 
 **API base URL** is runtime user-controlled state in `App.tsx` (default `http://127.0.0.1:8014`). A fresh Axios instance is created per call via `createApiClient(baseUrl)` — there is no shared singleton client.
 
-## Landing Page (`LandingPage.tsx`)
+## Learn Dashboard (`LearnDashboard.tsx`)
 
-Nine section components assembled in order: `Hero`, `ProblemStatement`, `Features`, `Products`, `TargetUsers`, `Pricing`, `ValueProps` (in `<main>`), then `CTAFooter`. Each accepts a typed `data` prop — no API calls, pure render.
+Light-theme 3-column layout (`bg-gray-50`):
+- **Left** — `LeftSidebar` (240 px, `bg-white`): logo, nav items, connected status pill.
+- **Center** — `MainContent`: progress header, unit accordions. `expandedUnit` state lives here; only one unit open at a time.
+- **Right** — `RightSidebar` (288 px): `StreakPanel`, `DailyGoalPanel`, `LevelPanel`, `StatsGrid`.
 
-Sample data lives in `data/landingData.ts` as a bilingual object keyed `vi` / `en`. The `LandingData` type is in `types/landing.ts`. `Navbar` is excluded from `LandingPage` — it lives in `LandingLayout` so it persists across future child routes.
+`UnitAccordion` receives a full `Unit` object from `LEARN_UNITS`. When expanded it shows the active lesson card (hardcoded Lesson 1 / A-E) plus `LessonRow` components for remaining lessons. `LessonRow` has local expand state showing a description + "Start" CTA that navigates to `/learn/:unitNumber/:lessonIndex`.
+
+## Learn Page (`LearnPage.tsx`)
+
+Dark-theme flashcard view (`bg-dark-bg` + `.bg-dot-grid` overlay). Uses `useParams` to read `unitId` and `lessonId`; maps `lessonId` to an index into `words` from `learnData.ts` (clamped, so any out-of-range value is safe).
+
+Layout:
+1. **Progress track** — label + `Từ N / total` fraction + slim `bg-brand-primary` fill bar.
+2. **Word title** — `{word.vi}` (`text-text-main`) + `/` + `{word.en}` (`text-brand-primaryLight`).
+3. **3-panel row** — `AvatarCard` (image or dim watermark) | `VideoCard` (placeholder with play button) | `MetaCard` (badges, description).
+4. **Footer** — prev button + dot navigator + "Luyện tập từ này" practice CTA + "Từ tiếp theo →" next button. Navigation calls `useNavigate` to `/learn/:unitId/:newIndex`.
 
 ## API Layer (`src/api/`)
 
@@ -75,12 +107,26 @@ Fixed form params sent with every analyze call: `frame_stride=2`, `auto_segment=
 
 Custom utility classes defined in `@layer utilities`: `.bg-dot-grid`, `.custom-scrollbar`.
 
-Landing page components use Tailwind exclusively. Practice app components use the hand-authored CSS classes in `styles.css`.
+Practice app → hand-authored CSS classes. Landing page + Learn pages → Tailwind exclusively.
+
+### Tailwind theme tokens (defined in `tailwind.config.js`)
+| Token | Value | Usage |
+|---|---|---|
+| `dark-bg` | `#020617` | LearnPage viewport background |
+| `dark-sidebar` | `#090d16` | Dark sidebar variant |
+| `dark-card` | `rgba(255,255,255,0.04)` | Dark glassmorphism cards |
+| `brand-primary` | `#0284c7` | Buttons, progress fills |
+| `brand-primaryHover` | `#0ea5e9` | Hover state |
+| `brand-primaryLight` | `#7dd3fc` | Accent text |
+| `brand-teal` / `brand-tealLight` | `#0d9488` / `#2dd4bf` | Difficulty badges |
+| `text-main` | `#ffffff` | Primary text |
+| `text-muted` | `#94a3b8` | Secondary text |
+| `text-hint` | `#64748b` | Labels, hints |
 
 ## Key Gotchas
 
 **React 19 ref types** — `useRef<T>(null)` returns `RefObject<T | null>`. Props accepting refs must be typed as `RefObject<HTMLVideoElement | null>` (not `RefObject<HTMLVideoElement>`).
 
-**No icon library installed** — `lucide-react` is not in `package.json`. Install it before using icon components: `npm install lucide-react`.
+**`words` image field** — `words[i].image` is `string | null`. Words without images (Study, Water) have `null`; components must handle both.
 
-**Page specs** — UI generation specs for new dashboard pages live in `guide/`. Read the relevant spec before implementing a new page.
+**Page specs** — UI generation specs for new pages live in `guide/`. Read the relevant spec before implementing a new page.
