@@ -12,36 +12,39 @@ export function StudyStage({ apiBase, topic, word, wordIndex, onStartPractice, o
   const progressRatio = topic.words.length > 0 ? ((wordIndex + 1) / topic.words.length) * 100 : 0;
 
   return (
-    <section className="study-stage">
-      <div className="study-header card-surface">
-        <button className="ghost-button" type="button" onClick={onBackToTopics}>
-          ← Quay lại topics
-        </button>
-        <div className="study-progress">
-          <p className="eyebrow">Học</p>
+    <section className="study-stage study-stage-dashboard">
+      <div className="study-header card-surface study-header-dashboard">
+        <div>
+          <button className="ghost-button" type="button" onClick={onBackToTopics}>
+            ← Back to topics
+          </button>
+          <p className="eyebrow">Learn Word</p>
           <h2>{topic.title}</h2>
           <p className="muted">
-            Từ {wordIndex + 1}/{topic.words.length} • {word.gloss}
+            Word {wordIndex + 1}/{topic.words.length}
           </p>
+        </div>
+        <div className="study-progress">
+          <div className="target-pill study-word-pill">{word.gloss}</div>
           <div className="progress-track progress-track-wide">
             <div className="progress-fill" style={{ width: `${progressRatio}%` }} />
           </div>
         </div>
       </div>
 
-      <div className="study-grid">
+      <div className="study-grid study-grid-dashboard">
         <article className="study-card card-surface">
-          <p className="eyebrow">Từ đang học</p>
-          <div className="study-sticker">✨ Hôm nay mình học từ mới</div>
+          <p className="eyebrow">Word Card</p>
+          <div className="study-sticker">Ready to practice</div>
           <h3>{word.gloss}</h3>
           <p className="muted">
-            Xem hình minh họa, nhìn video mẫu, rồi thử làm lại bằng tay của mình trước khi chuyển sang luyện.
+            Look at the illustration, watch the reference video, and get ready to move into Practice I right after this screen.
           </p>
 
           <div className="topic-metrics">
             <div>
               <span className="metric-label">Checkpoint</span>
-              <strong>{word.checkpoint_group === 1 ? "Nhóm 1/5" : "Nhóm 2/5"}</strong>
+              <strong>{word.checkpoint_group === 1 ? "Block 1/5" : "Block 2/5"}</strong>
             </div>
             <div>
               <span className="metric-label">Reference</span>
@@ -50,23 +53,23 @@ export function StudyStage({ apiBase, topic, word, wordIndex, onStartPractice, o
           </div>
 
           <div className="kid-note">
-            Mẹo nhỏ: xem video mẫu 1-2 lần trước, rồi thử bắt chước chậm rãi bằng tay của mình.
+            Tip: watch the motion once or twice, then copy it slowly before you record your own attempt.
           </div>
 
           <button className="primary-button" type="button" onClick={onStartPractice}>
-            Mình sẵn sàng luyện từ này
+            Start Practice I
           </button>
         </article>
 
         <article className="study-card card-surface">
-          <p className="eyebrow">Hình minh họa</p>
+          <p className="eyebrow">Illustration</p>
           <div className="poster-shell">
             {posterUrl ? <img src={posterUrl} alt={word.gloss} className="poster-image" /> : <div className="empty-state">Chưa có poster</div>}
           </div>
         </article>
 
         <article className="study-card card-surface">
-          <p className="eyebrow">Video reference</p>
+          <p className="eyebrow">Reference Video</p>
           <div className="study-video-shell">
             {referenceUrl ? (
               <video
@@ -83,7 +86,7 @@ export function StudyStage({ apiBase, topic, word, wordIndex, onStartPractice, o
           </div>
           {referenceSegment ? (
             <p className="debug-line">
-              Segment chuẩn: {referenceSegment.start_ms}ms → {referenceSegment.end_ms}ms
+              Reference segment: {referenceSegment.start_ms}ms → {referenceSegment.end_ms}ms
             </p>
           ) : null}
         </article>

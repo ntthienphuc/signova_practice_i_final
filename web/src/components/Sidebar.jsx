@@ -1,7 +1,7 @@
 const TABS = [
   { id: "learn", label: "Học" },
-  { id: "family", label: "Dashboard Gia đình" },
-  { id: "school", label: "Dashboard Trường học" },
+  { id: "family", label: "Gia đình" },
+  { id: "school", label: "Trường học" },
 ];
 
 export function Sidebar({ activeTab, onTabChange, apiBase, onApiBaseChange, curriculumTopics }) {
@@ -12,12 +12,12 @@ export function Sidebar({ activeTab, onTabChange, apiBase, onApiBaseChange, curr
           <div className="brand-mark">
             <img src="/signova-mascot.png" alt="Signova mascot" className="brand-mark-image" />
           </div>
-          <div className="brand-badge">20 từ • 2 topic</div>
+          <div className="brand-badge">Core Practice</div>
         </div>
-        <p className="eyebrow">SIGNOVA</p>
-        <h1>Học ký hiệu cùng mascot Signova</h1>
+        <p className="eyebrow">SIGNOVA LEARN</p>
+        <h1>Learn with Signova</h1>
         <p className="muted">
-          Xem mẫu, học từng từ, quay video và nhận phản hồi màu sắc thật dễ hiểu.
+          Study one word at a time, then practice right away with AI feedback and reference playback.
         </p>
       </div>
 
@@ -34,19 +34,14 @@ export function Sidebar({ activeTab, onTabChange, apiBase, onApiBaseChange, curr
         ))}
       </div>
 
-      <label className="field">
-        <span>API Base</span>
-        <input value={apiBase} onChange={(event) => onApiBaseChange(event.target.value)} />
-      </label>
-
-      <div className="card-surface">
-        <p className="eyebrow">Lộ trình học</p>
+      <div className="card-surface sidebar-roadmap">
+        <p className="eyebrow">Topics</p>
         <div className="sidebar-topic-list">
           {curriculumTopics.map((topic) => (
             <div key={topic.id} className="sidebar-topic-item">
               <div className="sidebar-topic-copy">
                 <strong>{topic.title}</strong>
-                <div className="sidebar-topic-subtitle">5 từ đầu → checkpoint → 5 từ sau</div>
+                <div className="sidebar-topic-subtitle">5 words → checkpoint → 5 more words</div>
               </div>
               <span className="sidebar-topic-count">{topic.word_count} từ</span>
             </div>
@@ -55,11 +50,15 @@ export function Sidebar({ activeTab, onTabChange, apiBase, onApiBaseChange, curr
       </div>
 
       <div className="card-surface sidebar-helper-card">
-        <p className="eyebrow">Cách chơi</p>
+        <p className="eyebrow">Workspace</p>
+        <label className="field">
+          <span>API Base</span>
+          <input value={apiBase} onChange={(event) => onApiBaseChange(event.target.value)} />
+        </label>
         <ul className="helper-list">
-          <li>Xem hình và video mẫu trước.</li>
-          <li>Học xong một từ thì luyện ngay.</li>
-          <li>Mỗi 5 từ sẽ có một bài kiểm tra nhỏ.</li>
+          <li>Study the word card first.</li>
+          <li>Practice I starts right after learning.</li>
+          <li>Every 5 words unlock a Practice II checkpoint.</li>
         </ul>
       </div>
     </aside>

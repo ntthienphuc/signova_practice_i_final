@@ -252,13 +252,13 @@ export function PracticeWorkspace({
   return (
     <section className="practice-workspace">
       <div className="practice-sidebar card-surface">
-        <p className="eyebrow">Practice</p>
+        <p className="eyebrow">Practice Workspace</p>
         <h2>{title}</h2>
         <p className="muted">{subtitle}</p>
 
         <div className="target-pill">{targetGloss}</div>
         <div className="coach-note">
-          <strong>Màu sắc dễ hiểu:</strong> xanh là đang làm tốt, đỏ là chỗ mình thử sửa thêm nhé.
+          <strong>Overlay guide:</strong> green means your movement is aligned well, red means the model thinks this area still needs correction.
         </div>
 
         {mode === "practice_ii" ? (
@@ -281,7 +281,7 @@ export function PracticeWorkspace({
             <div>
               <strong>{file ? file.name : "Upload attempt"}</strong>
               <div className="muted">
-                {file ? "Video đã sẵn sàng" : "Chọn video từ máy để gửi lên app"}
+                {file ? "Video is ready" : "Choose a video from your device"}
               </div>
             </div>
           </label>
@@ -304,18 +304,18 @@ export function PracticeWorkspace({
               <strong>{Math.round(Number(analysis.raw.score ?? 0))}</strong>
             </div>
             <div className="metric-row">
-              <span>Kết luận</span>
-              <strong>{decision?.accept_as_target ? "Đúng target" : "Cần sửa thêm"}</strong>
+              <span>Decision</span>
+              <strong>{decision?.accept_as_target ? "Accepted" : "Needs revision"}</strong>
             </div>
             {mode === "practice_ii" && decision?.predicted_wrong_gloss ? (
               <div className="callout warning">
-                Hình như bạn vừa làm sang từ: <strong>{decision.predicted_wrong_gloss}</strong>
+                You may have signed: <strong>{decision.predicted_wrong_gloss}</strong>
               </div>
             ) : null}
-            <p className="muted">{feedback?.overall ?? "Đã có feedback từ backend."}</p>
+            <p className="muted">{feedback?.overall ?? "Feedback is ready from the backend."}</p>
             <div className="legend-row">
-              <span className="legend-pill legend-pill-good">Xanh: đúng / gần đúng</span>
-              <span className="legend-pill legend-pill-fix">Đỏ: cần sửa</span>
+              <span className="legend-pill legend-pill-good">Green: correct / close</span>
+              <span className="legend-pill legend-pill-fix">Red: needs correction</span>
             </div>
             <button className="primary-button" type="button" onClick={handleComplete}>
               {completionLabel}
@@ -332,7 +332,7 @@ export function PracticeWorkspace({
         <div className="stage-head">
           <div>
             <p className="eyebrow">Playback</p>
-            <h3>Cùng nhìn lại và so sánh nhé</h3>
+            <h3>Compare your attempt with the reference</h3>
           </div>
           {analysis ? (
             <div className="transport-row">
