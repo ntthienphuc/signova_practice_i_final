@@ -1,4 +1,5 @@
 import type { AppTab, CurriculumTopicSummary } from "../../types/learn";
+import { X } from "lucide-react";
 
 interface SidebarProps {
   activeTab: AppTab;
@@ -7,6 +8,8 @@ interface SidebarProps {
   currentUser: any;
   onOpenAuth: () => void;
   onLogout: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export function Sidebar({
@@ -16,6 +19,8 @@ export function Sidebar({
   currentUser,
   onOpenAuth,
   onLogout,
+  isOpen = false,
+  onClose,
 }: SidebarProps) {
   const role = currentUser?.role;
   const tabs: Array<{ id: AppTab; label: string }> = [];
@@ -47,9 +52,22 @@ export function Sidebar({
   };
 
   return (
-    <aside className="sticky top-0 h-screen overflow-auto py-8 px-6 border-r border-[rgba(53,84,128,0.08)] backdrop-blur-[14px] bg-[radial-gradient(circle_at_top_left,rgba(255,220,242,0.6),transparent_28%),linear-gradient(180deg,rgba(255,252,247,0.96),rgba(238,247,255,0.96))]">
+    <aside className={`fixed top-0 bottom-0 left-0 z-50 lg:z-10 w-80 lg:w-[var(--sidebar-width)] h-screen overflow-auto py-8 px-6 border-r border-[rgba(53,84,128,0.08)] backdrop-blur-[14px] bg-[radial-gradient(circle_at_top_left,rgba(255,220,242,0.6),transparent_28%),linear-gradient(180deg,rgba(255,252,247,0.96),rgba(238,247,255,0.96))] transition-transform duration-300 transform lg:sticky lg:translate-x-0 ${
+      isOpen ? "translate-x-0" : "-translate-x-full"
+    }`}>
+      {/* Mobile close button */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="lg:hidden absolute top-4 right-4 p-2 rounded-xl text-slate-500 hover:bg-slate-50 border-0 bg-transparent cursor-pointer flex items-center justify-center"
+          aria-label="Đóng menu"
+        >
+          <X size={20} />
+        </button>
+      )}
+
       {/* Brand */}
-      <div className="mb-[22px]">
+      <div className="mb-[22px] relative">
         <div className="flex items-center gap-[10px] flex-wrap">
           <div className="w-[66px] h-[66px] rounded-[22px] grid place-items-center bg-white/[0.9] shadow-[0_14px_28px_rgba(83,110,249,0.12)] overflow-hidden">
             <img src="/signova-mascot.png" alt="Signova mascot" className="w-full h-full object-cover" />

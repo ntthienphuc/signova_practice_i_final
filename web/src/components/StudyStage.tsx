@@ -41,7 +41,7 @@ export function StudyStage({
     <section className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)] text-[var(--ink)]">
       <div className="bg-dot-grid pointer-events-none absolute inset-0 opacity-100" />
 
-      <div className="relative flex flex-col min-h-screen max-w-[1440px] mx-auto px-8 pt-10 pb-8">
+      <div className="relative flex flex-col min-h-screen max-w-[1440px] mx-auto px-4 sm:px-8 pt-10 pb-8">
         <button
           type="button"
           onClick={onBackToTopics}
@@ -134,16 +134,16 @@ export function StudyStage({
 
         {/* Footer */}
         <div className="flex flex-col items-center gap-4 pt-7 pb-2">
-          <div className="flex items-center justify-between w-full gap-4">
+          <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4">
             <button
               type="button"
               onClick={wordIndex === 0 ? onBackToTopics : () => onPreviousWord?.(wordIndex - 1)}
-              className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594]"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594]"
             >
               {wordIndex === 0 ? "← Quay lại topic" : "← Từ trước"}
             </button>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 py-2">
               {topic.words.map((topicWord, index) => (
                 <button
                   key={topicWord.gloss}
@@ -160,11 +160,11 @@ export function StudyStage({
               ))}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
               {isAlreadyLearned && onNextWord && (
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.3)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#5c72fb]"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.3)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#5c72fb]"
                   onClick={onNextWord}
                 >
                   Bỏ qua → Từ tiếp theo
@@ -172,7 +172,7 @@ export function StudyStage({
               )}
               <button
                 type="button"
-                className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border-0 rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-gradient-to-br from-[#5c72fb] to-[#67bfff] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)]"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border-0 rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-gradient-to-br from-[#5c72fb] to-[#67bfff] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)]"
                 onClick={onStartPractice}
               >
                 <Play size={16} />

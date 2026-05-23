@@ -9,6 +9,7 @@ import {
 import { Sidebar } from "../components/learn-dashboard/Sidebar";
 import { AuthModal } from "../components/AuthModal";
 import type { AppTab } from "../types/learn";
+import { Menu } from "lucide-react";
 
 // Import 3 Custom Hooks mới tạo
 import { useAuthAndProfile } from "../../hook/useAuthAndProfile";
@@ -45,6 +46,7 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
 
   // Độc lập review & dashboard states chưa tách hết
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [reviewWords, setReviewWords] = useState<any[]>([]);
   const [loadingReview, setLoadingReview] = useState(false);
   const [reviewError, setReviewError] = useState("");
@@ -228,11 +230,67 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
   return (
     <div className={immersiveStage ? "app-shell app-shell-learn-immersive" : "app-shell flow-shell"}>
       {!immersiveStage && (
-        <Sidebar
-          activeTab={activeTab} onTabChange={setActiveTab}
-          curriculumTopics={config?.curriculum_topics ?? []}
-          currentUser={auth.currentUser} onOpenAuth={() => setIsAuthOpen(true)} onLogout={handleLogout}
-        />
+        <>
+          {/* Mobile Header */}
+          <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/[0.94] border-b border-[rgba(53,84,128,0.06)] flex items-center justify-between px-4 z-40 backdrop-blur-md shadow-sm">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-50 transition-colors border-0 bg-transparent cursor-pointer flex items-center justify-center"
+              aria-label="Mở menu"
+            >
+              <Menu size={24} />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/[0.9] shadow-sm">
+                <img src="/signova-mascot.png" alt="Mascot" className="w-full h-full object-cover" />
+              </div>
+              <span className="font-extrabold text-sm tracking-[0.1em] text-[#c07f42] uppercase">SIGNOVA</span>
+            </div>
+            <div className="w-10 h-10 flex items-center justify-center">
+              {auth.currentUser ? (
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-sky-400 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                  {auth.currentUser.username[0].toUpperCase()}
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsAuthOpen(true)}
+                  className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs border-0 cursor-pointer hover:bg-slate-200 transition-colors"
+                >
+                  👤
+                </button>
+              )}
+            </div>
+          </header>
+
+          {/* Sidebar Drawer Backdrop (Mobile only) */}
+          {isSidebarOpen && (
+            <div
+              className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
+
+          {/* Sidebar */}
+          <Sidebar
+            activeTab={activeTab}
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              setIsSidebarOpen(false);
+            }}
+            curriculumTopics={config?.curriculum_topics ?? []}
+            currentUser={auth.currentUser}
+            onOpenAuth={() => {
+              setIsAuthOpen(true);
+              setIsSidebarOpen(false);
+            }}
+            onLogout={() => {
+              handleLogout();
+              setIsSidebarOpen(false);
+            }}
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+          />
+        </>
       )}
     
       <main className={immersiveStage ? "learn-immersive-main" : "flow-main"}>
