@@ -221,7 +221,25 @@ def worst_joints(
 
 
 def normalized_resampled_xy(seq: PoseSequence, target_len: int) -> np.ndarray:
-    return resample_sequence(normalize_pose(seq), target_len).xy
+    return normalized_resampled_pose(seq, target_len).xy
+
+
+def normalized_resampled_pose(
+    seq: PoseSequence,
+    target_len: int,
+    *,
+    min_confidence: float = 0.35,
+) -> PoseSequence:
+    seq_r = resample_sequence(normalize_pose(seq), target_len)
+    xy = seq_r.xy.copy()
+    confidence = seq_r.confidence.copy()
+    xy[confidence < float(min_confidence)] = np.nan
+    return PoseSequence(
+        xy=xy,
+        confidence=confidence,
+        names=seq_r.names,
+        groups=seq_r.groups,
+    )
 
 
 def build_reference_bank(
@@ -300,36 +318,47 @@ def build_reference_bank_from_sequences(
 
 
 def compare_to_reference_bank(seq: PoseSequence, bank: ReferenceBank) -> dict:
-    xy = normalized_resampled_xy(seq, len(bank.median_xy))
+    user_r = normalized_resampled_pose(seq, len(bank.median_xy))
+    xy = user_r.xy
     matched_template_index = None
     if bank.template_xy is not None and len(bank.template_xy) > 0:
         template_distances = np.linalg.norm(bank.template_xy - xy[None, ...], axis=-1)
         template_ratios = template_distances / np.maximum(bank.tolerance[None, ...], 1e-6)
+        template_valid_mask = np.isfinite(xy).all(axis=-1)
+        template_ratios[:, ~template_valid_mask] = np.nan
         per_template_score = np.nanmedian(template_ratios, axis=(1, 2))
+        per_template_score = np.where(np.isfinite(per_template_score), per_template_score, np.inf)
         matched_template_index = int(np.nanargmin(per_template_score))
         reference_xy = bank.template_xy[matched_template_index]
     else:
         reference_xy = bank.median_xy
     distances = np.linalg.norm(xy - reference_xy, axis=-1)
     ratios = distances / np.maximum(bank.tolerance, 1e-6)
+    valid_mask = np.isfinite(xy).all(axis=-1) & np.isfinite(reference_xy).all(axis=-1)
+    ratios[~valid_mask] = np.nan
     bad_mask = ratios > 1.0
+    bad_mask_float = np.where(valid_mask, bad_mask.astype(np.float32), np.nan)
 
     component_bad_fraction: Dict[str, float] = {}
     component_ratio: Dict[str, float] = {}
+    component_valid_fraction: Dict[str, float] = {}
     for group, idxs in bank.groups.items():
-        component_bad_fraction[group] = float(np.nanmean(bad_mask[:, idxs]))
+        component_bad_fraction[group] = float(np.nanmean(bad_mask_float[:, idxs]))
         component_ratio[group] = float(np.nanmedian(ratios[:, idxs]))
+        component_valid_fraction[group] = float(np.mean(valid_mask[:, idxs]))
 
-    bad_fraction = float(np.nanmean(bad_mask))
+    valid_fraction = float(np.mean(valid_mask))
+    bad_fraction = float(np.nanmean(bad_mask_float)) if np.any(valid_mask) else 1.0
     median_ratio = float(np.nanmedian(ratios))
     score = int(round(max(0.0, min(100.0, 100.0 * (1.0 - bad_fraction)))))
-    per_joint = np.nanmean(bad_mask, axis=0)
+    per_joint = np.nanmean(bad_mask_float, axis=0)
     order = np.argsort(np.nan_to_num(per_joint, nan=-1.0))[::-1]
     worst = [
         {
             "joint": bank.names[i],
             "bad_fraction": float(per_joint[i]),
             "median_ratio": float(np.nanmedian(ratios[:, i])),
+            "valid_fraction": float(np.mean(valid_mask[:, i])),
         }
         for i in order[:8]
     ]
@@ -338,9 +367,12 @@ def compare_to_reference_bank(seq: PoseSequence, bank: ReferenceBank) -> dict:
         "score": score,
         "bad_fraction": bad_fraction,
         "median_ratio": median_ratio,
+        "valid_fraction": valid_fraction,
         "component_bad_fraction": component_bad_fraction,
         "component_ratio": component_ratio,
+        "component_valid_fraction": component_valid_fraction,
         "bad_mask": bad_mask,
+        "valid_mask": valid_mask,
         "distance": distances,
         "ratio": ratios,
         "user_xy": xy,
@@ -578,6 +610,7 @@ def build_visualization_payload(
     reference_xy = result["reference_xy"]
     ratio = result["ratio"]
     bad_mask = result["bad_mask"]
+    valid_mask = result.get("valid_mask")
     names = seq.names
     tolerance = result["tolerance_used"]
     frame_count = int(user_xy.shape[0])
@@ -612,7 +645,10 @@ def build_visualization_payload(
                 ref_joints[joint_name] = ref_point
 
             severity = _safe_float(min(float(ratio[frame_idx, joint_idx]), 2.0) / 2.0)
-            status = "bad" if bool(bad_mask[frame_idx, joint_idx]) else "good"
+            if valid_mask is not None and not bool(valid_mask[frame_idx, joint_idx]):
+                status = "missing"
+            else:
+                status = "bad" if bool(bad_mask[frame_idx, joint_idx]) else "good"
             joint_status.append(
                 {
                     "frame": frame_idx,
@@ -620,8 +656,8 @@ def build_visualization_payload(
                     "body_part": joint_name,
                     "status": status,
                     "severity": severity,
-                    "user_color": "red" if status == "bad" else "green",
-                    "reference_color": "green",
+                    "user_color": "red" if status == "bad" else ("orange" if status == "missing" else "green"),
+                    "reference_color": "green" if status != "missing" else "gray",
                 }
             )
             if status == "bad" and user_point is not None and ref_point is not None:
@@ -653,6 +689,8 @@ def build_visualization_payload(
     order = np.argsort(np.nan_to_num(per_joint_bad, nan=-1.0))[::-1]
     main_errors = []
     for joint_idx in order[:max_main_errors]:
+        if not np.isfinite(per_joint_bad[joint_idx]) or float(per_joint_bad[joint_idx]) <= 0.0:
+            continue
         joint_name = names[joint_idx]
         delta = reference_xy[:, joint_idx] - user_xy[:, joint_idx]
         valid_delta = delta[np.all(np.isfinite(delta), axis=1)]
@@ -681,6 +719,7 @@ def build_visualization_payload(
         "main_errors": main_errors,
         "segment_start_ms": start_ms,
         "segment_end_ms": end_ms,
+        "valid_fraction": result.get("valid_fraction"),
         "tolerance_summary": {
             "median": _safe_float(np.nanmedian(tolerance)),
             "max": _safe_float(np.nanmax(tolerance)),
@@ -708,21 +747,27 @@ def compare_static_pose_to_bank(seq: PoseSequence, bank: ReferenceBank) -> dict:
     xy = normalized.xy[0]
     distances = np.linalg.norm(bank.median_xy - xy[None, :, :], axis=-1)
     ratios = distances / np.maximum(bank.tolerance, 1e-6)
+    valid_mask = np.isfinite(xy).all(axis=-1)[None, :].repeat(len(bank.median_xy), axis=0)
+    ratios[~valid_mask] = np.nan
     bad_masks = ratios > 1.0
-    frame_bad_fraction = np.nanmean(bad_masks, axis=1)
+    bad_masks_float = np.where(valid_mask, bad_masks.astype(np.float32), np.nan)
+    frame_bad_fraction = np.nanmean(bad_masks_float, axis=1)
     frame_median_ratio = np.nanmedian(ratios, axis=1)
     sort_key = np.nan_to_num(frame_bad_fraction, nan=1.0) + 0.01 * np.nan_to_num(frame_median_ratio, nan=10.0)
     best_frame = int(np.argmin(sort_key))
 
     best_bad_mask = bad_masks[best_frame]
     best_ratios = ratios[best_frame]
+    best_valid_mask = valid_mask[best_frame]
     component_bad_fraction: Dict[str, float] = {}
     component_ratio: Dict[str, float] = {}
+    component_valid_fraction: Dict[str, float] = {}
     for group, idxs in bank.groups.items():
-        component_bad_fraction[group] = float(np.nanmean(best_bad_mask[idxs]))
+        component_bad_fraction[group] = float(np.nanmean(np.where(best_valid_mask[idxs], best_bad_mask[idxs].astype(np.float32), np.nan)))
         component_ratio[group] = float(np.nanmedian(best_ratios[idxs]))
+        component_valid_fraction[group] = float(np.mean(best_valid_mask[idxs]))
 
-    bad_fraction = float(np.nanmean(best_bad_mask))
+    bad_fraction = float(np.nanmean(np.where(best_valid_mask, best_bad_mask.astype(np.float32), np.nan))) if np.any(best_valid_mask) else 1.0
     score = int(round(max(0.0, min(100.0, 100.0 * (1.0 - bad_fraction)))))
     per_joint_ratio = np.nan_to_num(best_ratios, nan=-1.0)
     order = np.argsort(per_joint_ratio)[::-1]
@@ -739,8 +784,10 @@ def compare_static_pose_to_bank(seq: PoseSequence, bank: ReferenceBank) -> dict:
         "best_frame": best_frame,
         "bad_fraction": bad_fraction,
         "median_ratio": float(np.nanmedian(best_ratios)),
+        "valid_fraction": float(np.mean(best_valid_mask)),
         "component_bad_fraction": component_bad_fraction,
         "component_ratio": component_ratio,
+        "component_valid_fraction": component_valid_fraction,
         "bad_mask": best_bad_mask,
         "worst_joints": worst,
     }

@@ -4,9 +4,8 @@
   "frame_stride": 2,
   "max_frames": 64,
   "target_len": 64,
-  "name": "SIGNOVA Practice I Top 30 Unique Bank",
-  "version": "2026-05-21-top30",
-  "selection_file": "unique_gloss_selection_400_top30.json",
+  "name": "SIGNOVA Practice 20-Gloss Bank",
+  "version": "2026-05-23-final",
   "glosses": [
     {
       "gloss_index": 0,

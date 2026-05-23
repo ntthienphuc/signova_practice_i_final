@@ -35,11 +35,16 @@ from signova_practice_i.video_engine import extract_video_pose_and_results
 
 APP_DIR = Path(__file__).resolve().parent
 DEFAULT_BANK_ROOT = APP_DIR / "outputs" / "reference_bank_20_best_allcam1_fe"
-if not DEFAULT_BANK_ROOT.exists():
-    DEFAULT_BANK_ROOT = APP_DIR / "outputs" / "reference_bank_30_unique_video_ref20_template"
-DEFAULT_SIGN_MODEL_PATH = Path(r"D:\Project\MultiModel\App\models\spoter_v3.0.onnx")
-DEFAULT_SIGN_GLOSS_CSV = Path(r"D:\Project\MultiModel\App\gloss.csv")
+LOCAL_SIGN_MODEL_PATH = APP_DIR / "models" / "spoter_v3.0.onnx"
+LOCAL_SIGN_GLOSS_CSV = APP_DIR / "gloss.csv"
+DEFAULT_SIGN_MODEL_PATH = LOCAL_SIGN_MODEL_PATH if LOCAL_SIGN_MODEL_PATH.exists() else Path(r"D:\Project\MultiModel\App\models\spoter_v3.0.onnx")
+DEFAULT_SIGN_GLOSS_CSV = LOCAL_SIGN_GLOSS_CSV if LOCAL_SIGN_GLOSS_CSV.exists() else Path(r"D:\Project\MultiModel\App\gloss.csv")
 PLAYBACK_CACHE_ROOT = APP_DIR / "outputs" / "web_playback_cache"
+CURRICULUM_TOPIC_SIZE = 10
+CURRICULUM_TITLES = [
+    ("topic_1", "Chủ đề 1", "10 từ đầu tiên"),
+    ("topic_2", "Chủ đề 2", "10 từ tiếp theo"),
+]
 
 
 def create_app() -> FastAPI:
@@ -50,6 +55,9 @@ def create_app() -> FastAPI:
     sign_classifier: SPOTERONNXInferer | None = None
     sign_classifier_error: str | None = None
     reference_pose_cache: dict[str, dict[str, Any]] = {}
+    reference_study_cache: dict[str, dict[str, Any]] = {}
+    reference_duration_cache: dict[str, float] = {}
+    curriculum_cache: dict[str, Any] | None = None
     rng = random.SystemRandom()
     playback_cache_dir = PLAYBACK_CACHE_ROOT
     playback_cache_dir.mkdir(parents=True, exist_ok=True)
@@ -160,23 +168,143 @@ def create_app() -> FastAPI:
             "playback_url": f"/playback/reference/{quote(gloss, safe='')}",
         }
 
+    def ffmpeg_extract_poster(source: Path, target: Path, capture_second: float) -> Path:
+        if target.exists() and target.stat().st_size > 0:
+            return target
+        target.parent.mkdir(parents=True, exist_ok=True)
+        tmp_target = target.with_suffix(".tmp.jpg")
+        if tmp_target.exists():
+            tmp_target.unlink()
+        command = [
+            "ffmpeg",
+            "-y",
+            "-ss",
+            f"{max(0.0, float(capture_second)):.3f}",
+            "-i",
+            str(source),
+            "-frames:v",
+            "1",
+            "-q:v",
+            "2",
+            str(tmp_target),
+        ]
+        result = subprocess.run(command, capture_output=True, text=True)
+        if result.returncode != 0 or not tmp_target.exists():
+            raise RuntimeError(f"ffmpeg poster extract failed for {source.name}: {result.stderr[-500:]}")
+        tmp_target.replace(target)
+        return target
+
+    def probe_duration_seconds(source: Path) -> float:
+        cache_key = str(source.resolve())
+        if cache_key in reference_duration_cache:
+            return reference_duration_cache[cache_key]
+        command = [
+            "ffprobe",
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            str(source),
+        ]
+        result = subprocess.run(command, capture_output=True, text=True)
+        duration = 0.0
+        if result.returncode == 0:
+            try:
+                duration = max(0.0, float(result.stdout.strip() or "0"))
+            except ValueError:
+                duration = 0.0
+        reference_duration_cache[cache_key] = duration
+        return duration
+
+    def ensure_reference_poster(gloss: str, source: Path, video_id: str | None, capture_second: float) -> dict[str, str]:
+        slug = safe_slug(gloss)
+        stem = f"{slug}_{video_id}" if video_id else slug
+        poster_path = playback_cache_dir / "reference_posters" / f"{stem}.jpg"
+        ffmpeg_extract_poster(source, poster_path, capture_second)
+        return {
+            "poster_path": str(poster_path),
+            "poster_url": f"/poster/reference/{quote(gloss, safe='')}",
+        }
+
     def build_reference_asset(gloss: str) -> dict[str, Any] | None:
         asset = store.get_display_reference(gloss)
         if asset is None:
             return None
-        playback = ensure_reference_playback(
-            gloss,
-            Path(str(asset["video_path"])),
-            (str(asset.get("video_id")) if asset.get("video_id") is not None else None),
-        )
         return {
             "gloss": gloss,
             "video_id": asset.get("video_id"),
             "video_score": asset.get("score"),
             "video_url": f"/reference-video/{quote(gloss, safe='')}",
-            "playback_url": playback["playback_url"],
+            "playback_url": f"/playback/reference/{quote(gloss, safe='')}",
             "video_filename": Path(str(asset["video_path"])).name,
         }
+
+    def build_reference_study_payload(gloss: str) -> dict[str, Any] | None:
+        nonlocal reference_study_cache
+        if gloss in reference_study_cache:
+            return reference_study_cache[gloss]
+
+        asset = store.get_display_reference(gloss)
+        if asset is None:
+            return None
+        source_path = Path(str(asset["video_path"]))
+        reference_asset = build_reference_asset(gloss)
+        if reference_asset is None:
+            return None
+        payload = {
+            "gloss": gloss,
+            "video_id": asset.get("video_id"),
+            "score": asset.get("score"),
+            "poster_url": f"/poster/reference/{quote(gloss, safe='')}",
+            "reference": {
+                "video_url": reference_asset["video_url"],
+                "playback_url": reference_asset["playback_url"],
+                "segment": None,
+                "video_filename": source_path.name,
+            },
+        }
+        reference_study_cache[gloss] = payload
+        return payload
+
+    def build_curriculum() -> dict[str, Any]:
+        nonlocal curriculum_cache
+        if curriculum_cache is not None:
+            return curriculum_cache
+
+        glosses = store.list_glosses()
+        topics: list[dict[str, Any]] = []
+        for topic_index, (topic_id, title, subtitle) in enumerate(CURRICULUM_TITLES):
+            start = topic_index * CURRICULUM_TOPIC_SIZE
+            end = start + CURRICULUM_TOPIC_SIZE
+            topic_glosses = glosses[start:end]
+            if not topic_glosses:
+                continue
+            words = []
+            for local_index, gloss in enumerate(topic_glosses, start=1):
+                study = build_reference_study_payload(gloss)
+                words.append(
+                    {
+                        "order": local_index,
+                        "gloss": gloss,
+                        "checkpoint_group": 1 if local_index <= 5 else 2,
+                        "study": study,
+                    }
+                )
+            topics.append(
+                {
+                    "id": topic_id,
+                    "title": title,
+                    "subtitle": subtitle,
+                    "word_count": len(topic_glosses),
+                    "checkpoint_sizes": [5, 10],
+                    "glosses": topic_glosses,
+                    "words": words,
+                }
+            )
+        curriculum_cache = {"topics": topics}
+        return curriculum_cache
 
     def get_reference_pose_bundle(gloss: str) -> dict[str, Any] | None:
         asset = store.get_display_reference(gloss)
@@ -263,6 +391,9 @@ def create_app() -> FastAPI:
                     scoring_pose, segment, segment_info = select_best_segment(
                         user_pose,
                         target_bank=target_bank,
+                        results_list=user_results,
+                        fps=float(video_meta["fps"]),
+                        frame_stride=frame_stride,
                         min_frames=segment_min_frames,
                         max_frames=segment_max_frames,
                         pad_frames=segment_pad_frames,
@@ -299,6 +430,7 @@ def create_app() -> FastAPI:
                 reference_scoring_pose, reference_seg, _ = select_best_segment(
                     reference_pose_full,
                     target_bank=target_bank,
+                    fps=float(reference_video_meta["fps"]),
                     min_frames=segment_min_frames,
                     max_frames=segment_max_frames,
                     pad_frames=segment_pad_frames,
@@ -368,7 +500,10 @@ def create_app() -> FastAPI:
     def build_feedback_block(analysis: dict[str, Any]) -> dict[str, Any]:
         target_result = analysis["target_result"]
         main_errors = analysis["visualization"]["main_errors"]
-        if main_errors:
+        valid_fraction = float(target_result.get("valid_fraction", 1.0))
+        if valid_fraction < 0.55:
+            overall = "Tracking quality is low. Keep both hands visible and retry once."
+        elif main_errors:
             overall = f"Most correction is needed around {main_errors[0]['body_part']}."
         else:
             overall = "Good attempt. Keep the overall movement close to the reference."
@@ -376,6 +511,7 @@ def create_app() -> FastAPI:
             **public_result(target_result),
             "overall": overall,
             "main_errors": main_errors,
+            "tracking_quality": "low" if valid_fraction < 0.55 else "good",
         }
 
     def build_practice_i_response(analysis: dict[str, Any]) -> dict[str, Any]:
@@ -429,6 +565,14 @@ def create_app() -> FastAPI:
             wrong_word_min_lesson_score=wrong_word_min_lesson_score,
             wrong_word_min_margin=wrong_word_min_margin,
         )
+        feedback = build_feedback_block(analysis)
+        if decision["wrong_word_detected"] and decision.get("predicted_wrong_gloss"):
+            feedback["overall"] = (
+                f"It looks like you may have signed "
+                f"{decision['predicted_wrong_gloss']} instead of {analysis['target_gloss']}."
+            )
+        elif decision["low_tracking_quality"]:
+            feedback["overall"] = "Tracking quality is low. Keep both hands visible and retry once."
         return {
             "attempt_id": analysis["attempt_id"],
             "practice_mode": "practice_ii",
@@ -439,7 +583,7 @@ def create_app() -> FastAPI:
             "segment": analysis["segment"],
             "playback": analysis["playback"],
             "overlay": analysis["overlay"],
-            "feedback": build_feedback_block(analysis),
+            "feedback": feedback,
             "visualization": analysis["visualization"],
             "reference": analysis["reference"],
             "classifier": {
@@ -471,9 +615,19 @@ def create_app() -> FastAPI:
 
     @app.get("/app-config")
     def app_config() -> dict[str, object]:
+        curriculum = build_curriculum()
         return {
             "glosses": store.list_glosses(),
             "topics": store.list_topics(),
+            "curriculum_topics": [
+                {
+                    "id": topic["id"],
+                    "title": topic["title"],
+                    "subtitle": topic["subtitle"],
+                    "word_count": topic["word_count"],
+                }
+                for topic in curriculum["topics"]
+            ],
             "practice_modes": ["practice_i", "practice_ii"],
             "random_practice_ii_sizes": [5, 10],
             "reference_video_available": bool(store.display_references),
@@ -487,6 +641,10 @@ def create_app() -> FastAPI:
     @app.get("/topics")
     def topics() -> dict[str, object]:
         return {"topics": store.list_topics()}
+
+    @app.get("/curriculum")
+    def curriculum() -> dict[str, Any]:
+        return build_curriculum()
 
     @app.get("/practice-i/task/random")
     def practice_i_task_random() -> dict[str, object]:
@@ -534,6 +692,25 @@ def create_app() -> FastAPI:
         )
         path = Path(playback["playback_path"])
         return FileResponse(path, media_type="video/mp4", filename=path.name)
+
+    @app.get("/poster/reference/{gloss}")
+    def reference_poster(gloss: str) -> FileResponse:
+        asset = store.get_display_reference(gloss)
+        if asset is None:
+            raise HTTPException(status_code=404, detail=f"No reference poster for gloss: {gloss}")
+        source_path = Path(str(asset["video_path"]))
+        duration_seconds = probe_duration_seconds(source_path)
+        capture_second = 0.8
+        if duration_seconds > 0:
+            capture_second = min(max(duration_seconds * 0.35, 0.4), max(0.4, duration_seconds - 0.2))
+        poster = ensure_reference_poster(
+            gloss,
+            source_path,
+            (str(asset.get("video_id")) if asset.get("video_id") is not None else None),
+            capture_second,
+        )
+        path = Path(poster["poster_path"])
+        return FileResponse(path, media_type="image/jpeg", filename=path.name)
 
     @app.get("/playback/attempt/{attempt_id}")
     def attempt_playback(attempt_id: str) -> FileResponse:
