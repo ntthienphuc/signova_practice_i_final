@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import LandingLayout from "./layouts/LandingLayout";
 import LandingPage from "./pages/LandingPage";
 import PracticePage from "./PracticePage";
+import { StudyStage } from "./components/StudyStage";
 
 export const router = createBrowserRouter([
   {
@@ -13,18 +14,22 @@ export const router = createBrowserRouter([
   },
   {
     path: "/practice",
-    element: <PracticePage initialTab="learn" />,
+    element: <PracticePage/>,
   },
   {
-    path: "/learn",
-    element: <PracticePage initialTab="learn" />,
+    path: "/learn-dashboard",
+    element: <PracticePage />,
   },
   {
-    path: "/dashboard/family",
-    element: <PracticePage initialTab="family" />,
-  },
-  {
-    path: "/dashboard/school",
-    element: <PracticePage initialTab="school" />,
-  },
+    path: "/learn/:topicId/:wordOrder",
+    element: <StudyStage />,
+  }
+  // {
+  //   path: "/dashboard/family",
+  //   element: <PracticePage initialTab="family" />,
+  // },
+  // {
+  //   path: "/dashboard/school",
+  //   element: <PracticePage initialTab="school" />,
+  // },
 ]);
