@@ -71,8 +71,9 @@ export function handleAxiosError(error: unknown): never {
   throw error;
 }
 
-// Instantiate the primary client interface using your custom engine
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://thienphuc12339-signova-backend.hf.space";
+export const BASE_URL = ensureBaseUrl(
+  (import.meta.env.VITE_API_BASE_URL as string) || "https://thienphuc12339-signova-backend.hf.space"
+);
 export const apiClient = createApiClient(BASE_URL);
 
 /** ==========================================
@@ -371,6 +372,14 @@ export async function rejectSchoolLink(id: string): Promise<any> {
 export async function getLearnerDashboard(learnerId: string): Promise<any> {
   try {
     const response = await apiClient.get(`/dashboard/learner/${learnerId}`);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+export async function getMyProgress(): Promise<any> {
+  try {
+    const response = await apiClient.get("/progress/me");
     return response.data;
   } catch (error) {
     handleAxiosError(error);
