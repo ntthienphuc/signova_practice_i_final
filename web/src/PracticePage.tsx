@@ -154,7 +154,7 @@ interface PracticePageProps {
 }
 
 export default function PracticePage({ initialTab = "learn" }: PracticePageProps) {
-  const [apiBase, setApiBase] = useState("http://127.0.0.1:8010");
+  const [apiBase, setApiBase] = useState(import.meta.env.VITE_API_BASE_URL || "https://thienphuc12339-signova-backend.hf.space");
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [curriculum, setCurriculum] = useState<DashboardPayload | null>(null);
   const [activeTab, setActiveTab] = useState<AppTab>(initialTab);
@@ -1842,3 +1842,4 @@ export default function PracticePage({ initialTab = "learn" }: PracticePageProps
     </div>
   );
 }
+

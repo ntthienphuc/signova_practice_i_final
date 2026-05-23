@@ -1,52 +1,58 @@
 #!/usr/bin/env python3
-"""Download SIGNOVA ONNX model from release or cloud storage"""
+"""Download SIGNOVA ONNX model from Google Drive."""
 
 import os
 import sys
-import subprocess
 from pathlib import Path
 
-def download_model():
-    """Download spoter_v3.0.onnx model"""
-    models_dir = Path(__file__).parent / "models"
-    models_dir.mkdir(exist_ok=True)
-    
-    model_path = models_dir / "spoter_v3.0.onnx"
-    
-    # If model already exists, skip
-    if model_path.exists():
+import gdown
+
+
+GOOGLE_DRIVE_MODEL_ID = "1bovGilZArSEYd3GQ8dV-F33Z-2_Badxw"
+
+
+def download_model() -> bool:
+    """Download spoter_v3.0.onnx into /code/models or SIGNOVA_SIGN_MODEL_PATH."""
+
+    project_root = Path(__file__).resolve().parents[1]
+
+    model_env_path = os.getenv("SIGNOVA_SIGN_MODEL_PATH", "").strip()
+    if model_env_path:
+        model_path = Path(model_env_path)
+    else:
+        model_path = project_root / "models" / "spoter_v3.0.onnx"
+
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if model_path.exists() and model_path.stat().st_size > 10_000_000:
         print(f"✓ Model already exists at {model_path}")
         return True
-    
-    print("📥 Downloading ONNX model...")
-    
-    # Try multiple download sources
-    sources = [
-        # GitHub releases (adjust to your actual release URL)
-        "https://github.com/ntthienphuc/signova_practice_i_final/releases/download/v1.0/spoter_v3.0.onnx",
-        # Alternative: Direct cloud storage URL (if you have one)
-        # "https://your-cloud-storage.com/spoter_v3.0.onnx"
-    ]
-    
-    for source in sources:
-        try:
-            print(f"  Trying: {source}")
-            subprocess.run(
-                ["curl", "-L", "-o", str(model_path), source],
-                check=True,
-                capture_output=True
+
+    print("📥 Downloading ONNX model from Google Drive...")
+    print(f"Target path: {model_path}")
+
+    try:
+        gdown.download(
+            id=GOOGLE_DRIVE_MODEL_ID,
+            output=str(model_path),
+            quiet=False,
+        )
+
+        if model_path.exists() and model_path.stat().st_size > 10_000_000:
+            print(
+                f"✓ Model downloaded successfully "
+                f"({model_path.stat().st_size / 1_000_000:.1f} MB)"
             )
-            
-            if model_path.exists() and model_path.stat().st_size > 10_000_000:
-                print(f"✓ Model downloaded successfully ({model_path.stat().st_size / 1_000_000:.1f} MB)")
-                return True
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            print(f"  ✗ Failed to download from {source}")
-            continue
-    
-    print("⚠️  Could not download ONNX model. Practice II will be disabled.")
-    print("    To enable: manually place spoter_v3.0.onnx in models/")
-    return False
+            return True
+
+        print("⚠️ Download finished but file size looks wrong.")
+        return False
+
+    except Exception as exc:
+        print(f"⚠️ Could not download ONNX model: {exc}")
+        print("Practice II will be disabled unless the model exists in /code/models.")
+        return False
+
 
 if __name__ == "__main__":
     success = download_model()

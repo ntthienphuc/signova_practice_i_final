@@ -11,7 +11,7 @@
       "gloss_index": 0,
       "gloss": "Làm bài tập",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_00.npz",
+      "bank_path": "banks/gloss_00.npz",
       "reference_ids": [
         "012051",
         "007419",
@@ -39,7 +39,7 @@
       "gloss_index": 1,
       "gloss": "Không nên",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_01.npz",
+      "bank_path": "banks/gloss_01.npz",
       "reference_ids": [
         "022335",
         "009528",
@@ -67,7 +67,7 @@
       "gloss_index": 2,
       "gloss": "Tường",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_02.npz",
+      "bank_path": "banks/gloss_02.npz",
       "reference_ids": [
         "012560",
         "005123",
@@ -95,7 +95,7 @@
       "gloss_index": 3,
       "gloss": "Mới",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_03.npz",
+      "bank_path": "banks/gloss_03.npz",
       "reference_ids": [
         "018347",
         "009341",
@@ -123,7 +123,7 @@
       "gloss_index": 4,
       "gloss": "Cầu lông",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_04.npz",
+      "bank_path": "banks/gloss_04.npz",
       "reference_ids": [
         "011743",
         "022590",
@@ -151,7 +151,7 @@
       "gloss_index": 5,
       "gloss": "Thái Lan",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_05.npz",
+      "bank_path": "banks/gloss_05.npz",
       "reference_ids": [
         "014801",
         "007582",
@@ -179,7 +179,7 @@
       "gloss_index": 6,
       "gloss": "Trường Cao đẳng",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_06.npz",
+      "bank_path": "banks/gloss_06.npz",
       "reference_ids": [
         "023308",
         "011557",
@@ -207,7 +207,7 @@
       "gloss_index": 7,
       "gloss": "Con chó",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_07.npz",
+      "bank_path": "banks/gloss_07.npz",
       "reference_ids": [
         "023875",
         "021323",
@@ -235,7 +235,7 @@
       "gloss_index": 8,
       "gloss": "Quần đùi",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_08.npz",
+      "bank_path": "banks/gloss_08.npz",
       "reference_ids": [
         "023200",
         "001483",
@@ -263,7 +263,7 @@
       "gloss_index": 9,
       "gloss": "Nhân viên phục vụ",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_09.npz",
+      "bank_path": "banks/gloss_09.npz",
       "reference_ids": [
         "000362",
         "014534",
@@ -291,7 +291,7 @@
       "gloss_index": 10,
       "gloss": "Tháng mười",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_10.npz",
+      "bank_path": "banks/gloss_10.npz",
       "reference_ids": [
         "010603",
         "021583",
@@ -319,7 +319,7 @@
       "gloss_index": 11,
       "gloss": "Buổi tối",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_11.npz",
+      "bank_path": "banks/gloss_11.npz",
       "reference_ids": [
         "003602",
         "014379",
@@ -347,7 +347,7 @@
       "gloss_index": 12,
       "gloss": "Mũ",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_12.npz",
+      "bank_path": "banks/gloss_12.npz",
       "reference_ids": [
         "015392",
         "008184",
@@ -375,7 +375,7 @@
       "gloss_index": 13,
       "gloss": "Nhảy dây",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_13.npz",
+      "bank_path": "banks/gloss_13.npz",
       "reference_ids": [
         "008058",
         "013582",
@@ -403,7 +403,7 @@
       "gloss_index": 14,
       "gloss": "Bơi lội",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_14.npz",
+      "bank_path": "banks/gloss_14.npz",
       "reference_ids": [
         "005289",
         "009813",
@@ -431,7 +431,7 @@
       "gloss_index": 15,
       "gloss": "Ngày Quốc tế Lao động",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_15.npz",
+      "bank_path": "banks/gloss_15.npz",
       "reference_ids": [
         "011668",
         "001006",
@@ -459,7 +459,7 @@
       "gloss_index": 16,
       "gloss": "Hoàng hôn",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_16.npz",
+      "bank_path": "banks/gloss_16.npz",
       "reference_ids": [
         "017937",
         "005254",
@@ -487,7 +487,7 @@
       "gloss_index": 17,
       "gloss": "Dài",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_17.npz",
+      "bank_path": "banks/gloss_17.npz",
       "reference_ids": [
         "004211",
         "003377",
@@ -515,7 +515,7 @@
       "gloss_index": 18,
       "gloss": "Dụng cụ học tập",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_18.npz",
+      "bank_path": "banks/gloss_18.npz",
       "reference_ids": [
         "022670",
         "017168",
@@ -543,7 +543,7 @@
       "gloss_index": 19,
       "gloss": "Giúp đỡ",
       "reference_count": 20,
-      "bank_path": "banks\\gloss_19.npz",
+      "bank_path": "banks/gloss_19.npz",
       "reference_ids": [
         "020217",
         "005555",
