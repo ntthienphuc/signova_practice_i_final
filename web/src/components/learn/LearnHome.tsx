@@ -15,7 +15,11 @@ interface LearnHomeProps {
 export function LearnHome({ topics, progressByTopic, onOpenTopic }: LearnHomeProps) {
   return (
     <section className="grid gap-6">
-      <TopicGrid topics={topics} progressByTopic={progressByTopic} onOpenTopic={onOpenTopic} />
+      <TopicGrid topics={topics} progressByTopic={progressByTopic as any} onOpenTopic={onOpenTopic} />
     </section>
   );
 }
+
+
+
+
