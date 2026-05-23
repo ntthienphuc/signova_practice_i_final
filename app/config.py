@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 from pydantic import Field
 
 class Settings(BaseSettings):
-    database_url: str = Field(default="sqlite:///./signova.db")
+    database_url: str = Field(default="postgresql://neondb_owner:npg_ZU0F2aQufwjN@ep-red-dream-ad3huiiw-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
     jwt_secret_key: str = Field(default="supersecretkeyforjwttokengenerate321")
     jwt_refresh_secret_key: str = Field(default="supersecretkeyforjwttokengeneraterefresh123")
     access_token_expire_minutes: int = 60
