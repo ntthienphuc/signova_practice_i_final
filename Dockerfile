@@ -29,12 +29,14 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY app/ ./app/
 COPY alembic/ ./alembic/
 COPY scripts/ ./scripts/
-COPY models/ ./models/
 COPY outputs/ ./outputs/
 COPY api.py .
 COPY alembic.ini .
 COPY gloss.csv .
 COPY entrypoint.sh .
+
+# Create models directory and download ONNX model (if available)
+RUN mkdir -p models && python scripts/download_models.py || echo "Note: ONNX model not available, Practice II will be disabled"
 
 # Set execution permission for entrypoint script
 RUN chmod +x entrypoint.sh
