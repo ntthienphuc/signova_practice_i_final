@@ -1,7 +1,9 @@
+import type { SegmentTiming } from "../api/types";
+
 export interface VideoReference {
   video_url: string;
   playback_url: string;
-  segment: string | null;
+  segment: SegmentTiming | null;
   video_filename: string;
 }
 

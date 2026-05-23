@@ -176,6 +176,7 @@ button {
 
 .brand-badge,
 .topic-mini-tag {
+  margin-top: 10px;
   background: var(--yellow);
   color: #9a6213;
 }

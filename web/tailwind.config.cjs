@@ -8,6 +8,7 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ['"Baloo 2"', "Nunito", "sans-serif"],
       },
       colors: {
         dark: {
