@@ -1,5 +1,5 @@
 import type { Topic } from "../../types/learn";
-import { TopicGrid } from "../TopicGrid";
+import { TopicGrid } from "./TopicGrid";
 
 interface TopicProgress {
   completedWords?: number;

@@ -5,8 +5,6 @@ import { TaskCard } from "./TaskCard";
 import { UploadCard } from "./UploadCard";
 
 interface ControlPanelProps {
-  apiBase: string;
-  onApiBaseChange: (value: string) => void;
   config: AppConfig | null;
   mode: PracticeMode;
   onModeChange: (mode: PracticeMode) => void;
@@ -23,8 +21,6 @@ interface ControlPanelProps {
 }
 
 export function ControlPanel({
-  apiBase,
-  onApiBaseChange,
   config,
   mode,
   onModeChange,
@@ -49,11 +45,6 @@ export function ControlPanel({
           server.
         </p>
       </div>
-
-      <label className="field">
-        <span>API Base</span>
-        <input value={apiBase} onChange={(event) => onApiBaseChange(event.target.value)} />
-      </label>
 
       <div className="mode-row">
         <button

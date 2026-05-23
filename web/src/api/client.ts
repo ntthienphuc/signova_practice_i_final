@@ -72,7 +72,9 @@ export function handleAxiosError(error: unknown): never {
 }
 
 // Instantiate the primary client interface using your custom engine
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://thienphuc12339-signova-backend.hf.space";
+export const BASE_URL = ensureBaseUrl(
+  (import.meta.env.VITE_API_BASE_URL as string) || "https://thienphuc12339-signova-backend.hf.space"
+);
 export const apiClient = createApiClient(BASE_URL);
 
 /** ==========================================

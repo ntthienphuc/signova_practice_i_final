@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { AppConfig, PracticeMode, RandomTask } from "./api/index";
-import { analyzeAttempt, createRandomTask, ensureBaseUrl, loadAppConfig } from "./api/index";
+import { analyzeAttempt, createRandomTask, loadAppConfig } from "./api/index";
 import { ControlPanel } from "./components/ControlPanel";
 import { StagePanel } from "./components/StagePanel";
 import type { VideoStatus } from "./components/VideoPanel";
@@ -36,10 +36,6 @@ function useObjectUrl(file: File | null): string {
 }
 
 export default function App() {
-  // Initialize apiBase from environment variable, fallback to remote HF Spaces backend
-  const [apiBase, setApiBase] = useState(
-    import.meta.env.VITE_API_BASE_URL || "https://thienphuc12339-signova-backend.hf.space"
-  );
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [mode, setMode] = useState<PracticeMode>("practice_i");
   const [lessonSize, setLessonSize] = useState(5);
@@ -73,7 +69,7 @@ export default function App() {
 
   useEffect(() => {
     let active = true;
-    loadAppConfig(ensureBaseUrl(apiBase))
+    loadAppConfig()
       .then((payload) => {
         if (active) setConfig(payload);
       })
@@ -83,7 +79,7 @@ export default function App() {
     return () => {
       active = false;
     };
-  }, [apiBase]);
+  }, []);
 
   useEffect(() => {
     setUserStatus("idle");
@@ -148,7 +144,7 @@ export default function App() {
     setAnalysis(null);
     setPlaying(false);
     try {
-      setTask(await createRandomTask(ensureBaseUrl(apiBase), mode, lessonSize));
+      setTask(await createRandomTask(mode, lessonSize));
     } catch (err) {
       setError((err as Error).message);
     }
@@ -165,13 +161,12 @@ export default function App() {
     setPlaying(false);
     try {
       const payload = await analyzeAttempt({
-        apiBase: ensureBaseUrl(apiBase),
         mode,
         targetGloss: task.target_gloss,
         lessonGlosses: task.lesson_glosses ?? [task.target_gloss],
         file
       });
-      setAnalysis(normalizeAnalysis(payload, ensureBaseUrl(apiBase)));
+      setAnalysis(normalizeAnalysis(payload));
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -245,8 +240,6 @@ export default function App() {
   return (
     <div className="app-shell">
       <ControlPanel
-        apiBase={apiBase}
-        onApiBaseChange={setApiBase}
         config={config}
         mode={mode}
         onModeChange={(next) => {

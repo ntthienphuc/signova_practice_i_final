@@ -125,7 +125,6 @@ export interface AnalyzeResponse {
 }
 
 export interface AnalyzeAttemptParams {
-  apiBase: string;
   mode: PracticeMode;
   targetGloss: string;
   lessonGlosses: string[];
