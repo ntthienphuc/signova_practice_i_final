@@ -4,6 +4,9 @@ from app.config import settings
 
 engine = create_engine(
     settings.database_url,
+    pool_size=10,
+    max_overflow=20,
+    pool_recycle=300, # Release inactive connection slots in serverless Neon DB
     pool_pre_ping=True
 )
 
