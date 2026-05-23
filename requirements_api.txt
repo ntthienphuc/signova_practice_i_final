@@ -9,3 +9,10 @@ pose-format==0.13.0
 onnxruntime==1.26.0
 torch==2.12.0
 torchvision==0.27.0
+sqlalchemy==2.0.49
+pydantic-settings==2.14.1
+alembic==1.18.4
+psycopg2-binary==2.9.12
+python-dotenv==1.2.2
+python-jose==3.5.0
+bcrypt==5.0.0
