@@ -1,11 +1,8 @@
-import type { ChangeEvent } from "react";
 import type { AppTab, CurriculumTopicSummary } from "../../types/learn";
 
 interface SidebarProps {
   activeTab: AppTab;
   onTabChange: (tab: AppTab) => void;
-  apiBase: string;
-  onApiBaseChange: (value: string) => void;
   curriculumTopics: CurriculumTopicSummary[];
   currentUser: any;
   onOpenAuth: () => void;
@@ -15,17 +12,11 @@ interface SidebarProps {
 export function Sidebar({
   activeTab,
   onTabChange,
-  apiBase,
-  onApiBaseChange,
   curriculumTopics,
   currentUser,
   onOpenAuth,
   onLogout,
 }: SidebarProps) {
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onApiBaseChange(event.target.value);
-  };
-
   // Dynamically filter tabs based on role
   const role = currentUser?.role;
   const tabs: Array<{ id: AppTab; label: string }> = [];

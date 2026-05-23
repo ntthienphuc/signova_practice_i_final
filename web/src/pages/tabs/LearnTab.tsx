@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { PracticeWorkspace } from "../../components/PracticeWorkspace";
 import { StudyStage } from "../../components/StudyStage";
-import { TopicGrid } from "../../components/TopicGrid";
+import { TopicGrid } from "../../components/learn/TopicGrid";
 import { TopicSummary } from "../../components/TopicSummary";
 import type { AnalyzeResponse } from "../../api";
 import type { DashboardPayload, PracticeSession, ProgressByTopic, Topic } from "../../types/learn";
@@ -56,7 +56,6 @@ interface LearnTabProps {
   session: PracticeSession | null;
   topics: Topic[];
   progressByTopic: ProgressByTopic;
-  absoluteApiBase: string;
   onBackToTopics: () => void;
   onStartWordPractice: () => void;
   onGoToLearnWord: (nextIndex: number) => void;
@@ -72,7 +71,6 @@ export function LearnTab({
   session,
   topics,
   progressByTopic,
-  absoluteApiBase,
   onBackToTopics,
   onStartWordPractice,
   onGoToLearnWord,
@@ -131,7 +129,6 @@ export function LearnTab({
   if (session.stage === "learn" && currentWord) {
     return (
       <StudyStage
-        apiBase={absoluteApiBase}
         topic={session.topic}
         word={currentWord}
         wordIndex={session.wordIndex}
@@ -145,7 +142,6 @@ export function LearnTab({
   if (session.stage === "practice_i" && currentWord) {
     return (
       <PracticeWorkspace
-        apiBase={absoluteApiBase}
         mode="practice_i"
         targetGloss={currentWord.gloss}
         lessonGlosses={[currentWord.gloss]}
@@ -182,7 +178,6 @@ export function LearnTab({
   if (session.stage === "practice_ii" && currentQuizGloss && currentQuizWord) {
     return (
       <PracticeWorkspace
-        apiBase={absoluteApiBase}
         mode="practice_ii"
         targetGloss={currentQuizGloss}
         lessonGlosses={quizLessonGlosses}

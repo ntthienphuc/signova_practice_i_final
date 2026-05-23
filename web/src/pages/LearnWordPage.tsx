@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ensureBaseUrl, loadCurriculum } from "../api";
+import { loadCurriculum } from "../api";
 import { PracticeWorkspace } from "../components/PracticeWorkspace";
 import { StudyStage } from "../components/StudyStage";
 import type { DashboardPayload } from "../types/learn";
-
-const API_BASE = ensureBaseUrl(
-  (import.meta.env.VITE_API_BASE_URL as string) || "http://127.0.0.1:8010"
-);
 
 type PageStage = "learn" | "practice";
 
@@ -23,7 +19,7 @@ export default function LearnWordPage() {
   useEffect(() => {
     setLoading(true);
     setError("");
-    loadCurriculum(API_BASE)
+    loadCurriculum()
       .then(setCurriculum)
       .catch((e: unknown) => setError(e instanceof Error ? e.message : "Lỗi tải dữ liệu"))
       .finally(() => setLoading(false));
@@ -81,7 +77,6 @@ export default function LearnWordPage() {
       <div className="app-shell app-shell-learn-immersive">
         <main className="learn-immersive-main">
           <PracticeWorkspace
-            apiBase={API_BASE}
             mode="practice_i"
             targetGloss={word.gloss}
             lessonGlosses={[word.gloss]}
@@ -106,7 +101,6 @@ export default function LearnWordPage() {
     <div className="app-shell app-shell-learn-immersive">
       <main className="learn-immersive-main">
         <StudyStage
-          apiBase={API_BASE}
           topic={topic}
           word={word}
           wordIndex={wordIndex}

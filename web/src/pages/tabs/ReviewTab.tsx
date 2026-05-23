@@ -8,7 +8,6 @@ interface ReviewTabProps {
   reviewError: string;
   reviewWords: any[];
   loadingReviewWord: string | null;
-  absoluteApiBase: string;
   onOpenAuth: () => void;
   onSetActiveTab: (tab: AppTab) => void;
   onStartReviewPractice: (gloss: string) => void;
@@ -24,7 +23,6 @@ export function ReviewTab({
   reviewError,
   reviewWords,
   loadingReviewWord,
-  absoluteApiBase,
   onOpenAuth,
   onSetActiveTab,
   onStartReviewPractice,
@@ -54,7 +52,6 @@ export function ReviewTab({
   if (activeReviewWord) {
     return (
       <PracticeWorkspace
-        apiBase={absoluteApiBase}
         mode="practice_i"
         targetGloss={activeReviewWord.gloss}
         lessonGlosses={[activeReviewWord.gloss]}

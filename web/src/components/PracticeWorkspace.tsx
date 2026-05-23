@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef, useState, type ChangeEventHandler } from "r
 import { ArrowLeft, ArrowRight, Play, RotateCcw, UploadCloud, Pause } from "lucide-react";
 import {
   analyzeAttempt,
-  ensureBaseUrl,
   type AnalyzeResponse,
   type Decision,
   type SegmentTiming,
 } from "../api";
+import { apiClient } from "../api/client";
 import { drawOverlay, normalizeAnalysis, type NormalizedAnalysis, type NormalizedSegment } from "../overlay";
 import type { StudyMetadata } from "../types/learn";
 
@@ -104,7 +104,6 @@ function practiceIIFeedback(
 }
 
 interface PracticeWorkspaceProps {
-  apiBase: string;
   mode: "practice_i" | "practice_ii";
   targetGloss: string;
   lessonGlosses: string[];
@@ -122,7 +121,6 @@ interface PracticeWorkspaceProps {
 type PlaybackStatus = "idle" | "loading" | "metadata" | "ready" | "buffering" | "paused" | "error";
 
 export function PracticeWorkspace({
-  apiBase,
   mode,
   targetGloss,
   lessonGlosses,
@@ -150,12 +148,12 @@ export function PracticeWorkspace({
   const referenceCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const localUserVideoUrl = useObjectUrl(file);
-  const absoluteApiBase = ensureBaseUrl(apiBase);
+  const baseUrl = apiClient.defaults.baseURL ?? "";
 
   const referenceFallbackUrl = useMemo(() => {
     const rawUrl = referenceStudy?.reference?.playback_url ?? referenceStudy?.reference?.video_url;
-    return rawUrl ? new URL(rawUrl, absoluteApiBase).href : "";
-  }, [absoluteApiBase, referenceStudy]);
+    return rawUrl ? new URL(rawUrl, baseUrl).href : "";
+  }, [baseUrl, referenceStudy]);
 
   const referenceFallbackSegment = useMemo(
     () => normalizeSegment(referenceStudy?.reference?.segment),
@@ -276,13 +274,12 @@ export function PracticeWorkspace({
     setPlaying(false);
     try {
       const payload = await analyzeAttempt({
-        apiBase: absoluteApiBase,
         mode,
         targetGloss,
         lessonGlosses,
         file,
       });
-      setAnalysis(normalizeAnalysis(payload, absoluteApiBase));
+      setAnalysis(normalizeAnalysis(payload));
     } catch (nextError) {
       setError(getErrorMessage(nextError));
     } finally {
@@ -516,7 +513,7 @@ export function PracticeWorkspace({
                     src={referenceVideoUrl}
                     poster={
                       referenceStudy?.poster_url
-                        ? new URL(referenceStudy.poster_url, absoluteApiBase).href
+                        ? new URL(referenceStudy.poster_url, baseUrl).href
                         : undefined
                     }
                     className="video-node practice-video-node"

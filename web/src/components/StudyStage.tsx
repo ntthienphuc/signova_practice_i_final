@@ -1,15 +1,13 @@
 import { Play } from "lucide-react";
+import { apiClient } from "../api/client";
 import type { Topic, WordItem } from "../types/learn";
 
-function absoluteUrl(apiBase: string, url?: string | null): string {
-  if (!url) {
-    return "";
-  }
-  return new URL(url, apiBase).href;
+function absoluteUrl(url?: string | null): string {
+  if (!url) return "";
+  return new URL(url, apiClient.defaults.baseURL ?? "").href;
 }
 
 interface StudyStageProps {
-  apiBase: string;
   topic: Topic;
   word: WordItem;
   wordIndex: number;
@@ -19,7 +17,6 @@ interface StudyStageProps {
 }
 
 export function StudyStage({
-  apiBase,
   topic,
   word,
   wordIndex,
@@ -27,9 +24,8 @@ export function StudyStage({
   onBackToTopics,
   onPreviousWord,
 }: StudyStageProps) {
-  const posterUrl = absoluteUrl(apiBase, word.study?.poster_url);
+  const posterUrl = absoluteUrl(word.study?.poster_url);
   const referenceUrl = absoluteUrl(
-    apiBase,
     word.study?.reference?.playback_url ?? word.study?.reference?.video_url
   );
   const referenceSegment = word.study?.reference?.segment;

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronRight, ArrowRight, Sparkles } from "lucide-react";
-import type { ProgressByTopic, Topic, TopicProgress, WordItem } from "../types/learn";
+import type { ProgressByTopic, Topic, TopicProgress, WordItem } from "../../types/learn";
 
 const TOPIC_STYLES = [
   {
@@ -96,21 +96,14 @@ export function TopicGrid({ topics, progressByTopic }: TopicGridProps) {
                 onClick={() => setExpandedTopicId((prev) => (prev === topic.id ? null : topic.id))}
               >
                 <div className="learn-dashboard-card-copy">
-                  <div className="learn-dashboard-card-badges">
-                    <span className="topic-sticker">{style.badge}</span>
-                    <span className="topic-mini-tag">
-                      {progress.completed ? "Đã hoàn thành" : "Đang chờ bắt đầu"}
-                    </span>
-                  </div>
                   <p className="learn-dashboard-kicker">Topic {index + 1}</p>
                   <h3>{topic.title}</h3>
                   <p>{topic.subtitle}</p>
+                   <span className="topic-mini-tag">
+                      {progress.completed ? "Đã hoàn thành" : "Đang chờ bắt đầu"}
+                    </span>
                 </div>
                 <div className="learn-dashboard-card-side">
-                  <div className="learn-dashboard-card-metric">
-                    <span>Từ</span>
-                    <strong>{topic.word_count}</strong>
-                  </div>
                   <div className="learn-dashboard-card-metric">
                     <span>Tiến độ</span>
                     <strong>

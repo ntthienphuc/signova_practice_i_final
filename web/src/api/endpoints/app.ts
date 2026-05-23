@@ -1,21 +1,19 @@
-import { createApiClient, handleAxiosError } from "../client";
+import { apiClient, handleAxiosError } from "../client";
 import type { AppConfig } from "../types";
 import type { DashboardPayload } from "../../types/learn";
 
-export async function loadAppConfig(baseUrl: string): Promise<AppConfig> {
+export async function loadAppConfig(): Promise<AppConfig> {
   try {
-    const client = createApiClient(baseUrl);
-    const { data } = await client.get<AppConfig>("/app-config");
+    const { data } = await apiClient.get<AppConfig>("/app-config");
     return data;
   } catch (error) {
     handleAxiosError(error);
   }
 }
 
-export async function loadCurriculum(baseUrl: string): Promise<DashboardPayload> {
+export async function loadCurriculum(): Promise<DashboardPayload> {
   try {
-    const client = createApiClient(baseUrl);
-    const { data } = await client.get<DashboardPayload>("/curriculum");
+    const { data } = await apiClient.get<DashboardPayload>("/curriculum");
     return data;
   } catch (error) {
     handleAxiosError(error);

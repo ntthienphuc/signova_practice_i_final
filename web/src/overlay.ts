@@ -1,4 +1,5 @@
 import type { AnalyzeResponse, FrameData, FramePoints, Point, SegmentTiming } from "./api/index";
+import { apiClient } from "./api/client";
 
 export interface Palette {
   baseEdge: string;
@@ -144,7 +145,8 @@ function smoothBadByFrame(frames: Set<number>[]): Set<number>[] {
   return smoothed;
 }
 
-export function normalizeAnalysis(raw: AnalyzeResponse, apiBase: string): NormalizedAnalysis {
+export function normalizeAnalysis(raw: AnalyzeResponse): NormalizedAnalysis {
+  const apiBase = apiClient.defaults.baseURL ?? "";
   const overlay = raw.overlay ?? ({} as Partial<typeof raw.overlay>);
   const playback = raw.playback ?? ({} as Partial<typeof raw.playback>);
   const jointNames = overlay.joint_names ?? [];
