@@ -1,4 +1,12 @@
-function StatPanel({ eyebrow, value, hint }) {
+import type { AppTab, PracticeSession, ProgressByTopic, Topic } from "../types/learn";
+
+interface StatPanelProps {
+  eyebrow: string;
+  value: string;
+  hint: string;
+}
+
+function StatPanel({ eyebrow, value, hint }: StatPanelProps) {
   return (
     <article className="rail-panel">
       <p className="rail-eyebrow">{eyebrow}</p>
@@ -8,7 +16,14 @@ function StatPanel({ eyebrow, value, hint }) {
   );
 }
 
-export function ProgressRail({ activeTab, session, progressByTopic, topics }) {
+interface ProgressRailProps {
+  activeTab: AppTab;
+  session: PracticeSession | null;
+  progressByTopic: ProgressByTopic;
+  topics: Topic[];
+}
+
+export function ProgressRail({ activeTab, session, progressByTopic, topics }: ProgressRailProps) {
   if (activeTab !== "learn") {
     return (
       <aside className="progress-rail">

@@ -6,7 +6,8 @@ param(
     [string]$BankRoot = "",
     [string]$PythonVersion = "3.11",
     [switch]$RecreateVenv,
-    [switch]$ReinstallWeb
+    [switch]$ReinstallWeb,
+    [switch]$KeepDb
 )
 
 $ErrorActionPreference = "Stop"
@@ -146,6 +147,9 @@ if (-not [string]::IsNullOrWhiteSpace($SignModelPath)) {
 }
 if (-not [string]::IsNullOrWhiteSpace($SignGlossCsvPath)) {
     $restartArgs += @("-SignGlossCsvPath", $SignGlossCsvPath)
+}
+if ($KeepDb) {
+    $restartArgs += "-KeepDb"
 }
 
 & powershell @restartArgs

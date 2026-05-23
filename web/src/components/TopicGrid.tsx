@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, ArrowRight, Sparkles } from "lucide-react";
+import type { ProgressByTopic, Topic, TopicProgress, WordItem } from "../types/learn";
 
 const TOPIC_STYLES = [
   {
@@ -12,9 +13,14 @@ const TOPIC_STYLES = [
     softClass: "learn-dashboard-card-blue",
     badge: "🪁",
   },
-];
+] as const;
 
-function TopicWordRow({ word, unlocked }) {
+interface TopicWordRowProps {
+  word: WordItem;
+  unlocked: boolean;
+}
+
+function TopicWordRow({ word, unlocked }: TopicWordRowProps) {
   return (
     <div className={unlocked ? "topic-word-row active" : "topic-word-row"}>
       <div className="topic-word-icon">
@@ -31,10 +37,22 @@ function TopicWordRow({ word, unlocked }) {
   );
 }
 
-export function TopicGrid({ topics, progressByTopic, onOpenTopic }) {
-  const [expandedTopicId, setExpandedTopicId] = useState(topics[0]?.id ?? null);
+interface TopicGridProps {
+  topics: Topic[];
+  progressByTopic: ProgressByTopic;
+  onOpenTopic: (topic: Topic) => void;
+}
 
-  const normalizedTopics = useMemo(
+interface NormalizedTopic {
+  topic: Topic;
+  style: (typeof TOPIC_STYLES)[number];
+  progress: TopicProgress;
+}
+
+export function TopicGrid({ topics, progressByTopic, onOpenTopic }: TopicGridProps) {
+  const [expandedTopicId, setExpandedTopicId] = useState<string | null>(topics[0]?.id ?? null);
+
+  const normalizedTopics = useMemo<NormalizedTopic[]>(
     () =>
       topics.map((topic, index) => ({
         topic,
@@ -51,7 +69,8 @@ export function TopicGrid({ topics, progressByTopic, onOpenTopic }) {
           <p className="eyebrow">Learning Journey</p>
           <h2>Chọn topic rồi học từng từ theo đúng lộ trình</h2>
           <p className="muted">
-            Mỗi topic có 10 từ. Mình học từng từ một, luyện ngay bằng Practice I, checkpoint ở từ thứ 5, rồi làm Practice II tổng kết khi xong cả topic.
+            Mỗi topic có 10 từ. Mình học từng từ một, luyện ngay bằng Practice I, checkpoint ở từ
+            thứ 5, rồi làm Practice II tổng kết khi xong cả topic.
           </p>
         </div>
         <div className="learn-dashboard-hero-pills">
@@ -66,7 +85,8 @@ export function TopicGrid({ topics, progressByTopic, onOpenTopic }) {
           const isExpanded = expandedTopicId === topic.id;
           const completedWords = Number(progress.completedWords ?? 0);
           const ratio = topic.word_count > 0 ? Math.min(1, completedWords / topic.word_count) : 0;
-          const nextWord = topic.words[Math.min(completedWords, topic.words.length - 1)] ?? topic.words[0];
+          const nextWord =
+            topic.words[Math.min(completedWords, topic.words.length - 1)] ?? topic.words[0];
 
           return (
             <article
@@ -97,7 +117,9 @@ export function TopicGrid({ topics, progressByTopic, onOpenTopic }) {
                   </div>
                   <div className="learn-dashboard-card-metric">
                     <span>Tiến độ</span>
-                    <strong>{completedWords}/{topic.word_count}</strong>
+                    <strong>
+                      {completedWords}/{topic.word_count}
+                    </strong>
                   </div>
                   {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                 </div>
@@ -110,12 +132,17 @@ export function TopicGrid({ topics, progressByTopic, onOpenTopic }) {
                       <p className="eyebrow">Từ đang chờ</p>
                       <h4>{nextWord?.gloss ?? topic.glosses[0]}</h4>
                       <p className="muted">
-                        Bắt đầu từ đầu topic. Sau mỗi từ, app sẽ mở Practice I ngay, rồi tự chuyển sang từ tiếp theo.
+                        Bắt đầu từ đầu topic. Sau mỗi từ, app sẽ mở Practice I ngay, rồi tự chuyển
+                        sang từ tiếp theo.
                       </p>
                       <div className="progress-track">
                         <div className="progress-fill" style={{ width: `${ratio * 100}%` }} />
                       </div>
-                      <button className="primary-button" type="button" onClick={() => onOpenTopic(topic)}>
+                      <button
+                        className="primary-button"
+                        type="button"
+                        onClick={() => onOpenTopic(topic)}
+                      >
                         {progress.completed ? "Học lại topic này" : "Bắt đầu học topic"}
                         <ArrowRight size={16} />
                       </button>

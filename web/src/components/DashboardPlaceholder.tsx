@@ -1,4 +1,9 @@
-export function DashboardPlaceholder({ title, description }) {
+interface DashboardPlaceholderProps {
+  title: string;
+  description: string;
+}
+
+export function DashboardPlaceholder({ title, description }: DashboardPlaceholderProps) {
   return (
     <section className="dashboard-placeholder card-surface">
       <p className="eyebrow">Coming Later</p>

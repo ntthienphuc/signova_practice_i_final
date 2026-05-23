@@ -39,3 +39,9 @@ outputs/web_playback_cache/
 # Optional local-only large files
 All_cam1/
 All_cam1_metadata.json
+
+# Databases
+*.db
+*.sqlite*
+*.tsbuildinfo
+
