@@ -44,4 +44,6 @@ All_cam1_metadata.json
 *.db
 *.sqlite*
 *.tsbuildinfo
+.env
+
 
