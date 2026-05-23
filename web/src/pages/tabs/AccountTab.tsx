@@ -73,10 +73,10 @@ export function AccountTab({
 }: AccountTabProps) {
   if (!currentUser) {
     return (
-      <section className="card-surface hero-panel text-center py-12">
-        <p className="eyebrow">🔑 Yêu cầu đăng nhập</p>
+      <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7 text-center py-12">
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">🔑 Yêu cầu đăng nhập</p>
         <h2>Hãy đăng nhập để xem thông tin tài khoản</h2>
-        <button onClick={onOpenAuth} type="button" className="primary-button mt-4">
+        <button onClick={onOpenAuth} type="button" className="border-0 rounded-full min-h-[48px] px-5 transition-all font-extrabold bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white shadow-[0_16px_30px_rgba(83,110,249,0.22)] hover:-translate-y-px cursor-pointer mt-4">
           Đăng nhập / Đăng ký
         </button>
       </section>
@@ -86,16 +86,16 @@ export function AccountTab({
   const role = currentUser.role;
 
   return (
-    <section className="account-tab space-y-6">
-      <div className="hero-panel card-surface">
-        <p className="eyebrow text-indigo-600 font-bold">Cài đặt tài khoản</p>
+    <section className="space-y-6">
+      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-indigo-600 font-bold">Cài đặt tài khoản</p>
         <h2>Thiết lập thông tin cá nhân và kết nối</h2>
-        <p className="muted">Quản lý hồ sơ cá nhân và kết nối giữa phụ huynh - con, nhà trường - học sinh.</p>
+        <p className="text-[var(--ink-soft)] leading-[1.62]">Quản lý hồ sơ cá nhân và kết nối giữa phụ huynh - con, nhà trường - học sinh.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Profile Form */}
-        <div className="card-surface p-6 space-y-4">
+        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 space-y-4">
           <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
             👤 Thông tin hồ sơ
           </h3>
@@ -103,22 +103,24 @@ export function AccountTab({
           <form onSubmit={onUpdateProfile} className="space-y-4">
             {role === "learner" && (
               <>
-                <label className="field">
-                  <span>Tên hiển thị</span>
+                <label className="grid gap-2 my-[18px]">
+                  <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Tên hiển thị</span>
                   <input
                     type="text"
                     required
                     value={displayNameInput}
                     onChange={(e) => onSetDisplayNameInput(e.target.value)}
                     placeholder="Nhập tên hiển thị"
+                    className="w-full border border-[rgba(47,71,112,0.12)] rounded-[16px] px-4 py-[14px] bg-white/[0.82] text-[var(--ink)] text-base"
                   />
                 </label>
-                <label className="field">
-                  <span>Ngày sinh</span>
+                <label className="grid gap-2 my-[18px]">
+                  <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Ngày sinh</span>
                   <input
                     type="date"
                     value={dobInput}
                     onChange={(e) => onSetDobInput(e.target.value)}
+                    className="w-full border border-[rgba(47,71,112,0.12)] rounded-[16px] px-4 py-[14px] bg-white/[0.82] text-[var(--ink)] text-base"
                   />
                 </label>
               </>
@@ -126,23 +128,25 @@ export function AccountTab({
 
             {role === "parent" && (
               <>
-                <label className="field">
-                  <span>Họ tên phụ huynh</span>
+                <label className="grid gap-2 my-[18px]">
+                  <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Họ tên phụ huynh</span>
                   <input
                     type="text"
                     required
                     value={displayNameInput}
                     onChange={(e) => onSetDisplayNameInput(e.target.value)}
                     placeholder="Nhập họ tên phụ huynh"
+                    className="w-full border border-[rgba(47,71,112,0.12)] rounded-[16px] px-4 py-[14px] bg-white/[0.82] text-[var(--ink)] text-base"
                   />
                 </label>
-                <label className="field">
-                  <span>Số điện thoại</span>
+                <label className="grid gap-2 my-[18px]">
+                  <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Số điện thoại</span>
                   <input
                     type="tel"
                     value={phoneInput}
                     onChange={(e) => onSetPhoneInput(e.target.value)}
                     placeholder="Nhập số điện thoại liên hệ"
+                    className="w-full border border-[rgba(47,71,112,0.12)] rounded-[16px] px-4 py-[14px] bg-white/[0.82] text-[var(--ink)] text-base"
                   />
                 </label>
               </>
@@ -150,32 +154,35 @@ export function AccountTab({
 
             {role === "school" && (
               <>
-                <label className="field">
-                  <span>Tên trường học</span>
+                <label className="grid gap-2 my-[18px]">
+                  <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Tên trường học</span>
                   <input
                     type="text"
                     required
                     value={schoolNameInput}
                     onChange={(e) => onSetSchoolNameInput(e.target.value)}
                     placeholder="Nhập tên trường học"
+                    className="w-full border border-[rgba(47,71,112,0.12)] rounded-[16px] px-4 py-[14px] bg-white/[0.82] text-[var(--ink)] text-base"
                   />
                 </label>
-                <label className="field">
-                  <span>Người đại diện liên hệ</span>
+                <label className="grid gap-2 my-[18px]">
+                  <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Người đại diện liên hệ</span>
                   <input
                     type="text"
                     value={contactNameInput}
                     onChange={(e) => onSetContactNameInput(e.target.value)}
                     placeholder="Họ tên người liên hệ"
+                    className="w-full border border-[rgba(47,71,112,0.12)] rounded-[16px] px-4 py-[14px] bg-white/[0.82] text-[var(--ink)] text-base"
                   />
                 </label>
-                <label className="field">
-                  <span>Số điện thoại liên hệ</span>
+                <label className="grid gap-2 my-[18px]">
+                  <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Số điện thoại liên hệ</span>
                   <input
                     type="tel"
                     value={contactPhoneInput}
                     onChange={(e) => onSetContactPhoneInput(e.target.value)}
                     placeholder="Số điện thoại liên hệ"
+                    className="w-full border border-[rgba(47,71,112,0.12)] rounded-[16px] px-4 py-[14px] bg-white/[0.82] text-[var(--ink)] text-base"
                   />
                 </label>
               </>
@@ -203,7 +210,7 @@ export function AccountTab({
         </div>
 
         {/* Connections Section */}
-        <div className="card-surface p-6 space-y-4">
+        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 space-y-4">
           {role === "learner" ? (
             <div className="space-y-4">
               <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3">
@@ -226,14 +233,14 @@ export function AccountTab({
               </h3>
 
               <form onSubmit={onSendLinkRequest} className="space-y-3">
-                <label className="field relative">
-                  <span>Tìm kiếm tài khoản học sinh</span>
+                <label className="grid gap-2 my-[18px] relative">
+                  <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Tìm kiếm tài khoản học sinh</span>
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={onSearchLearnerChange}
                     placeholder="Nhập tên tài khoản học sinh..."
-                    className="pr-10"
+                    className="w-full border border-[rgba(47,71,112,0.12)] rounded-[16px] px-4 py-[14px] bg-white/[0.82] text-[var(--ink)] text-base pr-10"
                   />
                   {searching && (
                     <span className="absolute right-3 top-9 w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
@@ -279,24 +286,26 @@ export function AccountTab({
 
                 {role === "school" && selectedLearner && (
                   <div className="grid grid-cols-2 gap-3">
-                    <label className="field">
-                      <span>Lớp học</span>
+                    <label className="grid gap-2 my-[18px]">
+                      <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Lớp học</span>
                       <input
                         type="text"
                         required
                         value={linkClassName}
                         onChange={(e) => onSetLinkClassName(e.target.value)}
                         placeholder="Ví dụ: 3A"
+                        className="w-full border border-[rgba(47,71,112,0.12)] rounded-[16px] px-4 py-[14px] bg-white/[0.82] text-[var(--ink)] text-base"
                       />
                     </label>
-                    <label className="field">
-                      <span>Mã học sinh (Student Code)</span>
+                    <label className="grid gap-2 my-[18px]">
+                      <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Mã học sinh (Student Code)</span>
                       <input
                         type="text"
                         required
                         value={linkStudentCode}
                         onChange={(e) => onSetLinkStudentCode(e.target.value)}
                         placeholder="Ví dụ: HS001"
+                        className="w-full border border-[rgba(47,71,112,0.12)] rounded-[16px] px-4 py-[14px] bg-white/[0.82] text-[var(--ink)] text-base"
                       />
                     </label>
                   </div>

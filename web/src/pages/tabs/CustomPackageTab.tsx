@@ -1,13 +1,13 @@
 export function CustomPackageTab() {
   return (
-    <section className="custom-package-tab space-y-6">
-      <div className="hero-panel card-surface">
-        <p className="eyebrow text-indigo-600 font-bold">Gói học tùy chỉnh</p>
+    <section className="space-y-6">
+      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-indigo-600 font-bold">Gói học tùy chỉnh</p>
         <h2>Chương trình đào tạo riêng biệt cho trường của bạn</h2>
-        <p className="muted">Tự thiết lập kho từ vựng, lộ trình bài giảng và giao bài tập theo lớp.</p>
+        <p className="text-[var(--ink-soft)] leading-[1.62]">Tự thiết lập kho từ vựng, lộ trình bài giảng và giao bài tập theo lớp.</p>
       </div>
 
-      <div className="card-surface p-8 text-center max-w-xl mx-auto space-y-4">
+      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-8 text-center max-w-xl mx-auto space-y-4">
         <div className="w-16 h-16 rounded-full bg-indigo-50 text-indigo-650 flex items-center justify-center mx-auto text-3xl">
           🏫
         </div>

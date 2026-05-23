@@ -34,10 +34,10 @@ export function StudyStage({
   const checkpointLabel = word.checkpoint_group === 1 ? "Nhóm 1/5" : "Nhóm 2/5";
 
   return (
-    <section className="learn-word-screen">
-      <div className="bg-dot-grid pointer-events-none learn-word-grid" />
+    <section className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)] text-[var(--ink)]">
+      <div className="bg-dot-grid pointer-events-none absolute inset-0 opacity-100" />
 
-      <div className="learn-word-shell relative">
+      <div className="relative flex flex-col min-h-screen max-w-[1200px] mx-auto px-8 pt-10 pb-8">
         <button
           type="button"
           onClick={onBackToTopics}
@@ -45,101 +45,111 @@ export function StudyStage({
         >
           🚪 Thoát
         </button>
-        <div className="learn-word-progress">
-          <div className="learn-word-progress-head">
+
+        {/* Progress */}
+        <div className="pt-2 pb-6">
+          <div className="flex items-center justify-between mb-3 text-[#7b8aa3] text-[0.8rem] font-bold tracking-[0.08em] uppercase">
             <span>Học từ ký hiệu</span>
-            <span>
-              Từ {wordIndex + 1} / {totalWords}
-            </span>
+            <span>Từ {wordIndex + 1} / {totalWords}</span>
           </div>
-          <div className="learn-word-progress-track">
-            <div className="learn-word-progress-fill" style={{ width: `${progressRatio}%` }} />
+          <div className="w-full h-1 overflow-hidden rounded-full bg-[rgba(83,110,249,0.12)]">
+            <div className="h-full rounded-[inherit] bg-[#0284c7] transition-[width_180ms_ease]" style={{ width: `${progressRatio}%` }} />
           </div>
         </div>
 
-        <div className="learn-word-title">
-          <span className="learn-word-title-vi">{word.gloss}</span>
-          <span className="learn-word-title-slash">/</span>
-          <span className="learn-word-title-en">{topic.title}</span>
+        {/* Title */}
+        <div className="mb-8 text-center">
+          <span className="text-[clamp(2.2rem,5vw,3rem)] font-extrabold leading-[1.08] text-[#233157]">{word.gloss}</span>
+          <span className="text-[clamp(2.2rem,5vw,3rem)] font-extrabold leading-[1.08] mx-3 text-[#90a0bb]">/</span>
+          <span className="text-[clamp(2.2rem,5vw,3rem)] font-extrabold leading-[1.08] text-[#5f8efb]">{topic.title}</span>
         </div>
 
-        <div className="learn-word-panels">
-          <article className="learn-media-card learn-media-card-poster">
+        {/* Panels */}
+        <div className="flex items-center justify-center gap-5 flex-1 pb-4 flex-wrap">
+          {/* Poster card */}
+          <article className="flex-shrink-0 overflow-hidden border border-[rgba(83,110,249,0.1)] rounded-[24px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] relative w-full max-w-[380px] aspect-square bg-white/[0.92] flex items-center justify-center">
             {posterUrl ? (
-              <img src={posterUrl} alt={word.gloss} className="learn-media-image" />
+              <img src={posterUrl} alt={word.gloss} className="w-full h-full object-cover block" />
             ) : (
-              <div className="learn-media-fallback">{word.gloss}</div>
+              <div className="p-6 text-[rgba(35,49,87,0.12)] text-6xl font-extrabold text-center leading-[1.1]">{word.gloss}</div>
             )}
           </article>
 
-          <article className="learn-media-card learn-media-card-video">
+          {/* Video card */}
+          <article className="flex-shrink-0 overflow-hidden border border-[rgba(83,110,249,0.1)] rounded-[24px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] relative w-full max-w-[380px] aspect-square bg-white/[0.96]">
             {referenceUrl ? (
               <video
                 src={referenceUrl}
                 poster={posterUrl || undefined}
-                className="learn-media-video"
+                className="w-full h-full object-cover block"
                 controls
                 playsInline
                 muted
               />
             ) : (
-              <div className="learn-media-fallback">Chưa có video mẫu</div>
+              <div className="p-6 text-[rgba(35,49,87,0.12)] text-6xl font-extrabold text-center leading-[1.1]">Chưa có video mẫu</div>
             )}
-            <div className="learn-media-caption">
-              <p>Video mẫu</p>
-              <strong>{word.gloss}</strong>
+            <div className="absolute right-0 bottom-0 left-0 top-0 p-3 text-center">
+              <p className="m-0 text-[#75839a] text-[0.8rem]">Video mẫu</p>
+              <strong className="text-[#223153] text-[0.95rem]">{word.gloss}</strong>
             </div>
           </article>
 
-          <article className="learn-meta-card">
+          {/* Meta card */}
+          <article className="flex-shrink-0 overflow-hidden border border-[rgba(83,110,249,0.1)] rounded-[24px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] w-full max-w-[380px] min-h-[380px] p-6 bg-white/[0.94] flex flex-col gap-[18px]">
             <div>
-              <p className="learn-meta-label">TỪ TIẾNG VIỆT</p>
-              <p className="learn-meta-value">{word.gloss}</p>
+              <p className="m-0 mb-1.5 text-[#7c8aa2] text-[0.72rem] font-bold tracking-[0.14em] uppercase">TỪ TIẾNG VIỆT</p>
+              <p className="m-0 text-[#223153] text-[1.35rem] font-extrabold">{word.gloss}</p>
             </div>
 
             <div>
-              <p className="learn-meta-label">CHECKPOINT</p>
-              <p className="learn-meta-value accent">{checkpointLabel}</p>
+              <p className="m-0 mb-1.5 text-[#7c8aa2] text-[0.72rem] font-bold tracking-[0.14em] uppercase">CHECKPOINT</p>
+              <p className="m-0 text-[#5f8efb] text-[1.35rem] font-extrabold">{checkpointLabel}</p>
             </div>
 
-            <div className="learn-meta-badges">
-              <span>{topic.title}</span>
-              <span>{word.study?.video_id ?? "sample"}</span>
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center px-2.5 py-1.5 rounded-full border border-[rgba(83,110,249,0.16)] bg-[rgba(83,110,249,0.08)] text-[#5f8efb] text-[0.82rem] font-bold">{topic.title}</span>
+              <span className="inline-flex items-center px-2.5 py-1.5 rounded-full border border-[rgba(83,110,249,0.16)] bg-[rgba(83,110,249,0.08)] text-[#5f8efb] text-[0.82rem] font-bold">{word.study?.video_id ?? "sample"}</span>
             </div>
 
             <div>
-              <p className="learn-meta-label">MÔ TẢ</p>
-              <p className="learn-meta-text">
+              <p className="m-0 mb-1.5 text-[#7c8aa2] text-[0.72rem] font-bold tracking-[0.14em] uppercase">MÔ TẢ</p>
+              <p className="m-0 text-[#6d7b92] leading-[1.7]">
                 Xem kỹ hình minh họa và video mẫu của từ này trước. Sau đó bấm vào nút luyện tập để
                 quay thử và nhận phản hồi AI.
               </p>
             </div>
 
             {referenceSegment ? (
-              <p className="learn-meta-segment">
+              <p className="m-0 text-[#6d7b92] leading-[1.7]">
                 Segment chuẩn: {referenceSegment.start_ms}ms → {referenceSegment.end_ms}ms
               </p>
             ) : null}
           </article>
         </div>
 
-        <div className="learn-word-footer">
-          <div className="learn-word-footer-row">
+        {/* Footer */}
+        <div className="flex flex-col items-center gap-4 pt-7 pb-2">
+          <div className="flex items-center justify-between w-full gap-4">
             <button
               type="button"
               onClick={wordIndex === 0 ? onBackToTopics : () => onPreviousWord?.(wordIndex - 1)}
-              className="learn-nav-button learn-nav-button-secondary"
+              className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594]"
             >
               {wordIndex === 0 ? "← Quay lại topic" : "← Từ trước"}
             </button>
 
-            <div className="learn-word-dots">
+            <div className="flex items-center gap-2">
               {topic.words.map((topicWord, index) => (
                 <button
                   key={topicWord.gloss}
                   type="button"
                   onClick={index < wordIndex ? () => onPreviousWord?.(index) : undefined}
-                  className={index === wordIndex ? "learn-word-dot active" : "learn-word-dot"}
+                  className={
+                    index === wordIndex
+                      ? "w-5 h-2 p-0 border-0 rounded-full bg-[#5c72fb] cursor-pointer transition-all"
+                      : "w-2 h-2 p-0 border-0 rounded-full bg-[rgba(83,110,249,0.18)] cursor-pointer transition-all disabled:cursor-default disabled:opacity-60"
+                  }
                   disabled={index > wordIndex}
                   aria-label={`Từ ${index + 1}`}
                 />
@@ -148,7 +158,7 @@ export function StudyStage({
 
             <button
               type="button"
-              className="learn-nav-button learn-nav-button-primary"
+              className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border-0 rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-gradient-to-br from-[#5c72fb] to-[#67bfff] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)]"
               onClick={onStartPractice}
             >
               <Play size={16} />
@@ -156,7 +166,7 @@ export function StudyStage({
             </button>
           </div>
 
-          <div className="learn-word-next">
+          <div className="text-[#6d7b92] text-[0.95rem] text-center">
             <span>Hoàn thành Practice I của từ này để mở từ tiếp theo →</span>
           </div>
         </div>

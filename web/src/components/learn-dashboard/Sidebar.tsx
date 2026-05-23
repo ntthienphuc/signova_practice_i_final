@@ -17,7 +17,6 @@ export function Sidebar({
   onOpenAuth,
   onLogout,
 }: SidebarProps) {
-  // Dynamically filter tabs based on role
   const role = currentUser?.role;
   const tabs: Array<{ id: AppTab; label: string }> = [];
 
@@ -35,7 +34,6 @@ export function Sidebar({
     tabs.push({ id: "custom_package", label: "Gói học tùy chỉnh" });
     tabs.push({ id: "account", label: "Tài khoản" });
   } else {
-    // Guest
     tabs.push({ id: "learn", label: "Học" });
     tabs.push({ id: "account", label: "Đăng nhập" });
   }
@@ -49,20 +47,21 @@ export function Sidebar({
   };
 
   return (
-    <aside className="sidebar">
-      <div className="brand-block">
-        <div className="brand-mark-row">
-          <div className="brand-mark">
-            <img src="/signova-mascot.png" alt="Signova mascot" className="brand-mark-image" />
+    <aside className="sticky top-0 h-screen overflow-auto py-8 px-6 border-r border-[rgba(53,84,128,0.08)] backdrop-blur-[14px] bg-[radial-gradient(circle_at_top_left,rgba(255,220,242,0.6),transparent_28%),linear-gradient(180deg,rgba(255,252,247,0.96),rgba(238,247,255,0.96))]">
+      {/* Brand */}
+      <div className="mb-[22px]">
+        <div className="flex items-center gap-[10px] flex-wrap">
+          <div className="w-[66px] h-[66px] rounded-[22px] grid place-items-center bg-white/[0.9] shadow-[0_14px_28px_rgba(83,110,249,0.12)] overflow-hidden">
+            <img src="/signova-mascot.png" alt="Signova mascot" className="w-full h-full object-cover" />
           </div>
-          <div className="brand-badge">20 từ • 2 topic</div>
+          <div className="inline-flex items-center rounded-full py-2 px-3 font-bold text-[0.92rem] mt-[10px] bg-[#fff0c4] text-[#9a6213]">20 từ • 2 topic</div>
         </div>
-        <p className="eyebrow">SIGNOVA</p>
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">SIGNOVA</p>
         <h1>Học ký hiệu cùng mascot Signova</h1>
       </div>
 
-      {/* User Auth Section */}
-      <div className="card-surface" style={{ padding: "12px", marginBottom: "16px" }}>
+      {/* Auth section */}
+      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px]" style={{ padding: "12px", marginBottom: "16px" }}>
         {currentUser ? (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
@@ -106,12 +105,17 @@ export function Sidebar({
         )}
       </div>
 
-      <div className="tab-list">
+      {/* Tab list */}
+      <div className="grid gap-[10px] mb-[18px]">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
-            className={activeTab === tab.id ? "nav-tab active" : "nav-tab"}
+            className={
+              activeTab === tab.id
+                ? "w-full border border-transparent bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white shadow-[0_12px_34px_rgba(83,110,249,0.1)] py-4 px-[18px] rounded-full text-left transition-all font-bold text-[1.02rem] hover:-translate-y-px cursor-pointer"
+                : "w-full border border-transparent bg-white/[0.72] text-[var(--ink)] py-4 px-[18px] rounded-full text-left transition-all font-bold text-[1.02rem] hover:-translate-y-px cursor-pointer"
+            }
             onClick={() => handleTabClick(tab.id)}
           >
             {tab.label}
@@ -119,12 +123,13 @@ export function Sidebar({
         ))}
       </div>
 
-      <div className="card-surface sidebar-helper-card">
-        <p className="eyebrow">Cách học</p>
-        <ul className="helper-list">
-          <li>Xem hình và video mẫu trước.</li>
-          <li>Học xong một từ thì luyện ngay.</li>
-          <li>Mỗi 5 từ sẽ có một bài kiểm tra nhỏ.</li>
+      {/* Helper card */}
+      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] mt-[14px] p-[18px]">
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Cách học</p>
+        <ul className="grid gap-[10px] m-0 pl-[18px]">
+          <li className="text-[1rem] leading-[1.65]">Xem hình và video mẫu trước.</li>
+          <li className="text-[1rem] leading-[1.65]">Học xong một từ thì luyện ngay.</li>
+          <li className="text-[1rem] leading-[1.65]">Mỗi 5 từ sẽ có một bài kiểm tra nhỏ.</li>
         </ul>
       </div>
     </aside>

@@ -52,21 +52,21 @@ function LearnerProgressDetails({ data, topics }: { data: any; topics: Topic[] }
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="card-surface p-5 flex items-center justify-between bg-gradient-to-br from-amber-50 to-orange-50/50 border border-amber-100">
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 border border-amber-100 rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-5 flex items-center justify-between">
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Chuỗi liên tục</span>
             <strong className="block text-3xl font-black text-amber-700 mt-1">{activeStreak} ngày</strong>
           </div>
           <div className="text-4xl">🔥</div>
         </div>
-        <div className="card-surface p-5 flex items-center justify-between bg-gradient-to-br from-indigo-50 to-purple-50/50 border border-indigo-100">
+        <div className="bg-gradient-to-br from-indigo-50 to-purple-50/50 border border-indigo-100 rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-5 flex items-center justify-between">
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Tổng điểm kinh nghiệm</span>
             <strong className="block text-3xl font-black text-indigo-700 mt-1">{currentXp} XP</strong>
           </div>
           <div className="text-4xl">⭐</div>
         </div>
-        <div className="card-surface p-5 flex items-center justify-between bg-gradient-to-br from-emerald-50 to-teal-50/50 border border-emerald-100">
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 border border-emerald-100 rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-5 flex items-center justify-between">
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Từ vựng đã học</span>
             <strong className="block text-3xl font-black text-emerald-700 mt-1">{totalStudiedWords} từ</strong>
@@ -75,7 +75,7 @@ function LearnerProgressDetails({ data, topics }: { data: any; topics: Topic[] }
         </div>
       </div>
 
-      <div className="card-surface p-6 space-y-4">
+      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 space-y-4">
         <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
           🏅 Bộ sưu tập Huy hiệu
         </h3>
@@ -112,7 +112,7 @@ function LearnerProgressDetails({ data, topics }: { data: any; topics: Topic[] }
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="card-surface p-6 space-y-4">
+        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 space-y-4">
           <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3">
             📚 Tiến trình các Chủ đề
           </h3>
@@ -148,7 +148,7 @@ function LearnerProgressDetails({ data, topics }: { data: any; topics: Topic[] }
           </div>
         </div>
 
-        <div className="card-surface p-6 space-y-4">
+        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 space-y-4">
           <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3">
             ⚡ Lịch sử luyện tập gần đây
           </h3>
@@ -217,10 +217,10 @@ export function ProgressTab({
 }: ProgressTabProps) {
   if (!currentUser) {
     return (
-      <section className="card-surface hero-panel text-center py-12">
-        <p className="eyebrow">🔑 Yêu cầu đăng nhập</p>
+      <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7 text-center py-12">
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">🔑 Yêu cầu đăng nhập</p>
         <h2>Hãy đăng nhập để theo dõi tiến độ</h2>
-        <button onClick={onOpenAuth} type="button" className="primary-button mt-4">
+        <button onClick={onOpenAuth} type="button" className="border-0 rounded-full min-h-[48px] px-5 transition-all font-extrabold bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white shadow-[0_16px_30px_rgba(83,110,249,0.22)] hover:-translate-y-px cursor-pointer mt-4">
           Đăng nhập / Đăng ký
         </button>
       </section>
@@ -232,21 +232,21 @@ export function ProgressTab({
   if (role === "parent") {
     const kids = parentDashData?.linked_learners || [];
     return (
-      <section className="progress-tab space-y-6">
-        <div className="hero-panel card-surface">
-          <p className="eyebrow text-indigo-600 font-bold">Tiến độ của con</p>
+      <section className="space-y-6">
+        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
+          <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-indigo-600 font-bold">Tiến độ của con</p>
           <h2>Theo dõi chi tiết kết quả học tập của các con</h2>
-          <p className="muted">Xem chuỗi ngày học, huy hiệu đạt được và lịch sử làm bài chi tiết.</p>
+          <p className="text-[var(--ink-soft)] leading-[1.62]">Xem chuỗi ngày học, huy hiệu đạt được và lịch sử làm bài chi tiết.</p>
         </div>
 
         {kids.length === 0 ? (
-          <div className="card-surface p-8 text-center text-slate-500 font-medium">
+          <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-8 text-center text-slate-500 font-medium">
             Chưa có tài khoản con nào được liên kết. Vui lòng vào tab <strong>Tài khoản</strong> để thêm con.
           </div>
         ) : (
           <div className="space-y-6">
-            <label className="field max-w-xs">
-              <span>Chọn con để xem tiến độ</span>
+            <label className="grid gap-2 my-[18px] max-w-xs">
+              <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Chọn con để xem tiến độ</span>
               <select
                 value={selectedChildId}
                 onChange={(e) => onSetSelectedChildId(e.target.value)}
@@ -261,11 +261,11 @@ export function ProgressTab({
             </label>
 
             {loadingChildProgress ? (
-              <div className="card-surface p-6 text-center text-slate-500">Đang tải dữ liệu tiến độ của con...</div>
+              <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center text-slate-500">Đang tải dữ liệu tiến độ của con...</div>
             ) : selectedChildProgress ? (
               <LearnerProgressDetails data={selectedChildProgress} topics={topics} />
             ) : (
-              <div className="card-surface p-6 text-center text-slate-500">Vui lòng chọn một người con.</div>
+              <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center text-slate-500">Vui lòng chọn một người con.</div>
             )}
           </div>
         )}
@@ -275,22 +275,22 @@ export function ProgressTab({
 
   if (role === "learner") {
     return (
-      <section className="progress-tab space-y-6">
-        <div className="hero-panel card-surface">
-          <p className="eyebrow text-indigo-600 font-bold">Tiến độ cá nhân</p>
+      <section className="space-y-6">
+        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
+          <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-indigo-600 font-bold">Tiến độ cá nhân</p>
           <h2>Thành tích học tập của bạn</h2>
-          <p className="muted">Duy trì ngọn lửa học tập hàng ngày để tích lũy XP và mở khóa huy hiệu quý giá.</p>
+          <p className="text-[var(--ink-soft)] leading-[1.62]">Duy trì ngọn lửa học tập hàng ngày để tích lũy XP và mở khóa huy hiệu quý giá.</p>
         </div>
 
         {loadingProgress ? (
-          <div className="card-surface p-6 text-center text-slate-500 font-medium">Đang tải dữ liệu thành tích...</div>
+          <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center text-slate-500 font-medium">Đang tải dữ liệu thành tích...</div>
         ) : progressError ? (
-          <div className="card-surface p-6 text-center text-rose-600 font-medium">Lỗi: {progressError}</div>
+          <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center text-rose-600 font-medium">Lỗi: {progressError}</div>
         ) : learnerDashData ? (
           <>
             {((pendingLinks.parent_links && pendingLinks.parent_links.length > 0) ||
               (pendingLinks.school_links && pendingLinks.school_links.length > 0)) && (
-              <div className="card-surface p-5 border border-amber-200 bg-amber-50/40 rounded-2xl space-y-3">
+              <div className="bg-amber-50/40 border border-amber-200 rounded-2xl shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-5 space-y-3">
                 <h4 className="text-amber-800 font-bold text-sm flex items-center gap-1.5">
                   ⚠️ Có yêu cầu kết nối tài khoản mới!
                 </h4>
@@ -343,7 +343,7 @@ export function ProgressTab({
             <LearnerProgressDetails data={learnerDashData} topics={topics} />
           </>
         ) : (
-          <div className="card-surface p-6 text-center text-slate-500 font-medium">Không thể lấy dữ liệu tiến độ.</div>
+          <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center text-slate-500 font-medium">Không thể lấy dữ liệu tiến độ.</div>
         )}
       </section>
     );

@@ -17,23 +17,23 @@ export function FamilyTab({ currentUser, loadingDash, parentDashData }: FamilyTa
   }
 
   return (
-    <section className="family-dashboard space-y-6">
-      <div className="hero-panel card-surface">
-        <p className="eyebrow text-indigo-600 font-bold">Dashboard Phụ Huynh</p>
+    <section className="space-y-6">
+      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-indigo-600 font-bold">Dashboard Phụ Huynh</p>
         <h2>Theo dõi tiến độ học của con</h2>
-        <p className="muted">Dữ liệu được đồng bộ trực tiếp từ các buổi tập và bài kiểm tra của con.</p>
+        <p className="text-[var(--ink-soft)] leading-[1.62]">Dữ liệu được đồng bộ trực tiếp từ các buổi tập và bài kiểm tra của con.</p>
       </div>
 
       {loadingDash ? (
-        <div className="card-surface p-6 text-center">Đang tải dữ liệu học tập...</div>
+        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center">Đang tải dữ liệu học tập...</div>
       ) : !parentDashData || !parentDashData.linked_learners || parentDashData.linked_learners.length === 0 ? (
-        <div className="card-surface p-8 text-center text-slate-500 font-medium">
+        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-8 text-center text-slate-500 font-medium">
           Chưa có tài khoản học sinh nào được liên kết. Hãy vào trang liên kết trong tài khoản của con để kết nối.
         </div>
       ) : (
         <div className="space-y-6">
           {parentDashData.linked_learners.map((learner: any) => (
-            <div key={learner.learner_id} className="card-surface p-6 space-y-4">
+            <div key={learner.learner_id} className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">

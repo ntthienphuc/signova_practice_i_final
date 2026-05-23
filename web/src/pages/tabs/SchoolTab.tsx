@@ -17,21 +17,21 @@ export function SchoolTab({ currentUser, loadingDash, schoolDashData }: SchoolTa
   }
 
   return (
-    <section className="school-dashboard space-y-6">
-      <div className="hero-panel card-surface">
-        <p className="eyebrow text-indigo-600 font-bold">Dashboard Nhà Trường</p>
+    <section className="space-y-6">
+      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-indigo-600 font-bold">Dashboard Nhà Trường</p>
         <h2>Quản lý lớp học & học sinh</h2>
-        <p className="muted">Thống kê điểm số và quá trình hoàn thành bài học của toàn bộ học sinh được liên kết.</p>
+        <p className="text-[var(--ink-soft)] leading-[1.62]">Thống kê điểm số và quá trình hoàn thành bài học của toàn bộ học sinh được liên kết.</p>
       </div>
 
       {loadingDash ? (
-        <div className="card-surface p-6 text-center">Đang tải danh sách học sinh...</div>
+        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center">Đang tải danh sách học sinh...</div>
       ) : !schoolDashData || !schoolDashData.linked_learners || schoolDashData.linked_learners.length === 0 ? (
-        <div className="card-surface p-8 text-center text-slate-500 font-medium">
+        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-8 text-center text-slate-500 font-medium">
           Chưa có học sinh nào được liên kết với trường học.
         </div>
       ) : (
-        <div className="card-surface overflow-x-auto p-0">
+        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] overflow-x-auto p-0">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold">

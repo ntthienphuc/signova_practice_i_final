@@ -1,17 +1,17 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronRight, ArrowRight, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronRight, Sparkles } from "lucide-react";
 import type { ProgressByTopic, Topic, TopicProgress, WordItem } from "../../types/learn";
 
 const TOPIC_STYLES = [
   {
     accent: "linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%)",
-    softClass: "learn-dashboard-card-violet",
+    bgClass: "bg-[radial-gradient(circle_at_top_right,rgba(170,164,255,0.15),transparent_32%),rgba(255,255,255,0.92)]",
     badge: "🌈",
   },
   {
     accent: "linear-gradient(135deg, #06b6d4 0%, #2563eb 100%)",
-    softClass: "learn-dashboard-card-blue",
+    bgClass: "bg-[radial-gradient(circle_at_top_right,rgba(105,210,255,0.14),transparent_32%),rgba(255,255,255,0.92)]",
     badge: "🪁",
   },
 ] as const;
@@ -23,15 +23,15 @@ interface TopicWordRowProps {
 
 function TopicWordRow({ word, unlocked }: TopicWordRowProps) {
   return (
-    <div className={unlocked ? "topic-word-row active" : "topic-word-row"}>
-      <div className="topic-word-icon">
+    <div className={`grid grid-cols-[42px_minmax(0,1fr)_auto] gap-[14px] items-center py-[14px] px-4 rounded-[20px] border ${unlocked ? "border-[rgba(83,110,249,0.2)] bg-[rgba(243,247,255,0.96)]" : "border-[rgba(92,118,184,0.12)] bg-[rgba(248,250,255,0.88)]"}`}>
+      <div className="w-[42px] h-[42px] grid place-items-center rounded-[16px] bg-[rgba(83,110,249,0.12)] text-[var(--brand)]">
         <Sparkles size={14} />
       </div>
-      <div className="topic-word-copy">
-        <strong>{word.gloss}</strong>
-        <span>Nhóm {word.checkpoint_group} • Từ số {word.order}</span>
+      <div className="min-w-0 grid gap-0.5">
+        <strong className="text-[1.05rem]">{word.gloss}</strong>
+        <span className="text-[var(--ink-soft)] text-[0.92rem]">Nhóm {word.checkpoint_group} • Từ số {word.order}</span>
       </div>
-      <div className={unlocked ? "topic-word-state ready" : "topic-word-state"}>
+      <div className={`py-2 px-3 rounded-full text-[0.85rem] font-extrabold ${unlocked ? "bg-[rgba(83,110,249,0.12)] text-[var(--brand)]" : "bg-[rgba(30,39,66,0.06)] text-[var(--ink-soft)]"}`}>
         {unlocked ? "Tiếp theo" : "Sắp mở"}
       </div>
     </div>
@@ -64,19 +64,19 @@ export function TopicGrid({ topics, progressByTopic }: TopicGridProps) {
   );
 
   return (
-    <section className="learn-dashboard-shell">
-      <div className="learn-dashboard-hero card-surface">
+    <section className="grid gap-5">
+      <div className="border border-white/[0.82] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] grid gap-4 p-8 rounded-[28px] bg-[radial-gradient(circle_at_top_right,rgba(117,170,255,0.26),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(250,252,255,0.94))]">
         <div>
-          <p className="eyebrow">Learning Journey</p>
+          <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Learning Journey</p>
           <h2>Chọn topic rồi học từng từ theo đúng lộ trình</h2>
-          <p className="muted">
+          <p className="text-[var(--ink-soft)] leading-[1.62]">
             Mỗi topic có 10 từ. Mình học từng từ một, luyện ngay bằng Practice I, checkpoint ở từ
             thứ 5, rồi làm Practice II tổng kết khi xong cả topic.
           </p>
         </div>
       </div>
 
-      <div className="learn-dashboard-list">
+      <div className="grid gap-[18px]">
         {normalizedTopics.map(({ topic, style, progress }, index) => {
           const isExpanded = expandedTopicId === topic.id;
           const completedWords = Number(progress.completedWords ?? 0);
@@ -87,26 +87,26 @@ export function TopicGrid({ topics, progressByTopic }: TopicGridProps) {
           return (
             <article
               key={topic.id}
-              className={`learn-dashboard-card ${style.softClass} ${isExpanded ? "expanded" : ""}`}
+              className={`overflow-hidden rounded-[28px] border border-[rgba(92,118,184,0.12)] shadow-[0_18px_40px_rgba(46,73,133,0.08)] ${style.bgClass}`}
             >
               <button
                 type="button"
-                className="learn-dashboard-card-head"
+                className="w-full border-0 py-6 px-[26px] flex justify-between gap-5 text-left text-white cursor-pointer"
                 style={{ background: style.accent }}
                 onClick={() => setExpandedTopicId((prev) => (prev === topic.id ? null : topic.id))}
               >
-                <div className="learn-dashboard-card-copy">
-                  <p className="learn-dashboard-kicker">Topic {index + 1}</p>
-                  <h3>{topic.title}</h3>
-                  <p>{topic.subtitle}</p>
-                   <span className="topic-mini-tag">
-                      {progress.completed ? "Đã hoàn thành" : "Đang chờ bắt đầu"}
-                    </span>
+                <div>
+                  <p className="mt-[14px] text-[0.76rem] tracking-[0.18em] uppercase font-extrabold text-white/[0.72]">Topic {index + 1}</p>
+                  <h3 className="mt-1.5 mb-2 text-[2rem] leading-[1] font-display">{topic.title}</h3>
+                  <p className="m-0 text-white/[0.84]">{topic.subtitle}</p>
+                  <span className="inline-flex items-center rounded-full py-2 px-3 font-bold text-[0.92rem] mt-[10px] bg-[#fff0c4] text-[#9a6213]">
+                    {progress.completed ? "Đã hoàn thành" : "Đang chờ bắt đầu"}
+                  </span>
                 </div>
-                <div className="learn-dashboard-card-side">
-                  <div className="learn-dashboard-card-metric">
-                    <span>Tiến độ</span>
-                    <strong>
+                <div className="min-w-[150px] flex flex-col items-end justify-between gap-[18px]">
+                  <div className="grid justify-items-end gap-1">
+                    <span className="text-[0.72rem] font-extrabold tracking-[0.15em] uppercase text-white/[0.72]">Tiến độ</span>
+                    <strong className="text-[1.28rem]">
                       {completedWords}/{topic.word_count}
                     </strong>
                   </div>
@@ -115,20 +115,20 @@ export function TopicGrid({ topics, progressByTopic }: TopicGridProps) {
               </button>
 
               {isExpanded ? (
-                <div className="learn-dashboard-card-body">
-                  <div className="learn-dashboard-card-main">
-                    <div className="learn-dashboard-highlight">
-                      <p className="eyebrow">Từ đang chờ</p>
-                      <h4>{nextWord?.gloss ?? topic.glosses[0]}</h4>
-                      <p className="muted">
+                <div className="px-6 pt-[22px] pb-6">
+                  <div className="grid grid-cols-[minmax(260px,320px)_minmax(0,1fr)] gap-[18px]">
+                    <div className="grid gap-[14px] content-start p-[22px] rounded-[24px] border border-[rgba(92,118,184,0.14)] bg-[linear-gradient(180deg,rgba(247,250,255,0.94),rgba(255,255,255,0.96))]">
+                      <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Từ đang chờ</p>
+                      <h4 className="m-0 text-[1.7rem] font-display">{nextWord?.gloss ?? topic.glosses[0]}</h4>
+                      <p className="text-[var(--ink-soft)] leading-[1.62]">
                         Bắt đầu từ đầu topic. Sau mỗi từ, app sẽ mở Practice I ngay, rồi tự chuyển
                         sang từ tiếp theo.
                       </p>
-                      <div className="progress-track">
-                        <div className="progress-fill" style={{ width: `${ratio * 100}%` }} />
+                      <div className="h-3 rounded-full overflow-hidden bg-[rgba(95,164,255,0.14)] border border-[rgba(95,164,255,0.12)]">
+                        <div className="h-full rounded-[inherit] bg-gradient-to-r from-[#ffbf56] via-[#64c8ff] to-[#4ed28d]" style={{ width: `${ratio * 100}%` }} />
                       </div>
                       <button
-                        className="primary-button"
+                        className="border-0 rounded-full min-h-[48px] px-5 transition-all font-extrabold bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white shadow-[0_16px_30px_rgba(83,110,249,0.22)] hover:-translate-y-px cursor-pointer"
                         type="button"
                         onClick={() => {
                           const targetIndex = progress.completed ? 0 : Math.min(completedWords, topic.words.length - 1);
@@ -139,7 +139,7 @@ export function TopicGrid({ topics, progressByTopic }: TopicGridProps) {
                       </button>
                     </div>
 
-                    <div className="learn-dashboard-word-stack">
+                    <div className="grid gap-3">
                       {topic.words.map((word, wordIndex) => (
                         <TopicWordRow
                           key={`${topic.id}-${word.gloss}`}

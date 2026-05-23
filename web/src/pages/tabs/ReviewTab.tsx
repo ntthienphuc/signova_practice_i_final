@@ -32,10 +32,10 @@ export function ReviewTab({
 }: ReviewTabProps) {
   if (!currentUser) {
     return (
-      <section className="card-surface hero-panel text-center py-12">
-        <p className="eyebrow">🔑 Yêu cầu đăng nhập</p>
+      <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7 text-center py-12">
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">🔑 Yêu cầu đăng nhập</p>
         <h2>Hãy đăng nhập học sinh để sử dụng tính năng luyện tập</h2>
-        <p className="muted mb-6">
+        <p className="text-[var(--ink-soft)] leading-[1.62] mb-6">
           Tính năng này giúp bạn xem lại các từ đã học, thống kê số lần sai và luyện tập lại để tăng điểm số.
         </p>
         <button
@@ -70,8 +70,8 @@ export function ReviewTab({
 
   if (loadingReview) {
     return (
-      <section className="card-surface hero-panel">
-        <p className="eyebrow">Đang tải</p>
+      <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Đang tải</p>
         <h2>Đang tải danh sách từ cần ôn tập...</h2>
       </section>
     );
@@ -79,11 +79,11 @@ export function ReviewTab({
 
   if (reviewError) {
     return (
-      <section className="card-surface hero-panel">
-        <p className="eyebrow">Lỗi</p>
+      <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Lỗi</p>
         <h2>Không thể tải danh sách ôn tập</h2>
-        <p className="error-text">{reviewError}</p>
-        <button onClick={onLoadReviewData} className="primary-button mt-4">Tải lại</button>
+        <p className="text-[#b33f47]">{reviewError}</p>
+        <button onClick={onLoadReviewData} className="border-0 rounded-full min-h-[48px] px-5 transition-all font-extrabold bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white shadow-[0_16px_30px_rgba(83,110,249,0.22)] hover:-translate-y-px cursor-pointer mt-4">Tải lại</button>
       </section>
     );
   }
@@ -91,11 +91,11 @@ export function ReviewTab({
   const failedWordsCount = reviewWords.filter((w) => w.failed_attempt_count > 0).length;
 
   return (
-    <section className="review-home space-y-6">
-      <div className="hero-panel card-surface">
-        <p className="eyebrow text-indigo-600 font-bold">Tab Luyện Tập</p>
+    <section className="space-y-6">
+      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-indigo-600 font-bold">Tab Luyện Tập</p>
         <h2>Ôn tập các từ đã học</h2>
-        <p className="muted">
+        <p className="text-[var(--ink-soft)] leading-[1.62]">
           Xếp hạng các từ theo số lần làm sai nhiều nhất. Hãy luyện tập lại những từ khó để thành thạo hơn nhé!
         </p>
 
@@ -112,7 +112,7 @@ export function ReviewTab({
       </div>
 
       {reviewWords.length === 0 ? (
-        <div className="card-surface text-center py-16">
+        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7 text-center py-16">
           <p className="text-slate-400 mb-4 text-sm font-semibold">Bạn chưa học từ nào trong bất kỳ Topic nào.</p>
           <button
             onClick={() => onSetActiveTab("learn")}
@@ -134,7 +134,7 @@ export function ReviewTab({
             return (
               <div
                 key={word.word_id}
-                className="card-surface p-5 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden"
+                className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-5 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden"
               >
                 {isFailedMuch && (
                   <div className="absolute top-0 right-0 bg-rose-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
