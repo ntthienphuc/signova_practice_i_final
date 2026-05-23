@@ -15,6 +15,41 @@ Set-Location $Root
 
 $pythonExe = Join-Path $Root ".venv\Scripts\python.exe"
 $nodeModules = Join-Path $Root "web\node_modules"
+$requirementsCheckScript = @'
+from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
+import sys
+
+try:
+    from packaging.requirements import Requirement
+except Exception:
+    print("missing:packaging")
+    sys.exit(1)
+
+req_path = Path("requirements_api.txt")
+missing = []
+
+for raw_line in req_path.read_text(encoding="utf-8").splitlines():
+    line = raw_line.strip()
+    if not line or line.startswith("#"):
+        continue
+    req = Requirement(line)
+    try:
+        installed = version(req.name)
+    except PackageNotFoundError:
+        missing.append(f"{req.name} (not installed)")
+        continue
+    if req.specifier and installed not in req.specifier:
+        missing.append(f"{req.name}=={installed} !~ {req.specifier}")
+
+if missing:
+    print("requirements-mismatch")
+    for item in missing:
+        print(item)
+    sys.exit(1)
+
+print("requirements-ok")
+'@
 
 function Require-Command {
     param(
@@ -27,12 +62,40 @@ function Require-Command {
     }
 }
 
+function Test-PythonEnvironment {
+    param([string]$PythonPath)
+
+    if (-not (Test-Path $PythonPath)) {
+        return $false
+    }
+
+    $tempFile = Join-Path $env:TEMP "signova_requirements_check.py"
+    Set-Content -LiteralPath $tempFile -Value $requirementsCheckScript -Encoding UTF8
+
+    try {
+        & $PythonPath $tempFile | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            return $false
+        }
+
+        & $PythonPath -m pip check | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            return $false
+        }
+
+        return $true
+    }
+    finally {
+        Remove-Item -LiteralPath $tempFile -ErrorAction SilentlyContinue
+    }
+}
+
 Write-Host "Preparing Signova workspace..."
 
 Require-Command -Name "py" -HelpText "Hãy cài Python 3.11 và bảo đảm lệnh 'py' dùng được."
 Require-Command -Name "npm" -HelpText "Hãy cài Node.js LTS để có npm."
 
-if ($RecreateVenv -or -not (Test-Path $pythonExe)) {
+if ($RecreateVenv -or -not (Test-PythonEnvironment -PythonPath $pythonExe)) {
     Write-Host "Setting up Python virtual environment..."
     $setupArgs = @(
         "-ExecutionPolicy", "Bypass",
@@ -45,7 +108,7 @@ if ($RecreateVenv -or -not (Test-Path $pythonExe)) {
     & powershell @setupArgs
 }
 else {
-    Write-Host ".venv already exists. Skipping Python install."
+    Write-Host ".venv is ready and dependencies match. Skipping Python install."
 }
 
 if ($ReinstallWeb -and (Test-Path $nodeModules)) {
