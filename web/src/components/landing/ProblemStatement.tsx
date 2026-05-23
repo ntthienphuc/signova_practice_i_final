@@ -10,8 +10,8 @@ export function ProblemStatement({ data }: ProblemStatementProps) {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Accent rule */}
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-10 h-1 rounded-full bg-sky-600" />
-          <span className="text-sm font-semibold text-sky-600 uppercase tracking-widest">
+          <div className="w-10 h-1 rounded-full bg-brand-primary" />
+          <span className="text-sm font-semibold text-brand-primary uppercase tracking-widest">
             The Problem
           </span>
         </div>
