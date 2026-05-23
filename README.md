@@ -187,11 +187,27 @@ signova_practice_i_final/
 
 ## Setup lần đầu
 
+### Cách gọn nhất cho máy mới
+
+```powershell
+.\restart_signova.bat
+```
+
+Script này sẽ tự:
+
+- kiểm tra `.venv`, nếu chưa có thì tự tạo và cài `requirements_api.txt`
+- kiểm tra `web/node_modules`, nếu chưa có thì tự chạy `npm ci`
+- dọn process cũ trên port API/Web
+- bật lại API
+- bật lại web
+
+### Setup thủ công nếu muốn
+
 ```powershell
 .\scripts\setup_venv.ps1
 ```
 
-Script web sẽ tự `npm install` nếu `node_modules` chưa có.
+Sau đó có thể chạy riêng API hoặc web bằng các script trong `scripts/`.
 
 ## Chạy app
 
@@ -203,6 +219,7 @@ Script web sẽ tự `npm install` nếu `node_modules` chưa có.
 
 Script này sẽ:
 
+- tự setup nếu máy mới chưa có môi trường
 - dọn process cũ trên port API/Web
 - bật lại API
 - bật lại web
