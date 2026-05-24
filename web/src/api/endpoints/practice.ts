@@ -1,18 +1,16 @@
-import { createApiClient, handleAxiosError } from "../client";
+import { apiClient, handleAxiosError } from "../client";
 import type { AnalyzeAttemptParams, AnalyzeResponse, PracticeMode, RandomTask } from "../types";
 
 export async function createRandomTask(
-  baseUrl: string,
   mode: PracticeMode,
   lessonSize: number
 ): Promise<RandomTask> {
   try {
-    const client = createApiClient(baseUrl);
     const path =
       mode === "practice_i"
         ? "/practice-i/task/random"
         : `/practice-ii/task/random?lesson_size=${lessonSize}`;
-    const { data } = await client.get<RandomTask>(path);
+    const { data } = await apiClient.get<RandomTask>(path);
     return data;
   } catch (error) {
     handleAxiosError(error);
@@ -20,14 +18,12 @@ export async function createRandomTask(
 }
 
 export async function analyzeAttempt({
-  apiBase,
   mode,
   targetGloss,
   lessonGlosses,
   file
 }: AnalyzeAttemptParams): Promise<AnalyzeResponse> {
   try {
-    const client = createApiClient(apiBase);
     const endpoint =
       mode === "practice_i" ? "/practice-i/analyze-video" : "/practice-ii/analyze-video";
     const form = new FormData();
@@ -42,7 +38,7 @@ export async function analyzeAttempt({
     if (mode === "practice_ii") {
       form.append("lesson_glosses", lessonGlosses.join(","));
     }
-    const { data } = await client.post<AnalyzeResponse>(endpoint, form, {
+    const { data } = await apiClient.post<AnalyzeResponse>(endpoint, form, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return data;

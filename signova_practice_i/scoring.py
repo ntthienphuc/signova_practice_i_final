@@ -33,7 +33,7 @@ def decision_for_target(
     target_result: Dict[str, Any],
     target_rank: int,
     top1_score: float | None = None,
-    soft_accept_score: float = 68.0,
+    soft_accept_score: float = 60.0,
     soft_accept_rank: int = 3,
     soft_accept_gap: float = 12.0,
     wrong_word_rank: int = 4,

@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef, useState, type ChangeEventHandler } from "r
 import { ArrowLeft, ArrowRight, Play, RotateCcw, UploadCloud, Pause } from "lucide-react";
 import {
   analyzeAttempt,
-  ensureBaseUrl,
   type AnalyzeResponse,
   type Decision,
   type SegmentTiming,
 } from "../api";
+import { apiClient } from "../api/client";
 import { drawOverlay, normalizeAnalysis, type NormalizedAnalysis, type NormalizedSegment } from "../overlay";
 import type { StudyMetadata } from "../types/learn";
 
@@ -104,7 +104,6 @@ function practiceIIFeedback(
 }
 
 interface PracticeWorkspaceProps {
-  apiBase: string;
   mode: "practice_i" | "practice_ii";
   targetGloss: string;
   lessonGlosses: string[];
@@ -122,7 +121,6 @@ interface PracticeWorkspaceProps {
 type PlaybackStatus = "idle" | "loading" | "metadata" | "ready" | "buffering" | "paused" | "error";
 
 export function PracticeWorkspace({
-  apiBase,
   mode,
   targetGloss,
   lessonGlosses,
@@ -150,12 +148,12 @@ export function PracticeWorkspace({
   const referenceCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const localUserVideoUrl = useObjectUrl(file);
-  const absoluteApiBase = ensureBaseUrl(apiBase);
+  const baseUrl = apiClient.defaults.baseURL ?? "";
 
   const referenceFallbackUrl = useMemo(() => {
     const rawUrl = referenceStudy?.reference?.playback_url ?? referenceStudy?.reference?.video_url;
-    return rawUrl ? new URL(rawUrl, absoluteApiBase).href : "";
-  }, [absoluteApiBase, referenceStudy]);
+    return rawUrl ? new URL(rawUrl, baseUrl).href : "";
+  }, [baseUrl, referenceStudy]);
 
   const referenceFallbackSegment = useMemo(
     () => normalizeSegment(referenceStudy?.reference?.segment),
@@ -276,13 +274,12 @@ export function PracticeWorkspace({
     setPlaying(false);
     try {
       const payload = await analyzeAttempt({
-        apiBase: absoluteApiBase,
         mode,
         targetGloss,
         lessonGlosses,
         file,
       });
-      setAnalysis(normalizeAnalysis(payload, absoluteApiBase));
+      setAnalysis(normalizeAnalysis(payload));
     } catch (nextError) {
       setError(getErrorMessage(nextError));
     } finally {
@@ -341,11 +338,18 @@ export function PracticeWorkspace({
     onComplete?.(analysis.raw);
   }
 
-  return (
-    <section className="practice-immersive-screen">
-      <div className="bg-dot-grid pointer-events-none learn-word-grid" />
+  const calloutClass: Record<PracticeIITone, string> = {
+    warning: "bg-[rgba(245,158,11,0.14)] border-[rgba(245,158,11,0.18)] text-[#9a5b00]",
+    info: "bg-[rgba(83,110,249,0.1)] border-[rgba(83,110,249,0.14)] text-[#3f58d8]",
+    success: "bg-[rgba(74,222,128,0.12)] border-[rgba(34,197,94,0.14)] text-[#1f7a47]",
+    neutral: "bg-[rgba(111,125,148,0.1)] border-[rgba(111,125,148,0.12)] text-[#52617f]",
+  };
 
-      <div className="practice-immersive-shell relative">
+  return (
+    <section className="relative min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)] text-[var(--ink)]">
+      <div className="bg-dot-grid pointer-events-none absolute inset-0" />
+
+      <div className="relative max-w-[1440px] mx-auto px-4 sm:px-8 pt-10 pb-8 grid gap-[26px]">
         <button
           type="button"
           onClick={onBackToLearn}
@@ -353,47 +357,44 @@ export function PracticeWorkspace({
         >
           🚪 Thoát
         </button>
-        <div className="learn-word-progress">
-          <div className="learn-word-progress-head">
+
+        {/* Progress */}
+        <div className="pt-2 pb-6">
+          <div className="flex items-center justify-between mb-3 text-[#7b8aa3] text-[0.8rem] font-bold tracking-[0.08em] uppercase">
             <span>{mode === "practice_i" ? "Practice I" : "Practice II"}</span>
-            <span>
-              Bước {Math.min(wordIndex + 1, wordCount)} / {Math.max(wordCount, 1)}
-            </span>
+            <span>Bước {Math.min(wordIndex + 1, wordCount)} / {Math.max(wordCount, 1)}</span>
           </div>
-          <div className="learn-word-progress-track">
-            <div className="learn-word-progress-fill" style={{ width: `${progressRatio}%` }} />
+          <div className="w-full h-1 overflow-hidden rounded-full bg-[rgba(83,110,249,0.12)]">
+            <div className="h-full rounded-[inherit] bg-[#0284c7] transition-[width_180ms_ease]" style={{ width: `${progressRatio}%` }} />
           </div>
         </div>
 
-        <div className="learn-word-title practice-word-title">
-          <span className="learn-word-title-vi">{targetGloss}</span>
-          <span className="learn-word-title-slash">/</span>
-          <span className="learn-word-title-en">
+        {/* Title */}
+        <div className="mb-[6px] text-center">
+          <span className="text-[clamp(2.2rem,5vw,2rem)] font-extrabold leading-[1.08] text-[#233157]">{targetGloss}</span>
+          <span className="text-[clamp(2.2rem,5vw,2rem)] font-extrabold leading-[1.08] mx-3 text-[#90a0bb]">/</span>
+          <span className="text-[clamp(2.2rem,5vw,2rem)] font-extrabold leading-[1.08] text-[#5f8efb]">
             {mode === "practice_i" ? "Practice I" : "Practice II"}
           </span>
         </div>
 
-        <div className="practice-subtitle">
-          <p>{title}</p>
-          <span>{subtitle}</span>
-        </div>
 
-        <div className="practice-immersive-grid">
-          <article className="practice-coach-card">
-            <div className="practice-card-head">
-              <div>
-                <p className="learn-meta-label">COACH NOTE</p>
-                <h3>Luyện theo đúng target</h3>
-              </div>
-              <span className="practice-target-pill">{targetGloss}</span>
-            </div>
+
+        {/* Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-[18px]">
+          {/* Coach card */}
+          <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-6 grid gap-[18px] content-start">
 
             {mode === "practice_ii" ? (
-              <div className="practice-lesson-pills">
+              <div className="flex flex-wrap gap-2">
                 {lessonGlosses.map((gloss) => (
                   <span
                     key={gloss}
-                    className={gloss === targetGloss ? "lesson-chip active" : "lesson-chip"}
+                    className={
+                      gloss === targetGloss
+                        ? "inline-flex items-center px-[14px] py-[10px] rounded-full bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white border-transparent text-[1rem] font-bold"
+                        : "inline-flex items-center px-[14px] py-[10px] rounded-full bg-white/[0.78] border border-[rgba(53,84,128,0.08)] text-[#4d5970] text-[1rem] font-bold"
+                    }
                   >
                     {gloss}
                   </span>
@@ -401,23 +402,21 @@ export function PracticeWorkspace({
               </div>
             ) : null}
 
-            <label className="practice-upload-card">
-              <input type="file" accept="video/*" onChange={handleFileChange} />
-              <div className="practice-upload-icon">
+            <label className="grid grid-cols-[48px_minmax(0,1fr)] gap-[14px] items-start p-[18px] rounded-[22px] border border-dashed border-[rgba(83,110,249,0.2)] bg-[rgba(247,250,255,0.94)] cursor-pointer">
+              <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
+              <div className="w-12 h-12 grid place-items-center rounded-[18px] bg-[rgba(83,110,249,0.12)] text-[#5f8efb]">
                 <UploadCloud size={20} />
               </div>
-              <div className="practice-upload-copy">
-                <strong>{file ? file.name : "Chọn video để gửi lên"}</strong>
-                <span>
-                  {file
-                    ? "Video đã sẵn sàng để chấm."
-                    : "App sẽ tự cắt segment, so với mẫu và tô đỏ/xanh."}
+              <div className="grid gap-1.5">
+                <strong className="text-[#223153] text-[1rem]">{file ? file.name : "Chọn video"}</strong>
+                <span className="text-[#6f7d94] leading-[1.55]">
+                  {file ? "Video đã sẵn sàng để chấm." : "Vui lòng tải video lên"}
                 </span>
               </div>
             </label>
 
             <button
-              className="learn-nav-button learn-nav-button-primary practice-analyze-button"
+              className="justify-self-start inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border-0 rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-gradient-to-br from-[#5c72fb] to-[#67bfff] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)] disabled:opacity-55 disabled:cursor-not-allowed"
               type="button"
               disabled={loading || !file}
               onClick={handleAnalyze}
@@ -426,89 +425,79 @@ export function PracticeWorkspace({
               {loading ? "Đang phân tích..." : actionLabel}
             </button>
 
-            {error ? <p className="error-text">{error}</p> : null}
+            {error ? <p className="m-0 text-[#b33f47]">{error}</p> : null}
 
-            <div className="practice-feedback-card">
-              <div className="practice-feedback-metrics">
-                <div>
-                  <span>Score</span>
-                  <strong>{analysis ? Math.round(Number(analysis.raw.score ?? 0)) : "--"}</strong>
+            <div className="grid gap-[14px] p-[18px] rounded-[22px] border border-[rgba(83,110,249,0.08)] bg-[rgba(248,250,255,0.96)]">
+              <div className="flex flex-col gap-3">
+                <div className="grid gap-1.5 p-[14px] rounded-[18px] bg-white/[0.96]">
+                  <span className="text-[#6f7d94]">Score</span>
+                  <strong className="text-[1.3rem] text-[#223153]">{analysis ? Math.round(Number(analysis.raw.score ?? 0)) : "--"}</strong>
                 </div>
-                <div>
-                  <span>Kết luận</span>
-                  <strong>{analysis ? metricDecision(decision) : "Chờ phân tích"}</strong>
+                <div className="grid gap-1.5 p-[14px] rounded-[18px] bg-white/[0.96]">
+                  <span className="text-[#6f7d94]">Kết luận</span>
+                  <strong className="text-[1.3rem] text-[#223153]">{analysis ? metricDecision(decision) : "Chờ phân tích"}</strong>
                 </div>
               </div>
 
               {practiceIIStatus ? (
-                <div className={`practice-callout ${practiceIIStatus.tone}`}>
-                  <strong>{practiceIIStatus.title}</strong>
-                  <span>{practiceIIStatus.message}</span>
+                <div className={`grid gap-1 px-4 py-[14px] rounded-[18px] font-bold border ${calloutClass[practiceIIStatus.tone]}`}>
+                  <strong className="text-[0.96rem]">{practiceIIStatus.title}</strong>
+                  <span className="leading-[1.55] text-[0.94rem]">{practiceIIStatus.message}</span>
                 </div>
               ) : null}
 
-              <p className="practice-feedback-text">
+              <p className="m-0 leading-[1.65] text-[#6f7d94]">
                 {analysis
                   ? feedback?.overall ?? "Đã có feedback từ backend."
                   : "Phân tích xong, app sẽ hiện feedback tổng và giữ nút sang bước tiếp theo ở dưới."}
               </p>
 
-              <div className="practice-legend">
-                <span>
-                  <i className="legend-dot good" /> Xanh là đang đúng hoặc gần đúng
+              <div className="grid gap-2">
+                <span className="inline-flex items-center gap-[10px] text-[#52617f] text-[0.95rem]">
+                  <i className="w-2.5 h-2.5 rounded-full inline-block bg-[#4ade80]" /> Xanh là đang đúng hoặc gần đúng
                 </span>
-                <span>
-                  <i className="legend-dot fix" /> Đỏ là vùng cần sửa thêm
+                <span className="inline-flex items-center gap-[10px] text-[#52617f] text-[0.95rem]">
+                  <i className="w-2.5 h-2.5 rounded-full inline-block bg-[#fb7185]" /> Đỏ là vùng cần sửa thêm
                 </span>
               </div>
             </div>
           </article>
 
-          <article className="practice-media-panel">
-            <div className="practice-panel-header">
+          {/* User video */}
+          <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-5 grid gap-4">
+            <div className="flex justify-between gap-[14px] items-start">
               <div>
-                <p className="learn-meta-label">USER ATTEMPT</p>
-                <h4>Bài làm của bạn</h4>
+                <h4 className="mt-1.5 mb-0 text-[#223153] text-[1.28rem]">Bài làm của bạn</h4>
               </div>
-              <span className="practice-panel-status">
-                {userSegment
-                  ? `${userSegment.segment_start_ms}ms → ${userSegment.segment_end_ms}ms`
-                  : userStatus}
-              </span>
             </div>
-            <div className="video-shell practice-video-shell">
+            <div className="relative isolate min-h-[440px] rounded-[24px] overflow-hidden bg-[rgba(242,247,255,0.95)] border border-[rgba(53,84,128,0.08)]">
               {userVideoUrl ? (
                 <>
                   <video
                     ref={userVideoRef}
                     src={userVideoUrl}
-                    className="video-node practice-video-node"
+                    className="absolute inset-0 z-[1] w-full h-full object-contain block bg-white"
                     playsInline
                     muted
                     controls={!analysis}
                     {...buildVideoHandlers("user")}
                   />
-                  {analysis ? <canvas ref={userCanvasRef} className="overlay-canvas" /> : null}
+                  {analysis ? <canvas ref={userCanvasRef} className="absolute inset-0 z-[2] w-full h-full pointer-events-none" /> : null}
                 </>
               ) : (
-                <div className="practice-empty-state">Upload video để xem phần user attempt.</div>
+                <div className="min-h-[440px] grid place-items-center text-center p-6 text-[#6f7d94]">Upload video để xem phần bài làm.</div>
               )}
             </div>
           </article>
 
-          <article className="practice-media-panel">
-            <div className="practice-panel-header">
+          {/* Reference video */}
+          <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-5 grid gap-4">
+            <div className="flex justify-between gap-[14px] items-start">
               <div>
-                <p className="learn-meta-label">REFERENCE</p>
-                <h4>Video mẫu chuẩn</h4>
+                <h4 className="mt-1.5 mb-0 text-[#223153] text-[1.28rem]">Video mẫu chuẩn</h4>
               </div>
-              <span className="practice-panel-status">
-                {referenceSegment
-                  ? `${referenceSegment.segment_start_ms}ms → ${referenceSegment.segment_end_ms}ms`
-                  : referenceStatus}
-              </span>
             </div>
-            <div className="video-shell practice-video-shell">
+            <div className="relative isolate min-h-[440px] rounded-[24px] overflow-hidden bg-[rgba(242,247,255,0.95)]">
               {referenceVideoUrl ? (
                 <>
                   <video
@@ -516,74 +505,75 @@ export function PracticeWorkspace({
                     src={referenceVideoUrl}
                     poster={
                       referenceStudy?.poster_url
-                        ? new URL(referenceStudy.poster_url, absoluteApiBase).href
+                        ? new URL(referenceStudy.poster_url, baseUrl).href
                         : undefined
                     }
-                    className="video-node practice-video-node"
+                    className="absolute inset-0 z-[1] w-full h-full object-contain block bg-white "
                     playsInline
                     muted
                     controls={!analysis}
                     {...buildVideoHandlers("reference")}
                   />
                   {analysis ? (
-                    <canvas ref={referenceCanvasRef} className="overlay-canvas" />
+                    <canvas ref={referenceCanvasRef} className="absolute inset-0 z-[2] w-full h-full pointer-events-none" />
                   ) : null}
                 </>
               ) : (
-                <div className="practice-empty-state">Reference sẽ hiện ở đây.</div>
+                <div className="min-h-[440px] grid place-items-center text-center p-6 text-[#6f7d94]">Reference sẽ hiện ở đây.</div>
               )}
             </div>
           </article>
         </div>
 
-        <div className="practice-footer">
-          <div className="practice-transport">
+        {/* Footer */}
+        <div className="grid gap-[14px]">
+          <div className="flex flex-col md:flex-row justify-between gap-4 items-center">
             {onBackToLearn ? (
               <button
                 type="button"
-                className="learn-nav-button learn-nav-button-secondary"
+                className="w-full md:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594]"
                 onClick={onBackToLearn}
               >
                 <ArrowLeft size={16} />
                 Xem lại từ này
               </button>
             ) : (
-              <div />
+              <div className="hidden md:block" />
             )}
 
-            <div className="practice-transport-buttons">
+            <div className="flex gap-[10px] flex-wrap justify-center w-full md:w-auto">
               <button
                 type="button"
-                className="learn-nav-button learn-nav-button-secondary"
+                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 min-h-[44px] px-4 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.85rem] sm:text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594] disabled:opacity-55 disabled:cursor-not-allowed"
                 onClick={playSegments}
                 disabled={!analysis}
               >
-                <Play size={16} />
+                <Play size={14} />
                 Play segment
               </button>
               <button
                 type="button"
-                className="learn-nav-button learn-nav-button-secondary"
+                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 min-h-[44px] px-4 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.85rem] sm:text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594] disabled:opacity-55 disabled:cursor-not-allowed"
                 onClick={pauseSegments}
                 disabled={!analysis}
               >
-                <Pause size={16} />
+                <Pause size={14} />
                 Pause
               </button>
               <button
                 type="button"
-                className="learn-nav-button learn-nav-button-secondary"
+                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 min-h-[44px] px-4 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.85rem] sm:text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594] disabled:opacity-55 disabled:cursor-not-allowed"
                 onClick={resetSegments}
                 disabled={!analysis}
               >
-                <RotateCcw size={16} />
+                <RotateCcw size={14} />
                 Reset
               </button>
             </div>
 
             <button
               type="button"
-              className="learn-nav-button learn-nav-button-primary"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border-0 rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-gradient-to-br from-[#5c72fb] to-[#67bfff] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)] disabled:opacity-55 disabled:cursor-not-allowed"
               onClick={handleComplete}
               disabled={!analysis}
             >
@@ -592,7 +582,7 @@ export function PracticeWorkspace({
             </button>
           </div>
 
-          <div className="learn-word-next">
+          <div className="text-[#6d7b92] text-[0.95rem] text-center">
             <span>
               {analysis
                 ? "Đã xong phần so sánh. Nếu ổn rồi thì sang bước tiếp theo nhé →"

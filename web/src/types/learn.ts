@@ -49,7 +49,7 @@ export interface TopicProgress {
   completed: boolean;
 }
 
-export type ProgressByTopic = Record<string, TopicProgress>;
+export type ProgressByTopic = Record<string, TopicProgress | undefined>;
 
 export interface AnalysisSummary {
   target_gloss: string;
@@ -78,3 +78,4 @@ export interface CurriculumTopicSummary {
   title: string;
   word_count: number;
 }
+

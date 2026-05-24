@@ -47,3 +47,7 @@ All_cam1_metadata.json
 .env
 
 
+# Ignore ONNX model in git to bypass HF 10MB limit
+models/
+
+web/.env.local

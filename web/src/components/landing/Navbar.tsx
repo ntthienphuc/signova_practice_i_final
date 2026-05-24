@@ -68,7 +68,7 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
               <span className={locale === "en" ? "text-slate-900" : "text-slate-400"}>EN</span>
             </button>
             <Link
-              to="/practice"
+              to="/learn-dashboard"
               className="px-5 py-2 bg-gradient-to-r from-indigo-500 to-sky-400 hover:opacity-95 text-white text-sm font-semibold rounded-lg transition-colors shadow-md shadow-sky-200"
             >
               {data.cta}
