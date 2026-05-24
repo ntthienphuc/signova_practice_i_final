@@ -9,6 +9,14 @@ from alembic import context
 import os
 project_root = str(Path(__file__).resolve().parent.parent)
 print(f"[ALEMBIC] env.py: project_root={project_root}, cwd={os.getcwd()}")
+print(f"[ALEMBIC] files in root: {os.listdir(project_root)}")
+if os.path.exists(os.path.join(project_root, "app")):
+    print(f"[ALEMBIC] files in app: {os.listdir(os.path.join(project_root, 'app'))}")
+    if os.path.exists(os.path.join(project_root, "app", "models")):
+        print(f"[ALEMBIC] files in app/models: {os.listdir(os.path.join(project_root, 'app', 'models'))}")
+else:
+    print("[ALEMBIC] WARNING: 'app' directory does not exist in project_root!")
+
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
