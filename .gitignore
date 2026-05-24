@@ -47,13 +47,7 @@ All_cam1_metadata.json
 .env
 
 
-# models/spoter_v3.0.onnx
-
-# Allow ONNX model for HuggingFace Space Docker build
-!models/
-!models/spoter_v3.0.onnx
-!models/
-!models/**
-!models/spoter_v3.0.onnx
+# Ignore ONNX model in git to bypass HF 10MB limit
+models/
 
 web/.env.local

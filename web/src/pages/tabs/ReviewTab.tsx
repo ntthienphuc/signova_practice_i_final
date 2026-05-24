@@ -136,11 +136,23 @@ export function ReviewTab({
                 key={word.word_id}
                 className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-5 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden"
               >
-                {isFailedMuch && (
-                  <div className="absolute top-0 right-0 bg-rose-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
-                    Cần cải thiện
+                {word.accepted_once && (lastScore === null || lastScore >= 60) ? (
+                  <div className="absolute top-0 right-0 bg-emerald-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
+                    Đã Đạt
                   </div>
-                )}
+                ) : word.accepted_once && lastScore !== null && lastScore < 60 ? (
+                  <div className="absolute top-0 right-0 bg-amber-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
+                    Cần Ôn Tập
+                  </div>
+                ) : !word.accepted_once && isFailedMuch ? (
+                  <div className="absolute top-0 right-0 bg-rose-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
+                    Cần Cải Thiện
+                  </div>
+                ) : !word.accepted_once && failed > 0 ? (
+                  <div className="absolute top-0 right-0 bg-amber-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
+                    Đang Luyện Tập
+                  </div>
+                ) : null}
                 <div>
                   <h3 className="text-lg font-bold text-slate-800">{word.gloss}</h3>
                   <div className="grid grid-cols-2 gap-3 my-4 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">

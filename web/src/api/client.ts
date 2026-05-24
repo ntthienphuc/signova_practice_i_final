@@ -71,7 +71,6 @@ export function handleAxiosError(error: unknown): never {
   throw error;
 }
 
-// Instantiate the primary client interface using your custom engine
 export const BASE_URL = ensureBaseUrl(
   (import.meta.env.VITE_API_BASE_URL as string) || "https://thienphuc12339-signova-backend.hf.space"
 );
@@ -378,7 +377,6 @@ export async function getLearnerDashboard(learnerId: string): Promise<any> {
     handleAxiosError(error);
   }
 }
-
 export async function getMyProgress(): Promise<any> {
   try {
     const response = await apiClient.get("/progress/me");

@@ -83,6 +83,53 @@ def create_app() -> FastAPI:
     app.include_router(link_router.router)
     app.include_router(dashboard_router.router)
 
+    @app.on_event("startup")
+    def repair_database_progress():
+        from app.db import SessionLocal
+        from app.models.attempt import PracticeAttempt
+        from app.models.progress import LearnerWordProgress
+        
+        db = SessionLocal()
+        try:
+            # 1. Update all attempts with score >= 60.0 to accepted = True
+            attempts_to_fix = db.query(PracticeAttempt).filter(
+                PracticeAttempt.score >= 60.0,
+                PracticeAttempt.accepted == False
+            ).all()
+            
+            if attempts_to_fix:
+                print(f"Startup Repair: Fixing {len(attempts_to_fix)} attempts that scored >= 60 but were marked as not accepted.")
+                for attempt in attempts_to_fix:
+                    attempt.accepted = True
+                db.commit()
+                
+            # 2. Recalculate word progress stats
+            all_wp = db.query(LearnerWordProgress).all()
+            for wp in all_wp:
+                attempts = db.query(PracticeAttempt).filter(
+                    PracticeAttempt.learner_user_id == wp.learner_user_id,
+                    PracticeAttempt.word_id == wp.word_id
+                ).all()
+                if attempts:
+                    correct_count = sum(1 for a in attempts if a.accepted)
+                    failed_count = sum(1 for a in attempts if not a.accepted)
+                    best_score = max(a.score for a in attempts)
+                    last_score = attempts[-1].score
+                    accepted_once = any(a.accepted for a in attempts)
+                    
+                    wp.correct_attempt_count = correct_count
+                    wp.failed_attempt_count = failed_count
+                    wp.best_practice1_score = best_score
+                    wp.last_practice1_score = last_score
+                    wp.accepted_once = accepted_once
+            db.commit()
+            print("Startup Repair: Database progress stats successfully recalculated and synchronized.")
+        except Exception as e:
+            print(f"Startup Repair Error: {e}")
+            db.rollback()
+        finally:
+            db.close()
+
     def get_sign_classifier() -> SPOTERONNXInferer:
         nonlocal sign_classifier, sign_classifier_error
         if sign_classifier is not None:

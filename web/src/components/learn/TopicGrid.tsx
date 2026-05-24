@@ -127,8 +127,8 @@ export function TopicGrid({ topics, progressByTopic }: TopicGridProps) {
               </button>
 
               {isExpanded ? (
-                <div className="px-6 pt-[22px] pb-6">
-                  <div className="grid grid-cols-[minmax(260px,320px)_minmax(0,1fr)] gap-[18px]">
+                <div className="px-4 sm:px-6 pt-[22px] pb-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-[18px]">
                     <div className="grid gap-[14px] content-start p-[22px] rounded-[24px] border border-[rgba(92,118,184,0.14)] bg-[linear-gradient(180deg,rgba(247,250,255,0.94),rgba(255,255,255,0.96))]">
                       <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Từ đang chờ</p>
                       <h4 className="m-0 text-[1.7rem] font-display">{nextWord?.gloss ?? topic.glosses[0]}</h4>

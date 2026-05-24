@@ -349,7 +349,7 @@ export function PracticeWorkspace({
     <section className="relative min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)] text-[var(--ink)]">
       <div className="bg-dot-grid pointer-events-none absolute inset-0" />
 
-      <div className="relative max-w-[1440px] mx-auto px-8 pt-10 pb-8 grid gap-[26px]">
+      <div className="relative max-w-[1440px] mx-auto px-4 sm:px-8 pt-10 pb-8 grid gap-[26px]">
         <button
           type="button"
           onClick={onBackToLearn}
@@ -381,7 +381,7 @@ export function PracticeWorkspace({
 
 
         {/* Grid */}
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-[18px]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-[18px]">
           {/* Coach card */}
           <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-6 grid gap-[18px] content-start">
 
@@ -527,53 +527,53 @@ export function PracticeWorkspace({
 
         {/* Footer */}
         <div className="grid gap-[14px]">
-          <div className="flex justify-between gap-4 items-center">
+          <div className="flex flex-col md:flex-row justify-between gap-4 items-center">
             {onBackToLearn ? (
               <button
                 type="button"
-                className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594]"
+                className="w-full md:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594]"
                 onClick={onBackToLearn}
               >
                 <ArrowLeft size={16} />
                 Xem lại từ này
               </button>
             ) : (
-              <div />
+              <div className="hidden md:block" />
             )}
 
-            <div className="flex gap-[10px] flex-wrap justify-center">
+            <div className="flex gap-[10px] flex-wrap justify-center w-full md:w-auto">
               <button
                 type="button"
-                className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594] disabled:opacity-55 disabled:cursor-not-allowed"
+                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 min-h-[44px] px-4 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.85rem] sm:text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594] disabled:opacity-55 disabled:cursor-not-allowed"
                 onClick={playSegments}
                 disabled={!analysis}
               >
-                <Play size={16} />
+                <Play size={14} />
                 Play segment
               </button>
               <button
                 type="button"
-                className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594] disabled:opacity-55 disabled:cursor-not-allowed"
+                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 min-h-[44px] px-4 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.85rem] sm:text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594] disabled:opacity-55 disabled:cursor-not-allowed"
                 onClick={pauseSegments}
                 disabled={!analysis}
               >
-                <Pause size={16} />
+                <Pause size={14} />
                 Pause
               </button>
               <button
                 type="button"
-                className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594] disabled:opacity-55 disabled:cursor-not-allowed"
+                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 min-h-[44px] px-4 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.85rem] sm:text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594] disabled:opacity-55 disabled:cursor-not-allowed"
                 onClick={resetSegments}
                 disabled={!analysis}
               >
-                <RotateCcw size={16} />
+                <RotateCcw size={14} />
                 Reset
               </button>
             </div>
 
             <button
               type="button"
-              className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border-0 rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-gradient-to-br from-[#5c72fb] to-[#67bfff] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)] disabled:opacity-55 disabled:cursor-not-allowed"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border-0 rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-gradient-to-br from-[#5c72fb] to-[#67bfff] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)] disabled:opacity-55 disabled:cursor-not-allowed"
               onClick={handleComplete}
               disabled={!analysis}
             >

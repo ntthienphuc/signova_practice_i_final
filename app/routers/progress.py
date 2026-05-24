@@ -203,6 +203,7 @@ def get_review_words(current_user: User = Depends(get_current_user), db: Session
             "correct_attempt_count": p.correct_attempt_count,
             "best_practice1_score": p.best_practice1_score,
             "last_practice1_score": p.last_practice1_score,
+            "accepted_once": p.accepted_once,
             "updated_at": p.updated_at
         })
         
