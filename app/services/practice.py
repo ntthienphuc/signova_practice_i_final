@@ -20,7 +20,7 @@ def save_practice_attempt(
     
     # Decision flags
     decision = analysis_result.get("decision", {})
-    accepted = bool(decision.get("accepted", False))
+    accepted = bool(decision.get("accept_as_target", False) or decision.get("accepted", False))
     wrong_word_detected = bool(decision.get("wrong_word_detected", False))
     predicted_wrong_gloss = decision.get("predicted_wrong_gloss")
     target_rank = analysis_result.get("target_rank")
