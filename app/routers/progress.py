@@ -15,20 +15,37 @@ router = APIRouter(prefix="/progress", tags=["progress"])
 def get_my_progress(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if current_user.role != "learner":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only learners have progress")
-        
+
     profile = current_user.learner_profile
     if not profile:
         raise HTTPException(status_code=404, detail="Learner profile not found")
-        
-    topic_progress = db.query(LearnerTopicProgress).filter(
+
+    topic_progress_list = db.query(LearnerTopicProgress).filter(
         LearnerTopicProgress.learner_user_id == current_user.id
     ).all()
-    
+
+    result = []
+    for tp in topic_progress_list:
+        studied_count = db.query(LearnerWordProgress).join(Word).filter(
+            LearnerWordProgress.learner_user_id == current_user.id,
+            Word.topic_id == tp.topic_id,
+            LearnerWordProgress.studied == True
+        ).count()
+        result.append({
+            "topic_id": tp.topic_id,
+            "completed_words": studied_count,
+            "checkpoint5_passed": tp.checkpoint5_passed,
+            "practice2_final_passed": tp.practice2_final_passed,
+            "completed": tp.completed,
+            "last_word_index": tp.last_word_index,
+            "updated_at": tp.updated_at,
+        })
+
     return {
         "learning_streak": profile.learning_streak,
         "xp": profile.xp,
         "resume_state": profile.resume_state_json,
-        "topic_progress": topic_progress
+        "topic_progress": result,
     }
 
 @router.get("/topic/{topic_id}")
@@ -152,7 +169,7 @@ def mark_word_viewed(req: WordViewedRequest, current_user: User = Depends(get_cu
                 Word.topic_id == word.topic_id,
                 LearnerWordProgress.studied == True
             ).count()
-            tp.completed_words = studied_count + 1
+            tp.completed_words = studied_count
             if word.order_index > tp.last_word_index:
                 tp.last_word_index = word.order_index
                 

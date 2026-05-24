@@ -229,17 +229,17 @@ export function AccountTab({
           ) : (
             <div className="space-y-4">
               <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center justify-between">
-                <span>➕ Thêm {role === "parent" ? "con" : "học sinh"} mới</span>
+                <span>➕ Thêm {role === "parent" ? "thành viên" : "học sinh"}</span>
               </h3>
 
               <form onSubmit={onSendLinkRequest} className="space-y-3">
                 <label className="grid gap-2 my-[18px] relative">
-                  <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Tìm kiếm tài khoản học sinh</span>
+                  <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Tìm kiếm tài khoản</span>
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={onSearchLearnerChange}
-                    placeholder="Nhập tên tài khoản học sinh..."
+                    placeholder="Nhập tên tài khoản"
                     className="w-full border border-[rgba(47,71,112,0.12)] rounded-[16px] px-4 py-[14px] bg-white/[0.82] text-[var(--ink)] text-base pr-10"
                   />
                   {searching && (

@@ -32,7 +32,9 @@ export interface AnalysisResponse {
 
 export function ensureBaseUrl(value: string): string {
   // Use remote HF Spaces backend as default, not local localhost
-  const defaultUrl = "https://thienphuc12339-signova-backend.hf.space";
+  // const defaultUrl = "https://thienphuc12339-signova-backend.hf.space";
+  const defaultUrl = "http://127.0.0.1:8010";
+
   const baseUrl = value || defaultUrl;
   // Normalize: ensure trailing slash, handle both with and without it
   return baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
@@ -65,14 +67,21 @@ export function createApiClient(baseUrl: string): AxiosInstance {
 export function handleAxiosError(error: unknown): never {
   if (axios.isAxiosError(error) && error.response) {
     const data = error.response.data as unknown;
-    const message = typeof data === "string" ? data : JSON.stringify(data);
+    let message: string;
+    if (typeof data === "string") {
+      message = data;
+    } else if (data && typeof data === "object" && "detail" in data && typeof (data as Record<string, unknown>).detail === "string") {
+      message = (data as Record<string, unknown>).detail as string;
+    } else {
+      message = JSON.stringify(data);
+    }
     throw new Error(message || `HTTP ${error.response.status}`);
   }
   throw error;
 }
 
 export const BASE_URL = ensureBaseUrl(
-  (import.meta.env.VITE_API_BASE_URL as string) || "https://thienphuc12339-signova-backend.hf.space"
+  (import.meta.env.VITE_API_BASE_URL as string) || "http://127.0.0.1:8010"
 );
 export const apiClient = createApiClient(BASE_URL);
 
