@@ -320,20 +320,103 @@ def build_reference_bank_from_sequences(
 def compare_to_reference_bank(seq: PoseSequence, bank: ReferenceBank) -> dict:
     user_r = normalized_resampled_pose(seq, len(bank.median_xy))
     xy = user_r.xy
+    num_frames, num_joints = xy.shape[0], xy.shape[1]
+    connections = skeleton_connections(bank.names)
     matched_template_index = None
+
+    # Identify which joints have incoming skeletal angles
+    has_angle = np.zeros(num_joints, dtype=bool)
+    for _, idx_b in connections:
+        has_angle[idx_b] = True
+
     if bank.template_xy is not None and len(bank.template_xy) > 0:
+        num_templates = len(bank.template_xy)
+        ratio_angle_joints = np.zeros((num_templates, num_frames, num_joints), dtype=np.float32)
+        
+        # Calculate coordinates ratios across all templates
         template_distances = np.linalg.norm(bank.template_xy - xy[None, ...], axis=-1)
-        template_ratios = template_distances / np.maximum(bank.tolerance[None, ...], 1e-6)
+        ratios_coord = template_distances / np.maximum(bank.tolerance[None, ...], 1e-6)
+        
+        # Calculate segment angular ratios across all templates using dynamic angular tolerances
+        for idx_a, idx_b in connections:
+            user_vec = xy[:, idx_b, :] - xy[:, idx_a, :]
+            user_vec_norm = np.linalg.norm(user_vec, axis=-1, keepdims=True)
+            user_dir = user_vec / np.maximum(user_vec_norm, 1e-6)
+            
+            ref_vecs = bank.template_xy[:, :, idx_b, :] - bank.template_xy[:, :, idx_a, :]
+            ref_vecs_norm = np.linalg.norm(ref_vecs, axis=-1, keepdims=True)
+            ref_dirs = ref_vecs / np.maximum(ref_vecs_norm, 1e-6)
+            
+            # 1. Calculate median direction vector across templates
+            median_dir = np.nanmedian(ref_dirs, axis=0)
+            median_dir_norm = np.linalg.norm(median_dir, axis=-1, keepdims=True)
+            median_dir = median_dir / np.maximum(median_dir_norm, 1e-6)
+            
+            # 2. Calculate angular deviation of templates from median direction
+            cos_sim_ref = np.sum(ref_dirs * median_dir[None, ...], axis=-1)
+            angles_ref = np.arccos(np.clip(cos_sim_ref, -1.0, 1.0))
+            
+            # 3. Dynamic angular tolerance: 85th quantile + 0.05 margin, with a floor of 0.20 radians (~11.5 deg)
+            ang_tol = np.nanquantile(angles_ref, 0.85, axis=0) + 0.05
+            ang_tol = np.maximum(ang_tol, 0.20)
+            
+            # 4. Calculate angular deviation of user from each template direction
+            cos_sim = np.sum(user_dir[None, ...] * ref_dirs, axis=-1)
+            angles = np.arccos(np.clip(cos_sim, -1.0, 1.0))
+            
+            ratio_angle = angles / np.maximum(ang_tol[None, ...], 1e-6)
+            ratio_angle_joints[:, :, idx_b] = ratio_angle
+            
+        # Blend ratios (60% coordinate distance + 40% angular direction where angle exists)
+        ratios_blended = np.zeros_like(ratios_coord)
+        for idx in range(num_joints):
+            if has_angle[idx]:
+                ratios_blended[:, :, idx] = 0.6 * ratios_coord[:, :, idx] + 0.4 * ratio_angle_joints[:, :, idx]
+            else:
+                ratios_blended[:, :, idx] = ratios_coord[:, :, idx]
+        
+        # Pick overall best matching template for visualization
         template_valid_mask = np.isfinite(xy).all(axis=-1)
-        template_ratios[:, ~template_valid_mask] = np.nan
-        per_template_score = np.nanmedian(template_ratios, axis=(1, 2))
+        ratios_masked = ratios_blended.copy()
+        ratios_masked[:, ~template_valid_mask] = np.nan
+        per_template_score = np.nanmedian(ratios_masked, axis=(1, 2))
         per_template_score = np.where(np.isfinite(per_template_score), per_template_score, np.inf)
         matched_template_index = int(np.nanargmin(per_template_score))
         reference_xy = bank.template_xy[matched_template_index]
+        
+        # Consensus: pick minimum ratio across all templates for each frame & joint
+        ratios = np.nanmin(ratios_blended, axis=0)
     else:
         reference_xy = bank.median_xy
+        ratio_angle_joints = np.zeros((num_frames, num_joints), dtype=np.float32)
+        
+        # Coordinates ratios
+        distances = np.linalg.norm(xy - reference_xy, axis=-1)
+        ratios_coord = distances / np.maximum(bank.tolerance, 1e-6)
+        
+        # Angles with a fixed fallback tolerance (0.40 radians ~23 deg)
+        for idx_a, idx_b in connections:
+            user_vec = xy[:, idx_b, :] - xy[:, idx_a, :]
+            user_vec_norm = np.linalg.norm(user_vec, axis=-1, keepdims=True)
+            user_dir = user_vec / np.maximum(user_vec_norm, 1e-6)
+            
+            ref_vec = reference_xy[:, idx_b, :] - reference_xy[:, idx_a, :]
+            ref_vec_norm = np.linalg.norm(ref_vec, axis=-1, keepdims=True)
+            ref_dir = ref_vec / np.maximum(ref_vec_norm, 1e-6)
+            
+            cos_sim = np.sum(user_dir * ref_dir, axis=-1)
+            angles = np.arccos(np.clip(cos_sim, -1.0, 1.0))
+            ratio_angle = angles / 0.40
+            ratio_angle_joints[:, idx_b] = ratio_angle
+            
+        ratios = np.zeros_like(ratios_coord)
+        for idx in range(num_joints):
+            if has_angle[idx]:
+                ratios[:, idx] = 0.6 * ratios_coord[:, idx] + 0.4 * ratio_angle_joints[:, idx]
+            else:
+                ratios[:, idx] = ratios_coord[:, idx]
+
     distances = np.linalg.norm(xy - reference_xy, axis=-1)
-    ratios = distances / np.maximum(bank.tolerance, 1e-6)
     valid_mask = np.isfinite(xy).all(axis=-1) & np.isfinite(reference_xy).all(axis=-1)
     ratios[~valid_mask] = np.nan
     bad_mask = ratios > 1.0
@@ -343,9 +426,14 @@ def compare_to_reference_bank(seq: PoseSequence, bank: ReferenceBank) -> dict:
     component_ratio: Dict[str, float] = {}
     component_valid_fraction: Dict[str, float] = {}
     for group, idxs in bank.groups.items():
-        component_bad_fraction[group] = float(np.nanmean(bad_mask_float[:, idxs]))
-        component_ratio[group] = float(np.nanmedian(ratios[:, idxs]))
-        component_valid_fraction[group] = float(np.mean(valid_mask[:, idxs]))
+        if len(idxs) > 0 and np.any(valid_mask[:, idxs]):
+            component_bad_fraction[group] = float(np.nanmean(bad_mask_float[:, idxs]))
+            component_ratio[group] = float(np.nanmedian(ratios[:, idxs]))
+            component_valid_fraction[group] = float(np.mean(valid_mask[:, idxs]))
+        else:
+            component_bad_fraction[group] = 0.0
+            component_ratio[group] = 0.0
+            component_valid_fraction[group] = 0.0
 
     valid_fraction = float(np.mean(valid_mask))
     bad_fraction = float(np.nanmean(bad_mask_float)) if np.any(valid_mask) else 1.0
