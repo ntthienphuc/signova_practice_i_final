@@ -6,7 +6,16 @@ from sqlalchemy import pool
 from alembic import context
 
 # Insert project root to path so we can import app modules
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import os
+project_root = str(Path(__file__).resolve().parent.parent)
+print(f"[ALEMBIC] env.py: project_root={project_root}, cwd={os.getcwd()}")
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Handle potential module shadowing of 'app'
+if 'app' in sys.modules:
+    print(f"[ALEMBIC] env.py: 'app' already in sys.modules, source={getattr(sys.modules['app'], '__file__', 'unknown')}. Removing to prevent shadowing.")
+    del sys.modules['app']
 
 from app.config import settings
 from app.models import Base

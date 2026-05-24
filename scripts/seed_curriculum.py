@@ -3,7 +3,11 @@ import sys
 from pathlib import Path
 
 # Add project root to path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+project_root = str(Path(__file__).resolve().parent.parent)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+if 'app' in sys.modules:
+    del sys.modules['app']
 
 from sqlalchemy.orm import Session
 from app.db import SessionLocal
