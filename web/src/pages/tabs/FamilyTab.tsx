@@ -1,107 +1,153 @@
-import { DashboardPlaceholder } from "../../components/DashboardPlaceholder";
+import { useState } from "react";
+import { LearnerProgressDetails } from "./ProgressTab";
+import type { Topic } from "../../types/learn";
 
 interface FamilyTabProps {
   currentUser: any;
   loadingDash: boolean;
   parentDashData: any;
+  topics: Topic[];
 }
 
-export function FamilyTab({ currentUser, loadingDash, parentDashData }: FamilyTabProps) {
+export function FamilyTab({ currentUser, loadingDash, parentDashData, topics }: FamilyTabProps) {
+  const [activeMemberId, setActiveMemberId] = useState<string>("parent");
+
   if (currentUser?.role !== "parent") {
     return (
-      <DashboardPlaceholder
-        title="Dashboard Gia đình"
-        description="Phần dashboard dành riêng cho phụ huynh. Vui lòng đăng nhập bằng tài khoản Phụ huynh."
-      />
+      <section className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-6 text-center max-w-md mx-auto my-12">
+        <div className="text-4xl mb-3">👨‍👩‍👧</div>
+        <h2 className="text-xl font-black text-slate-800 m-0">Dashboard Gia đình</h2>
+        <p className="text-slate-500 mt-2 font-bold text-xs">
+          Phần dashboard dành riêng cho phụ huynh. Vui lòng đăng nhập bằng tài khoản Phụ huynh nhé!
+        </p>
+      </section>
     );
   }
 
+  const selfProgress = parentDashData?.self_progress;
+  const linkedLearners = parentDashData?.linked_learners || [];
+
   return (
     <section className="space-y-6">
-      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
-        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-indigo-600 font-bold">Dashboard Phụ Huynh</p>
-        <h2>Theo dõi tiến độ học của con</h2>
-        <p className="text-[var(--ink-soft)] leading-[1.62]">Dữ liệu được đồng bộ trực tiếp từ các buổi tập và bài kiểm tra của con.</p>
+      {/* Banner */}
+      <div 
+        className="text-white p-6 relative overflow-hidden rounded-[28px]"
+        style={{
+          backgroundColor: "#1cb0f6",
+          borderBottom: "2px solid #1899d6"
+        }}
+      >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-[120px] pointer-events-none" />
+        <p className="m-0 text-xs uppercase tracking-[0.2em] font-black text-sky-100">Gia đình cùng học 👨‍👩‍👧</p>
+        <h2 className="text-2xl font-black m-0 mt-1">Cổng kết nối Signova Family Hub</h2>
+        <p className="text-sky-50 font-bold m-0 mt-1.5 leading-relaxed max-w-xl text-xs">
+          Đồng hành cùng con trên con đường học ngôn ngữ ký hiệu. Ba mẹ có thể tự học và theo dõi sát sao từng bước tiến bộ của con!
+        </p>
       </div>
 
       {loadingDash ? (
-        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center">Đang tải dữ liệu học tập...</div>
-      ) : !parentDashData || !parentDashData.linked_learners || parentDashData.linked_learners.length === 0 ? (
-        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-8 text-center text-slate-500 font-medium">
-          Chưa có tài khoản học sinh nào được liên kết. Hãy vào trang liên kết trong tài khoản của con để kết nối.
+        <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-10 text-center text-slate-400 font-bold">
+          <div className="w-8 h-8 rounded-full border-3 border-indigo-500/20 border-t-indigo-500 animate-spin mx-auto mb-3" />
+          Đang tải dữ liệu học tập của gia đình...
         </div>
       ) : (
         <div className="space-y-6">
-          {parentDashData.linked_learners.map((learner: any) => (
-            <div key={learner.learner_id} className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-                    {learner.username[0].toUpperCase()}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-800">{learner.username}</h3>
-                    <span className="text-xs text-slate-500">Học sinh</span>
-                  </div>
-                </div>
-                <div className="text-right text-xs">
-                  <div>🔥 Chuỗi học: <strong>{learner.learning_streak} ngày</strong></div>
-                  <div className="mt-0.5">⭐ Tổng điểm XP: <strong>{learner.xp}</strong></div>
-                </div>
-              </div>
+          {/* Member Pills */}
+          <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-5">
+            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3 px-1 select-none">
+              👥 Thành viên gia đình
+            </h4>
+            <div className="flex flex-wrap gap-3">
+              {/* Parent Option */}
+              {selfProgress && (
+                <button
+                  type="button"
+                  onClick={() => setActiveMemberId("parent")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-black text-sm transition-all border-2 cursor-pointer ${
+                    activeMemberId === "parent"
+                      ? "bg-[#1cb0f6] border-b-2 border-[#1899d6] text-white active:border-b-0 active:translate-y-[2px]"
+                      : "bg-white border-2 border-b-2 border-slate-200 text-slate-700 hover:bg-slate-50 active:border-b-0 active:translate-y-[1px]"
+                  }`}
+                >
+                  <span className="text-lg">🧑‍🏫</span>
+                  <span>Ba/Mẹ (Bạn)</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-black ${
+                    activeMemberId === "parent" ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600"
+                  }`}>
+                    🔥 {selfProgress.learning_streak || 0}
+                  </span>
+                </button>
+              )}
 
-              <div>
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Độ hoàn thành Topic</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {learner.topic_progress && learner.topic_progress.length > 0 ? (
-                    learner.topic_progress.map((tp: any) => (
-                      <div key={tp.topic_id} className="bg-slate-50 p-3 rounded-xl flex items-center justify-between">
-                        <div>
-                          <span className="text-xs font-bold text-slate-700">
-                            {tp.topic_id === "topic_1" ? "Chủ đề 1" : "Chủ đề 2"}
-                          </span>
-                          <span className="block text-[10px] text-slate-500 mt-0.5">Đã học: {tp.completed_words}/10 từ</span>
-                        </div>
-                        <div className="text-right">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${tp.completed ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>
-                            {tp.completed ? "Hoàn thành" : "Đang học"}
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-xs text-slate-400 col-span-2">Chưa bắt đầu học topic nào.</div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hoạt động luyện tập gần đây</h4>
-                <div className="space-y-2">
-                  {learner.recent_attempts && learner.recent_attempts.length > 0 ? (
-                    learner.recent_attempts.map((att: any) => (
-                      <div key={att.id} className="bg-slate-50 p-2.5 rounded-lg flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${att.practice_mode === "practice_i" ? "bg-indigo-100 text-indigo-800" : "bg-sky-100 text-sky-800"}`}>
-                            {att.practice_mode === "practice_i" ? "Luyện từ" : "Kiểm tra"}
-                          </span>
-                          <span className="font-semibold text-slate-700">{att.target_gloss}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span>Điểm số: <strong>{Math.round(att.score)}đ</strong></span>
-                          <span className={att.accepted ? "text-emerald-600 font-bold" : "text-amber-600 font-bold"}>
-                            {att.accepted ? "Đạt" : "Cần tập lại"}
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-xs text-slate-400">Chưa ghi nhận hoạt động luyện tập nào.</div>
-                  )}
-                </div>
-              </div>
+              {/* Kids Options */}
+              {linkedLearners.map((learner: any) => (
+                <button
+                  key={learner.learner_id}
+                  type="button"
+                  onClick={() => setActiveMemberId(learner.learner_id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-black text-sm transition-all border-2 cursor-pointer ${
+                    activeMemberId === learner.learner_id
+                      ? "bg-[#58cc02] border-b-2 border-[#58a700] text-white active:border-b-0 active:translate-y-[2px]"
+                      : "bg-white border-2 border-b-2 border-slate-200 text-slate-700 hover:bg-slate-50 active:border-b-0 active:translate-y-[1px]"
+                  }`}
+                >
+                  <span className="text-lg">👶</span>
+                  <span>{learner.display_name || learner.username}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-black ${
+                    activeMemberId === learner.learner_id ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600"
+                  }`}>
+                    🔥 {learner.learning_streak || 0}
+                  </span>
+                </button>
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* Active Profile Progress Details */}
+          {activeMemberId === "parent" && selfProgress ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2.5 px-2">
+                <span className="text-2xl">🧑‍🏫</span>
+                <div>
+                  <h3 className="font-black text-lg text-slate-800 m-0">Tiến độ học tập của Ba/Mẹ</h3>
+                  <p className="text-slate-500 text-[10px] font-bold m-0 mt-0.5">Dữ liệu tự học và luyện tập của chính bạn</p>
+                </div>
+              </div>
+              <LearnerProgressDetails data={selfProgress} topics={topics} />
+            </div>
+          ) : (
+            (() => {
+              const selectedKid = linkedLearners.find((l: any) => l.learner_id === activeMemberId);
+              if (selectedKid) {
+                return (
+                  <div className="space-y-4 animate-fade-in">
+                    <div className="flex items-center gap-2.5 px-2">
+                      <span className="text-2xl">👶</span>
+                      <div>
+                        <h3 className="font-black text-lg text-slate-800 m-0">Tiến độ của bé {selectedKid.display_name || selectedKid.username}</h3>
+                        <p className="text-slate-500 text-[10px] font-bold m-0 mt-0.5">Kết quả học tập đồng bộ trực tiếp từ bé</p>
+                      </div>
+                    </div>
+                    <LearnerProgressDetails data={selectedKid} topics={topics} />
+                  </div>
+                );
+              }
+              return (
+                <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-8 text-center text-slate-400 font-bold">
+                  Chưa chọn thành viên nào để xem chi tiết.
+                </div>
+              );
+            })()
+          )}
+
+          {/* Link Kids Notice if no kids are linked */}
+          {linkedLearners.length === 0 && (
+            <div className="bg-[#fffbeb] border border-amber-250 rounded-[24px] p-5 text-center text-amber-800 font-bold text-xs">
+              <p className="m-0 leading-relaxed">
+                💡 Ba mẹ chưa liên kết với tài khoản của bé nào. Hãy vào mục <strong>Tài khoản</strong> để gửi yêu cầu kết nối với bé nhé!
+              </p>
+            </div>
+          )}
         </div>
       )}
     </section>

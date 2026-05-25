@@ -23,10 +23,10 @@ export function TopicSummary({
 
   return (
     <section className="grid gap-6">
-      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] grid gap-[18px] p-[34px] bg-[radial-gradient(circle_at_top_right,rgba(255,207,148,0.18),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,251,255,0.96))]">
+      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] grid gap-[18px] p-[34px] bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.12),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,251,255,0.96))]">
         <div className="grid gap-[10px]">
-          <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Topic Summary</p>
-          <div className="inline-flex items-center rounded-full py-2 px-3 font-bold text-[0.92rem] bg-[#ffdff1] text-[#a8517e]">🎉 Xong một topic rồi!</div>
+          <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-sky-600 font-extrabold">Topic Summary</p>
+          <div className="inline-flex items-center rounded-full py-2 px-3 font-bold text-[0.92rem] bg-emerald-100 text-emerald-800">🎉 Xong một topic rồi!</div>
           <h2>{topic.title}</h2>
           <p className="text-[var(--ink-soft)] leading-[1.62]">
             Bạn đã học xong {topic.word_count} từ, hoàn thành Practice I từng từ, checkpoint 5 từ,
@@ -69,7 +69,7 @@ export function TopicSummary({
       </div>
 
       <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6">
-        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Danh sách từ</p>
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-indigo-600 font-extrabold">Danh sách từ</p>
         <div className="flex flex-wrap gap-[10px]">
           {topic.glosses.map((gloss) => (
             <span key={gloss} className="inline-flex items-center px-[14px] py-[10px] rounded-full bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white border-transparent text-[1rem] font-bold">

@@ -6,7 +6,7 @@ export type { Topic };
 export const TOPIC_COLORS: Record<string, string> = {
   "topic_1": "#22C55E", // Bright Green
   "topic_2": "#0EA5E9", // Vibrant Blue/Cyan
-  "topic_3": "#F59E0B", // Amber/Orange
+  "topic_3": "#6366F1", // Indigo
 };
 
 /** Helper constructor matching the real backend signature schema exactly */

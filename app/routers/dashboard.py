@@ -99,7 +99,15 @@ def get_parent_dashboard(current_user: User = Depends(get_current_user), db: Ses
             summary = get_learner_dashboard_data(db, kid)
             kids_data.append(summary)
             
-    return {"linked_learners": kids_data}
+    # Get parent's own progress (initialize learner profile if not exists)
+    from app.routers.progress import get_or_create_learner_profile
+    get_or_create_learner_profile(current_user, db)
+    parent_self_data = get_learner_dashboard_data(db, current_user)
+            
+    return {
+        "linked_learners": kids_data,
+        "self_progress": parent_self_data
+    }
 
 @router.get("/school")
 def get_school_dashboard(class_name: Optional[str] = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):

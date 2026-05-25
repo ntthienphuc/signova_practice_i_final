@@ -1,4 +1,4 @@
-import { Play } from "lucide-react";
+import { Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { apiClient } from "../api/client";
 import type { Topic, WordItem } from "../types/learn";
 
@@ -32,161 +32,163 @@ export function StudyStage({
   const referenceUrl = absoluteUrl(
     word.study?.reference?.playback_url ?? word.study?.reference?.video_url
   );
-  const referenceSegment = word.study?.reference?.segment;
   const totalWords = topic.words.length || 1;
   const progressRatio = topic.words.length > 0 ? ((wordIndex + 1) / topic.words.length) * 100 : 0;
-  const checkpointLabel = word.checkpoint_group === 1 ? "Nhóm 1/5" : "Nhóm 2/5";
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)] text-[var(--ink)]">
-      <div className="bg-dot-grid pointer-events-none absolute inset-0 opacity-100" />
+    <section className="relative min-h-screen bg-[#f0f6ff] text-[#1e2742] font-sans">
+      {/* Top bar: back + progress */}
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b-2 border-slate-200">
+        <div className="max-w-[900px] mx-auto px-4 py-3 flex items-center gap-4">
+          <button
+            type="button"
+            onClick={onBackToTopics}
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-200 flex items-center justify-center text-slate-600 transition-all cursor-pointer flex-shrink-0"
+          >
+            <ChevronLeft size={20} />
+          </button>
 
-      <div className="relative flex flex-col min-h-screen max-w-[1440px] mx-auto px-4 sm:px-8 pt-10 pb-8">
-        <button
-          type="button"
-          onClick={onBackToTopics}
-          className="absolute top-4 right-4 py-2 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 font-bold rounded-xl text-xs transition-all border-0 cursor-pointer flex items-center gap-1 z-10 shadow-sm"
-        >
-          🚪 Thoát
-        </button>
-
-        {/* Progress */}
-        <div className="pt-2 pb-6">
-          <div className="flex items-center justify-between mb-3 text-[#7b8aa3] text-[0.8rem] font-bold tracking-[0.08em] uppercase">
-            <span>Học từ ký hiệu</span>
-            <span>Từ {wordIndex + 1} / {totalWords}</span>
-          </div>
-          <div className="w-full h-1 overflow-hidden rounded-full bg-[rgba(83,110,249,0.12)]">
-            <div className="h-full rounded-[inherit] bg-[#0284c7] transition-[width_180ms_ease]" style={{ width: `${progressRatio}%` }} />
-          </div>
-        </div>
-
-        {/* Title */}
-        <div className="mb-8 text-center">
-          <span className="text-[clamp(2.2rem,5vw,3rem)] font-extrabold leading-[1.08] text-[#233157]">{word.gloss}</span>
-          <span className="text-[clamp(2.2rem,5vw,3rem)] font-extrabold leading-[1.08] mx-3 text-[#90a0bb]">/</span>
-          <span className="text-[clamp(2.2rem,5vw,3rem)] font-extrabold leading-[1.08] text-[#5f8efb]">{topic.title}</span>
-        </div>
-
-        {/* Panels */}
-        <div className="flex items-center justify-center gap-5 flex-1 pb-4 flex-wrap">
-          {/* Poster card */}
-          <article className="flex-shrink-0 overflow-hidden border border-[rgba(83,110,249,0.1)] rounded-[24px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] relative w-full max-w-[380px] aspect-square bg-white/[0.92] flex items-center justify-center">
-            {posterUrl ? (
-              <img src={posterUrl} alt={word.gloss} className="w-full h-full object-cover block" />
-            ) : (
-              <div className="p-6 text-[rgba(35,49,87,0.12)] text-6xl font-extrabold text-center leading-[1.1]">{word.gloss}</div>
-            )}
-          </article>
-
-          {/* Video card */}
-          <article className="flex-shrink-0 overflow-hidden border border-[rgba(83,110,249,0.1)] rounded-[24px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] relative w-full max-w-[380px] aspect-square bg-white/[0.96]">
-            {referenceUrl ? (
-              <video
-                src={referenceUrl}
-                poster={posterUrl || undefined}
-                className="w-full h-full object-cover block"
-                controls
-                playsInline
-                muted
+          {/* Progress track */}
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs font-black text-slate-500 uppercase tracking-wider">📖 {topic.title}</span>
+              <span className="text-xs font-black text-[#1cb0f6]">{wordIndex + 1} / {totalWords}</span>
+            </div>
+            <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+              <div
+                className="h-full rounded-full bg-[#1cb0f6] transition-all duration-500 ease-out"
+                style={{ width: `${progressRatio}%` }}
               />
-            ) : (
-              <div className="p-6 text-[rgba(35,49,87,0.12)] text-6xl font-extrabold text-center leading-[1.1]">Chưa có video mẫu</div>
+            </div>
+          </div>
+
+          {/* Dot nav */}
+          <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
+            {topic.words.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={index < wordIndex ? () => onPreviousWord?.(index) : undefined}
+                disabled={index > wordIndex}
+                className={`rounded-full border-0 transition-all p-0 ${
+                  index === wordIndex
+                    ? "w-5 h-2.5 bg-[#1cb0f6] cursor-default"
+                    : index < wordIndex
+                    ? "w-2.5 h-2.5 bg-[#1cb0f6]/40 cursor-pointer hover:bg-[#1cb0f6]/70"
+                    : "w-2.5 h-2.5 bg-slate-200 cursor-not-allowed"
+                }`}
+                aria-label={`Từ ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="max-w-[900px] mx-auto px-4 pt-6 pb-[180px] sm:pb-[100px]">
+        {/* Word title — giant, Duolingo-style */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 bg-[#1cb0f6]/10 px-4 py-1.5 rounded-full mb-3">
+            <span className="text-xs font-black text-[#1cb0f6] uppercase tracking-wider">Từ {wordIndex + 1}</span>
+            {isAlreadyLearned && (
+              <span className="text-xs font-black bg-[#58cc02] text-white px-2 py-0.5 rounded-full">Đã học ✓</span>
             )}
-            <div className="absolute right-0 bottom-0 left-0 top-0 p-3 text-center pointer-events-none">
-              <p className="m-0 text-[#75839a] text-[0.8rem]">Video mẫu</p>
-              <strong className="text-[#223153] text-[0.95rem]">{word.gloss}</strong>
-            </div>
-          </article>
-
-          {/* Meta card */}
-          <article className="flex-shrink-0 overflow-hidden border border-[rgba(83,110,249,0.1)] rounded-[24px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] w-full max-w-[380px] min-h-[380px] p-6 bg-white/[0.94] flex flex-col gap-[18px]">
-            <div>
-              <p className="m-0 mb-1.5 text-[#7c8aa2] text-[0.72rem] font-bold tracking-[0.14em] uppercase">TỪ TIẾNG VIỆT</p>
-              <p className="m-0 text-[#223153] text-[1.35rem] font-extrabold">{word.gloss}</p>
-            </div>
-
-            <div>
-              <p className="m-0 mb-1.5 text-[#7c8aa2] text-[0.72rem] font-bold tracking-[0.14em] uppercase">CHECKPOINT</p>
-              <p className="m-0 text-[#5f8efb] text-[1.35rem] font-extrabold">{checkpointLabel}</p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center px-2.5 py-1.5 rounded-full border border-[rgba(83,110,249,0.16)] bg-[rgba(83,110,249,0.08)] text-[#5f8efb] text-[0.82rem] font-bold">{topic.title}</span>
-              <span className="inline-flex items-center px-2.5 py-1.5 rounded-full border border-[rgba(83,110,249,0.16)] bg-[rgba(83,110,249,0.08)] text-[#5f8efb] text-[0.82rem] font-bold">{word.study?.video_id ?? "sample"}</span>
-            </div>
-
-            <div>
-              <p className="m-0 mb-1.5 text-[#7c8aa2] text-[0.72rem] font-bold tracking-[0.14em] uppercase">MÔ TẢ</p>
-              <p className="m-0 text-[#6d7b92] leading-[1.7]">
-                Xem kỹ hình minh họa và video mẫu của từ này trước. Sau đó bấm vào nút luyện tập để
-                quay thử và nhận phản hồi AI.
-              </p>
-            </div>
-
-            {referenceSegment ? (
-              <p className="m-0 text-[#6d7b92] leading-[1.7]">
-                Segment chuẩn: {referenceSegment.start_ms}ms → {referenceSegment.end_ms}ms
-              </p>
-            ) : null}
-          </article>
+          </div>
+          <h1 className="font-black text-[#1cb0f6] leading-none m-0 select-none tracking-tight" style={{ fontSize: 'clamp(3rem, 12vw, 6rem)' }}>
+            {word.gloss}
+          </h1>
+          <p className="text-slate-500 font-bold text-sm sm:text-base mt-2">
+            Chủ đề: <span className="text-slate-700 font-black">{topic.title}</span>
+          </p>
         </div>
 
-        {/* Footer */}
-        <div className="flex flex-col items-center gap-4 pt-7 pb-2">
-          <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4">
+        {/* Media cards: image + video side by side */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+          {/* Poster */}
+          <div className="bg-white border-2 border-b-4 border-[#58cc02]/40 rounded-[28px] overflow-hidden relative">
+            <div className="absolute top-3 left-3 z-10">
+              <span className="bg-[#58cc02] text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-xl">
+                🖼️ Hình minh họa
+              </span>
+            </div>
+            <div className="aspect-square">
+              {posterUrl ? (
+                <img src={posterUrl} alt={word.gloss} className="w-full h-full object-cover block" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-8xl text-slate-200 font-black">
+                  {word.gloss[0]}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Video */}
+          <div className="bg-white border-2 border-b-4 border-[#1cb0f6]/40 rounded-[28px] overflow-hidden relative">
+            <div className="absolute top-3 left-3 z-10">
+              <span className="bg-[#1cb0f6] text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-xl">
+                📺 Video mẫu
+              </span>
+            </div>
+            <div className="aspect-square">
+              {referenceUrl ? (
+                <video
+                  src={referenceUrl}
+                  poster={posterUrl || undefined}
+                  className="w-full h-full object-cover block bg-white"
+                  controls
+                  playsInline
+                  muted
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-slate-300 font-black text-lg">
+                  Chưa có video mẫu
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Tip box - hidden on small mobile */}
+        <div className="hidden sm:flex bg-[#fff8ee] border-2 border-b-4 border-[#ff9600]/30 rounded-2xl px-5 py-3 items-center gap-3 mb-6">
+          <span className="text-2xl">💡</span>
+          <p className="text-sm font-bold text-[#a06010] m-0">
+            Xem kỹ video mẫu rồi hãy thực hành. Để ý hướng tay và cử động của người mẫu nhé!
+          </p>
+        </div>
+      </div>
+
+      {/* Sticky bottom action bar — clears mobile bottom nav */}
+      <div className="fixed bottom-[72px] sm:bottom-0 left-0 right-0 z-40 bg-white border-t-2 border-slate-200">
+        <div className="max-w-[900px] mx-auto px-4 py-3 sm:py-4 flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={wordIndex === 0 ? onBackToTopics : () => onPreviousWord?.(wordIndex - 1)}
+            className="h-12 sm:h-14 px-4 sm:px-5 bg-white border-2 border-b-4 border-slate-200 text-slate-600 font-black rounded-2xl cursor-pointer flex items-center gap-1 sm:gap-1.5 hover:bg-slate-50 active:border-b-0 active:translate-y-[2px] transition-all text-sm flex-shrink-0"
+          >
+            <ChevronLeft size={18} />
+            <span className="hidden sm:inline">{wordIndex === 0 ? "Topics" : "Trước"}</span>
+          </button>
+
+          {isAlreadyLearned && onNextWord && (
             <button
               type="button"
-              onClick={wordIndex === 0 ? onBackToTopics : () => onPreviousWord?.(wordIndex - 1)}
-              className="w-full md:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594]"
+              onClick={onNextWord}
+              className="h-12 sm:h-14 px-4 sm:px-5 bg-white border-2 border-b-4 border-slate-200 text-[#1cb0f6] font-black rounded-2xl cursor-pointer flex items-center gap-1 sm:gap-1.5 hover:bg-sky-50 active:border-b-0 active:translate-y-[2px] transition-all text-sm flex-shrink-0"
             >
-              {wordIndex === 0 ? "← Quay lại topic" : "← Từ trước"}
+              <span className="hidden sm:inline">Bỏ qua</span>
+              <ChevronRight size={18} />
             </button>
+          )}
 
-            <div className="flex items-center gap-2 py-2">
-              {topic.words.map((topicWord, index) => (
-                <button
-                  key={topicWord.gloss}
-                  type="button"
-                  onClick={index < wordIndex ? () => onPreviousWord?.(index) : undefined}
-                  className={
-                    index === wordIndex
-                      ? "w-5 h-2 p-0 border-0 rounded-full bg-[#5c72fb] cursor-pointer transition-all"
-                      : "w-2 h-2 p-0 border-0 rounded-full bg-[rgba(83,110,249,0.18)] cursor-pointer transition-all disabled:cursor-default disabled:opacity-60"
-                  }
-                  disabled={index > wordIndex}
-                  aria-label={`Từ ${index + 1}`}
-                />
-              ))}
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
-              {isAlreadyLearned && onNextWord && (
-                <button
-                  type="button"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.3)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#5c72fb]"
-                  onClick={onNextWord}
-                >
-                  Bỏ qua → Từ tiếp theo
-                </button>
-              )}
-              <button
-                type="button"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border-0 rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-gradient-to-br from-[#5c72fb] to-[#67bfff] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)]"
-                onClick={onStartPractice}
-              >
-                <Play size={16} />
-                {isAlreadyLearned ? "Luyện lại" : "Luyện tập từ này"}
-              </button>
-            </div>
-          </div>
-
-          <div className="text-[#6d7b92] text-[0.95rem] text-center">
-            {isAlreadyLearned
-              ? <span>Từ này bạn đã học rồi — bỏ qua hoặc luyện lại tùy ý.</span>
-              : <span>Hoàn thành Practice của từ này để mở từ tiếp theo →</span>
-            }
-          </div>
+          {/* Main practice button */}
+          <button
+            type="button"
+            className="flex-1 h-12 sm:h-14 bg-[#58cc02] border-b-4 border-[#46a302] text-white font-black rounded-2xl cursor-pointer flex items-center justify-center gap-2 hover:bg-[#61e002] active:border-b-0 active:translate-y-[3px] transition-all text-sm sm:text-base"
+            onClick={onStartPractice}
+          >
+            <Play size={18} fill="white" />
+            {isAlreadyLearned ? "Luyện lại" : "Luyện tập ngay! 💪"}
+          </button>
         </div>
       </div>
     </section>

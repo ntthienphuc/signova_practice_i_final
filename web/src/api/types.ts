@@ -86,7 +86,9 @@ export interface Decision {
   needs_component_feedback: boolean;
   wrong_word_detected: boolean;
   predicted_wrong_gloss: string | null;
+  low_tracking_quality?: boolean;
 }
+
 
 export interface ReferenceBlock {
   matched_reference_id: string | null;

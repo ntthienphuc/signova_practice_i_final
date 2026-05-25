@@ -394,3 +394,32 @@ export async function getMyProgress(): Promise<any> {
     handleAxiosError(error);
   }
 }
+
+export async function createChild(data: {
+  username: string;
+  password: string;
+  display_name?: string;
+  dob?: string;
+}): Promise<any> {
+  try {
+    const response = await apiClient.post("/auth/create-child", data);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function createStudent(data: {
+  username: string;
+  password: string;
+  display_name?: string;
+  class_name?: string;
+  student_code?: string;
+}): Promise<any> {
+  try {
+    const response = await apiClient.post("/auth/create-student", data);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEventHandler } from "react";
-import { ArrowLeft, ArrowRight, Play, RotateCcw, UploadCloud, Pause } from "lucide-react";
+import { ArrowRight, UploadCloud } from "lucide-react";
 import {
   analyzeAttempt,
   type AnalyzeResponse,
@@ -8,7 +8,6 @@ import {
 } from "../api";
 import { apiClient } from "../api/client";
 import { drawOverlay, normalizeAnalysis, type NormalizedAnalysis, type NormalizedSegment } from "../overlay";
-import type { StudyMetadata } from "../types/learn";
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Đã có lỗi xảy ra.";
@@ -43,8 +42,8 @@ function normalizeSegment(segment: SegmentTiming | null | undefined): Normalized
 }
 
 const USER_PALETTE = {
-  baseEdge: "rgba(85, 206, 255, 0.22)",
-  baseJoint: "rgba(85, 206, 255, 0.38)",
+  baseEdge: "rgba(78, 255, 158, 0.22)",
+  baseJoint: "rgba(78, 255, 158, 0.38)",
   focusEdge: "rgba(255, 96, 96, 0.96)",
   focusJoint: "rgba(255, 120, 120, 1)",
 };
@@ -65,7 +64,7 @@ interface PracticeIIFeedbackState {
 }
 
 function metricDecision(decision?: Decision): string {
-  return decision?.accept_as_target ? "Đúng target" : "Cần sửa thêm";
+  return decision?.accept_as_target ? "Đạt chuẩn" : "Cần chỉnh thêm";
 }
 
 function practiceIIFeedback(
@@ -78,69 +77,61 @@ function practiceIIFeedback(
   if (decision.wrong_word_detected && decision.predicted_wrong_gloss) {
     return {
       tone: "warning",
-      title: "Phát hiện nhầm từ",
-      message: `Có thể bạn vừa ký sang từ "${decision.predicted_wrong_gloss}" thay vì "${targetGloss}".`,
+      title: "Nhầm ký hiệu",
+      message: `Có thể bạn làm nhầm sang từ "${decision.predicted_wrong_gloss}".`,
     };
   }
   if (decision.possible_wrong_word && decision.predicted_wrong_gloss) {
     return {
       tone: "info",
-      title: "Có khả năng nhầm từ",
-      message: `AI thấy bài làm đang nghiêng về "${decision.predicted_wrong_gloss}". Bạn nên xem lại target "${targetGloss}".`,
+      title: "Nghi ngờ nhầm",
+      message: `Bài làm giống từ "${decision.predicted_wrong_gloss}" hơn.`,
     };
   }
   if (decision.accept_as_target) {
     return {
       tone: "success",
-      title: "Đúng target",
-      message: `Bài làm hiện vẫn bám đúng target "${targetGloss}". Bạn chỉ cần tinh chỉnh các vùng đang bị tô đỏ nếu còn có.`,
+      title: "Chính xác",
+      message: `Đúng ký hiệu mẫu của từ "${targetGloss}".`,
     };
   }
-  return {
-    tone: "neutral",
-    title: "Tiếp tục so lại target",
-    message: `AI chưa thấy dấu hiệu nhầm sang từ khác, nhưng bài làm vẫn chưa khớp đủ với "${targetGloss}".`,
-  };
+  return null;
 }
 
 interface PracticeWorkspaceProps {
   mode: "practice_i" | "practice_ii";
   targetGloss: string;
   lessonGlosses: string[];
-  referenceStudy: StudyMetadata;
-  wordIndex?: number;
-  wordCount?: number;
+  referenceStudy: any;
+  wordIndex: number;
+  wordCount: number;
   title: string;
   subtitle: string;
   actionLabel: string;
   completionLabel: string;
   onBackToLearn?: () => void;
-  onComplete?: (raw: AnalyzeResponse) => void;
+  onComplete?: (rawAttempt: any) => void;
 }
-
-type PlaybackStatus = "idle" | "loading" | "metadata" | "ready" | "buffering" | "paused" | "error";
 
 export function PracticeWorkspace({
   mode,
   targetGloss,
   lessonGlosses,
   referenceStudy,
-  wordIndex = 0,
-  wordCount = 1,
-  title,
-  subtitle,
-  actionLabel,
+  wordIndex,
+  wordCount,
   completionLabel,
   onBackToLearn,
   onComplete,
 }: PracticeWorkspaceProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [analysis, setAnalysis] = useState<NormalizedAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
+  const [analysis, setAnalysis] = useState<NormalizedAnalysis | null>(null);
   const [error, setError] = useState("");
   const [playing, setPlaying] = useState(false);
-  const [userStatus, setUserStatus] = useState<PlaybackStatus>("idle");
-  const [referenceStatus, setReferenceStatus] = useState<PlaybackStatus>("idle");
+
+  const [userStatus, setUserStatus] = useState<string>("idle");
+  const [referenceStatus, setReferenceStatus] = useState<string>("idle");
 
   const userVideoRef = useRef<HTMLVideoElement | null>(null);
   const referenceVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -165,9 +156,7 @@ export function PracticeWorkspace({
   const userSegment = analysis?.userSegment ?? null;
   const referenceSegment = analysis?.referenceSegment ?? referenceFallbackSegment;
   const decision = analysis?.raw?.decision;
-  const feedback = analysis?.raw?.feedback;
   const progressRatio = wordCount > 0 ? ((wordIndex + 1) / wordCount) * 100 : 0;
-  const practiceIIStatus = mode === "practice_ii" ? practiceIIFeedback(decision, targetGloss) : null;
 
   useEffect(() => {
     setFile(null);
@@ -260,7 +249,13 @@ export function PracticeWorkspace({
   }
 
   const handleFileChange: ChangeEventHandler<HTMLInputElement> = (event) => {
-    setFile(event.target.files?.[0] ?? null);
+    const nextFile = event.target.files?.[0];
+    if (nextFile) {
+      setFile(nextFile);
+      setAnalysis(null);
+      setError("");
+      setPlaying(false);
+    }
   };
 
   async function handleAnalyze(): Promise<void> {
@@ -300,8 +295,22 @@ export function PracticeWorkspace({
     );
     userVideo.pause();
     referenceVideo.pause();
-    userVideo.currentTime = userSegment.segment_start_ms / 1000;
-    referenceVideo.currentTime = referenceSegment.segment_start_ms / 1000;
+
+    const userStart = userSegment.segment_start_ms / 1000;
+    const userEnd = userSegment.segment_end_ms / 1000;
+    const referenceStart = referenceSegment.segment_start_ms / 1000;
+    const referenceEnd = referenceSegment.segment_end_ms / 1000;
+
+    if (
+      userVideo.currentTime >= userEnd ||
+      userVideo.currentTime < userStart ||
+      referenceVideo.currentTime >= referenceEnd ||
+      referenceVideo.currentTime < referenceStart
+    ) {
+      userVideo.currentTime = userStart;
+      referenceVideo.currentTime = referenceStart;
+    }
+
     userVideo.playbackRate = userSegment.segment_duration_ms / commonDuration;
     referenceVideo.playbackRate = referenceSegment.segment_duration_ms / commonDuration;
     await Promise.allSettled([userVideo.play(), referenceVideo.play()]);
@@ -338,166 +347,109 @@ export function PracticeWorkspace({
     onComplete?.(analysis.raw);
   }
 
-  const calloutClass: Record<PracticeIITone, string> = {
-    warning: "bg-[rgba(245,158,11,0.14)] border-[rgba(245,158,11,0.18)] text-[#9a5b00]",
-    info: "bg-[rgba(83,110,249,0.1)] border-[rgba(83,110,249,0.14)] text-[#3f58d8]",
-    success: "bg-[rgba(74,222,128,0.12)] border-[rgba(34,197,94,0.14)] text-[#1f7a47]",
-    neutral: "bg-[rgba(111,125,148,0.1)] border-[rgba(111,125,148,0.12)] text-[#52617f]",
-  };
+  function handleSkip(): void {
+    onComplete?.(analysis?.raw as any);
+  }
+
+  const score = analysis ? Math.round(Number(analysis.raw.score ?? 0)) : 0;
+  const isWrongWord = !!decision?.wrong_word_detected;
+  const isLowTracking = !!decision?.low_tracking_quality;
+  const predictedWrongGloss = decision?.predicted_wrong_gloss;
+
+  const feedbackText = useMemo(() => {
+    if (!analysis) return "";
+    if (isWrongWord && predictedWrongGloss) {
+      return `Ký hiệu giống từ "${predictedWrongGloss}". Tập lại mẫu bên trái nhé! ❤️`;
+    }
+    if (isLowTracking) {
+      return "Camera không nhìn rõ tay. Hãy chỉnh lại góc máy và thử lại nha! 📸";
+    }
+    if (score >= 85) {
+      return `Xuất sắc! Đạt ${score} điểm! Bạn làm rất giỏi! 🎉`;
+    }
+    if (score >= 70) {
+      return `Làm tốt lắm! Được ${score} điểm rồi nè! 🌟`;
+    }
+    if (score >= 50) {
+      return `Cố lên! Bạn đạt ${score} điểm. Tập trung hơn một tí nhé! 💪`;
+    }
+    return `Đạt ${score} điểm. Hãy làm theo mẫu thêm một lần nữa nhé! 💖`;
+  }, [analysis, score, isWrongWord, isLowTracking, predictedWrongGloss]);
+
+  const isGoodScore = score >= 70;
+  const feedbackBg = isGoodScore ? "bg-[#f0fdf4] border-emerald-250 text-emerald-700" : "bg-[#fffbeb] border-amber-200 text-amber-700";
+  const feedbackTextColor = isGoodScore ? "text-emerald-600" : "text-amber-600";
+  const feedbackTitle = score >= 85 ? "🎉 TUYỆT VỜI!" : score >= 70 ? "🌟 RẤT TỐT!" : score >= 50 ? "💪 CỐ LÊN NÀO!" : "❤️ HÃY THỬ LẠI NHÉ!";
+  const nextButtonBg = isGoodScore
+    ? "bg-[#58cc02] border-b-2 border-[#58a700] hover:bg-[#61e002] text-white active:border-b-0 active:translate-y-[2px]"
+    : "bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white active:border-b-0 active:translate-y-[2px]";
 
   return (
-    <section className="relative min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)] text-[var(--ink)]">
-      <div className="bg-dot-grid pointer-events-none absolute inset-0" />
-
-      <div className="relative max-w-[1440px] mx-auto px-4 sm:px-8 pt-10 pb-8 grid gap-[26px]">
-        <button
-          type="button"
-          onClick={onBackToLearn}
-          className="absolute top-4 right-4 py-2 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 font-bold rounded-xl text-xs transition-all border-0 cursor-pointer flex items-center gap-1 z-10 shadow-sm"
-        >
-          🚪 Thoát
-        </button>
-
-        {/* Progress */}
-        <div className="pt-2 pb-6">
-          <div className="flex items-center justify-between mb-3 text-[#7b8aa3] text-[0.8rem] font-bold tracking-[0.08em] uppercase">
-            <span>{mode === "practice_i" ? "Practice I" : "Practice II"}</span>
-            <span>Bước {Math.min(wordIndex + 1, wordCount)} / {Math.max(wordCount, 1)}</span>
-          </div>
-          <div className="w-full h-1 overflow-hidden rounded-full bg-[rgba(83,110,249,0.12)]">
-            <div className="h-full rounded-[inherit] bg-[#0284c7] transition-[width_180ms_ease]" style={{ width: `${progressRatio}%` }} />
-          </div>
-        </div>
-
-        {/* Title */}
-        <div className="mb-[6px] text-center">
-          <span className="text-[clamp(2.2rem,5vw,2rem)] font-extrabold leading-[1.08] text-[#233157]">{targetGloss}</span>
-          <span className="text-[clamp(2.2rem,5vw,2rem)] font-extrabold leading-[1.08] mx-3 text-[#90a0bb]">/</span>
-          <span className="text-[clamp(2.2rem,5vw,2rem)] font-extrabold leading-[1.08] text-[#5f8efb]">
-            {mode === "practice_i" ? "Practice I" : "Practice II"}
+    <section className="relative min-h-screen bg-[#f0f6ff] text-[#233157] font-sans pb-[160px] sm:pb-16">
+      {/* Progress bar */}
+      <div className="max-w-[1200px] mx-auto px-4 pt-6">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-black text-sky-500 uppercase tracking-widest flex items-center gap-1">
+            {mode === "practice_i" ? "⭐ Luyện tập" : "🏆 Thử thách"}
+          </span>
+          <span className="text-sm font-black text-sky-600">
+            Từ {wordIndex + 1} / {wordCount}
           </span>
         </div>
+        <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200 shadow-inner">
+          <div 
+            className="h-full rounded-full bg-[#1cb0f6] transition-all duration-500" 
+            style={{ width: `${progressRatio}%` }} 
+          />
+        </div>
+      </div>
 
+      {/* Top Controls: sticky compact bar below the main nav */}
+      <div className="max-w-[1200px] mx-auto px-4 pt-3 flex justify-between items-center gap-3">
+        {onComplete ? (
+          <button
+            type="button"
+            onClick={handleSkip}
+            className="py-2 px-3 sm:px-4 bg-white border-2 border-b-2 border-slate-200 text-[#1cb0f6] font-black rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1 active:translate-y-[1px] active:border-b-0"
+          >
+            ⏭️ <span className="hidden sm:inline">Bỏ qua</span>
+          </button>
+        ) : <div />}
 
+        {onBackToLearn ? (
+          <button
+            type="button"
+            onClick={onBackToLearn}
+            className="py-2 px-3 sm:px-4 bg-white border-2 border-b-2 border-rose-200 text-rose-500 font-black rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1.5 active:translate-y-[1px] active:border-b-0"
+          >
+            🏠 <span className="hidden sm:inline">Quay lại học</span>
+          </button>
+        ) : <div />}
+      </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-[18px]">
-          {/* Coach card */}
-          <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-6 grid gap-[18px] content-start">
+      <div className="relative max-w-[1200px] mx-auto px-4 pt-3 grid gap-4 sm:gap-6">
+        {/* Word title — responsive size */}
+        <div className="text-center py-2 sm:py-4 flex flex-col items-center gap-1">
+          <h1 className="font-black text-[#1cb0f6] leading-none select-none m-0" style={{ fontSize: 'clamp(2.5rem, 10vw, 4.5rem)' }}>
+            {targetGloss}
+          </h1>
+          <p className="text-slate-500 text-sm sm:text-base font-bold max-w-lg m-0 mt-1">
+            {mode === "practice_i"
+              ? "Xem video mẫu rồi tập làm theo nhé!"
+              : "Thực hiện bài làm xem đúng không nhé!"}
+          </p>
+        </div>
 
-            {mode === "practice_ii" ? (
-              <div className="flex flex-wrap gap-2">
-                {lessonGlosses.map((gloss) => (
-                  <span
-                    key={gloss}
-                    className={
-                      gloss === targetGloss
-                        ? "inline-flex items-center px-[14px] py-[10px] rounded-full bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white border-transparent text-[1rem] font-bold"
-                        : "inline-flex items-center px-[14px] py-[10px] rounded-full bg-white/[0.78] border border-[rgba(53,84,128,0.08)] text-[#4d5970] text-[1rem] font-bold"
-                    }
-                  >
-                    {gloss}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-
-            <label className="grid grid-cols-[48px_minmax(0,1fr)] gap-[14px] items-start p-[18px] rounded-[22px] border border-dashed border-[rgba(83,110,249,0.2)] bg-[rgba(247,250,255,0.94)] cursor-pointer">
-              <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
-              <div className="w-12 h-12 grid place-items-center rounded-[18px] bg-[rgba(83,110,249,0.12)] text-[#5f8efb]">
-                <UploadCloud size={20} />
-              </div>
-              <div className="grid gap-1.5">
-                <strong className="text-[#223153] text-[1rem]">{file ? file.name : "Chọn video"}</strong>
-                <span className="text-[#6f7d94] leading-[1.55]">
-                  {file ? "Video đã sẵn sàng để chấm." : "Vui lòng tải video lên"}
-                </span>
-              </div>
-            </label>
-
-            <button
-              className="justify-self-start inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border-0 rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-gradient-to-br from-[#5c72fb] to-[#67bfff] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)] disabled:opacity-55 disabled:cursor-not-allowed"
-              type="button"
-              disabled={loading || !file}
-              onClick={handleAnalyze}
-            >
-              <Play size={16} />
-              {loading ? "Đang phân tích..." : actionLabel}
-            </button>
-
-            {error ? <p className="m-0 text-[#b33f47]">{error}</p> : null}
-
-            <div className="grid gap-[14px] p-[18px] rounded-[22px] border border-[rgba(83,110,249,0.08)] bg-[rgba(248,250,255,0.96)]">
-              <div className="flex flex-col gap-3">
-                <div className="grid gap-1.5 p-[14px] rounded-[18px] bg-white/[0.96]">
-                  <span className="text-[#6f7d94]">Score</span>
-                  <strong className="text-[1.3rem] text-[#223153]">{analysis ? Math.round(Number(analysis.raw.score ?? 0)) : "--"}</strong>
-                </div>
-                <div className="grid gap-1.5 p-[14px] rounded-[18px] bg-white/[0.96]">
-                  <span className="text-[#6f7d94]">Kết luận</span>
-                  <strong className="text-[1.3rem] text-[#223153]">{analysis ? metricDecision(decision) : "Chờ phân tích"}</strong>
-                </div>
-              </div>
-
-              {practiceIIStatus ? (
-                <div className={`grid gap-1 px-4 py-[14px] rounded-[18px] font-bold border ${calloutClass[practiceIIStatus.tone]}`}>
-                  <strong className="text-[0.96rem]">{practiceIIStatus.title}</strong>
-                  <span className="leading-[1.55] text-[0.94rem]">{practiceIIStatus.message}</span>
-                </div>
-              ) : null}
-
-              <p className="m-0 leading-[1.65] text-[#6f7d94]">
-                {analysis
-                  ? feedback?.overall ?? "Đã có feedback từ backend."
-                  : "Phân tích xong, app sẽ hiện feedback tổng và giữ nút sang bước tiếp theo ở dưới."}
-              </p>
-
-              <div className="grid gap-2">
-                <span className="inline-flex items-center gap-[10px] text-[#52617f] text-[0.95rem]">
-                  <i className="w-2.5 h-2.5 rounded-full inline-block bg-[#4ade80]" /> Xanh là đang đúng hoặc gần đúng
-                </span>
-                <span className="inline-flex items-center gap-[10px] text-[#52617f] text-[0.95rem]">
-                  <i className="w-2.5 h-2.5 rounded-full inline-block bg-[#fb7185]" /> Đỏ là vùng cần sửa thêm
-                </span>
-              </div>
-            </div>
-          </article>
-
-          {/* User video */}
-          <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-5 grid gap-4">
-            <div className="flex justify-between gap-[14px] items-start">
-              <div>
-                <h4 className="mt-1.5 mb-0 text-[#223153] text-[1.28rem]">Bài làm của bạn</h4>
-              </div>
-            </div>
-            <div className="relative isolate min-h-[440px] rounded-[24px] overflow-hidden bg-[rgba(242,247,255,0.95)] border border-[rgba(53,84,128,0.08)]">
-              {userVideoUrl ? (
-                <>
-                  <video
-                    ref={userVideoRef}
-                    src={userVideoUrl}
-                    className="absolute inset-0 z-[1] w-full h-full object-contain block bg-white"
-                    playsInline
-                    muted
-                    controls={!analysis}
-                    {...buildVideoHandlers("user")}
-                  />
-                  {analysis ? <canvas ref={userCanvasRef} className="absolute inset-0 z-[2] w-full h-full pointer-events-none" /> : null}
-                </>
-              ) : (
-                <div className="min-h-[440px] grid place-items-center text-center p-6 text-[#6f7d94]">Upload video để xem phần bài làm.</div>
-              )}
-            </div>
-          </article>
-
-          {/* Reference video */}
-          <article className="rounded-[28px] border border-[rgba(83,110,249,0.1)] bg-white/[0.94] backdrop-blur-[12px] shadow-[0_18px_42px_rgba(62,88,149,0.1)] p-5 grid gap-4">
-            <div className="flex justify-between gap-[14px] items-start">
-              <div>
-                <h4 className="mt-1.5 mb-0 text-[#223153] text-[1.28rem]">Video mẫu chuẩn</h4>
-              </div>
-            </div>
-            <div className="relative isolate min-h-[440px] rounded-[24px] overflow-hidden bg-[rgba(242,247,255,0.95)]">
+        {/* 2-Column Grid — stacks on mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-start">
+          
+          {/* LEFT COLUMN: Reference Video (Mẫu) */}
+          <article className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-5 flex flex-col gap-4 relative overflow-hidden">
+            <h3 className="text-xl font-black text-slate-800 flex items-center gap-2 m-0 select-none">
+              📺 Video mẫu chuẩn
+            </h3>
+            
+            <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-inner group">
               {referenceVideoUrl ? (
                 <>
                   <video
@@ -508,87 +460,160 @@ export function PracticeWorkspace({
                         ? new URL(referenceStudy.poster_url, baseUrl).href
                         : undefined
                     }
-                    className="absolute inset-0 z-[1] w-full h-full object-contain block bg-white "
+                    className="absolute inset-0 w-full h-full object-contain block bg-white"
                     playsInline
                     muted
                     controls={!analysis}
                     {...buildVideoHandlers("reference")}
                   />
-                  {analysis ? (
+                  {analysis && (
                     <canvas ref={referenceCanvasRef} className="absolute inset-0 z-[2] w-full h-full pointer-events-none" />
-                  ) : null}
+                  )}
                 </>
               ) : (
-                <div className="min-h-[440px] grid place-items-center text-center p-6 text-[#6f7d94]">Reference sẽ hiện ở đây.</div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-sky-600/70 text-center font-bold">
+                  🎥 Đang tải video mẫu...
+                </div>
               )}
             </div>
+            
+            <div className="text-xs font-bold text-slate-500 bg-slate-50 py-2 px-3 rounded-xl border border-slate-200">
+              💡 Hãy quan sát hướng tay và cử động cơ thể của mẫu thật kỹ nhé!
+            </div>
           </article>
-        </div>
 
-        {/* Footer */}
-        <div className="grid gap-[14px]">
-          <div className="flex flex-col md:flex-row justify-between gap-4 items-center">
-            {onBackToLearn ? (
-              <button
-                type="button"
-                className="w-full md:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594]"
-                onClick={onBackToLearn}
-              >
-                <ArrowLeft size={16} />
-                Xem lại từ này
-              </button>
-            ) : (
-              <div className="hidden md:block" />
+          {/* RIGHT COLUMN: User Video + Actions */}
+          <article className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-5 flex flex-col gap-4 relative overflow-hidden">
+            <h3 className="text-xl font-black text-slate-800 flex items-center gap-2 m-0 select-none">
+              🎥 Video bài làm của bạn
+            </h3>
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-3.5 bg-rose-50 border-2 border-rose-200 text-rose-700 font-bold rounded-2xl text-xs flex items-center gap-2">
+                ❌ Lỗi: {error}. Thử tải lại nhé!
+              </div>
             )}
 
-            <div className="flex gap-[10px] flex-wrap justify-center w-full md:w-auto">
-              <button
-                type="button"
-                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 min-h-[44px] px-4 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.85rem] sm:text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594] disabled:opacity-55 disabled:cursor-not-allowed"
-                onClick={playSegments}
-                disabled={!analysis}
-              >
-                <Play size={14} />
-                Play segment
-              </button>
-              <button
-                type="button"
-                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 min-h-[44px] px-4 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.85rem] sm:text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594] disabled:opacity-55 disabled:cursor-not-allowed"
-                onClick={pauseSegments}
-                disabled={!analysis}
-              >
-                <Pause size={14} />
-                Pause
-              </button>
-              <button
-                type="button"
-                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 min-h-[44px] px-4 border border-[rgba(83,110,249,0.14)] rounded-full text-[0.85rem] sm:text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-white/[0.84] text-[#657594] disabled:opacity-55 disabled:cursor-not-allowed"
-                onClick={resetSegments}
-                disabled={!analysis}
-              >
-                <RotateCcw size={14} />
-                Reset
-              </button>
-            </div>
+            {/* Content states based on user file upload & analysis */}
+            {!file ? (
+              /* No file uploaded yet: Giant Friendly Upload Dropzone */
+              <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100/50 rounded-[24px] p-10 text-center cursor-pointer transition-all duration-300 group">
+                <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
+                <div className="w-16 h-16 bg-sky-50 rounded-full flex items-center justify-center text-[#1cb0f6] mb-4 group-hover:scale-105 transition-transform duration-300">
+                  <UploadCloud size={32} className="animate-pulse" />
+                </div>
+                <h4 className="text-lg font-black text-slate-700 mb-1">📤 Tải video lên</h4>
+                <p className="text-slate-450 text-xs font-bold max-w-xs">
+                  Nhấp vào đây để chọn video bài làm của bạn
+                </p>
+              </label>
+            ) : !analysis ? (
+              /* File selected, not analyzed yet: Show raw video & analyze button */
+              <div className="flex flex-col gap-4">
+                <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-inner">
+                  <video
+                    ref={userVideoRef}
+                    src={userVideoUrl}
+                    className="absolute inset-0 w-full h-full object-contain block bg-white"
+                    playsInline
+                    muted
+                    controls
+                    {...buildVideoHandlers("user")}
+                  />
+                </div>
+                
+                <div className="flex gap-3 items-center">
+                  <label className="py-2.5 px-4 bg-white border-2 border-b-2 border-slate-200 text-slate-655 font-black rounded-2xl text-xs transition-all cursor-pointer flex items-center gap-1.5 active:border-b-0 active:translate-y-[2px]">
+                    <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
+                    🔄 Chọn lại
+                  </label>
+                  
+                  <button
+                    className="flex-1 py-3 px-6 bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white font-black rounded-2xl text-sm cursor-pointer flex items-center justify-center gap-2 active:border-b-0 active:translate-y-[2px] transition-all disabled:opacity-50"
+                    type="button"
+                    disabled={loading}
+                    onClick={handleAnalyze}
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                        <span>Đang chấm điểm...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>✨ Chấm điểm bài làm ✨</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Analyzed: Show video with overlay + custom controls + kid-friendly score card */
+              <div className="flex flex-col gap-4">
+                <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-inner">
+                  <video
+                    ref={userVideoRef}
+                    src={userVideoUrl}
+                    className="absolute inset-0 w-full h-full object-contain block bg-white"
+                    playsInline
+                    muted
+                    {...buildVideoHandlers("user")}
+                  />
+                  <canvas ref={userCanvasRef} className="absolute inset-0 z-[2] w-full h-full pointer-events-none" />
+                </div>
 
-            <button
-              type="button"
-              className="w-full md:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-5 border-0 rounded-full text-[0.95rem] font-bold transition-all hover:-translate-y-px cursor-pointer bg-gradient-to-br from-[#5c72fb] to-[#67bfff] text-white shadow-[0_10px_28px_rgba(92,114,251,0.26)] disabled:opacity-55 disabled:cursor-not-allowed"
-              onClick={handleComplete}
-              disabled={!analysis}
-            >
-              {completionLabel}
-              <ArrowRight size={16} />
-            </button>
-          </div>
+                {/* Simplified Playback Controls */}
+                <div className="flex justify-center gap-2.5 flex-wrap">
+                  <button
+                    type="button"
+                    className="py-2 px-4 bg-[#1cb0f6] border-b-2 border-[#1899d6] text-white font-black rounded-2xl text-xs cursor-pointer flex items-center gap-1.5 active:border-b-0 active:translate-y-[2px] transition-all"
+                    onClick={playing ? pauseSegments : playSegments}
+                  >
+                    {playing ? "⏸️ Tạm dừng" : "▶️ Xem lại"}
+                  </button>
+                  <label className="py-2 px-4 bg-white border-2 border-b-2 border-slate-200 text-slate-650 font-black rounded-2xl text-xs cursor-pointer flex items-center gap-1.5 active:border-b-0 active:translate-y-[1px] transition-all">
+                    <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
+                    📂 Đổi video
+                  </label>
+                </div>
 
-          <div className="text-[#6d7b92] text-[0.95rem] text-center">
-            <span>
-              {analysis
-                ? "Đã xong phần so sánh. Nếu ổn rồi thì sang bước tiếp theo nhé →"
-                : "Upload video và chờ AI phân tích để mở bước tiếp theo."}
-            </span>
-          </div>
+                {/* Friendly Score & Feedback Card */}
+                <div className={`border-2 border-b-2 rounded-[24px] p-5 flex flex-col items-center text-center gap-3 ${feedbackBg}`}>
+                  {/* Stars */}
+                  <div className="text-2xl tracking-widest select-none">
+                    {score >= 85 ? "⭐ ⭐ ⭐ ⭐ ⭐" : score >= 70 ? "⭐ ⭐ ⭐ ⭐" : score >= 50 ? "⭐ ⭐ ⭐" : "⭐ ⭐"}
+                  </div>
+                  
+                  {/* Fun Badge & Message */}
+                  <div className="flex flex-col gap-1.5">
+                    <strong className={`text-xl font-black ${feedbackTextColor}`}>
+                      {feedbackTitle}
+                    </strong>
+                    <span className="text-slate-800 text-sm font-bold leading-relaxed max-w-sm">
+                      {feedbackText}
+                    </span>
+                  </div>
+
+                  {/* Visual Hint */}
+                  <div className="text-[10px] font-bold text-slate-500">
+                    🟢 Khung xương xanh lá là đúng • 🔴 Vùng màu đỏ là cần sửa nhé!
+                  </div>
+                  
+                  {/* Next Button inside Card */}
+                  <button
+                    type="button"
+                    className={`w-full py-3 px-5 rounded-2xl text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-2 ${nextButtonBg}`}
+                    onClick={handleComplete}
+                  >
+                    <span>{completionLabel}</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </article>
+          
         </div>
       </div>
     </section>

@@ -28,3 +28,16 @@ class TokenPayload(BaseModel):
     sub: str # user id
     role: str
     exp: int
+
+class CreateChildRequest(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=6)
+    display_name: Optional[str] = None
+    dob: Optional[str] = None # For learner (YYYY-MM-DD)
+
+class CreateStudentRequest(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=6)
+    display_name: Optional[str] = None
+    class_name: Optional[str] = None
+    student_code: Optional[str] = None

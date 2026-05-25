@@ -7,7 +7,8 @@ from app.auth.jwt import create_access_token, create_refresh_token, decode_refre
 from app.auth.dependencies import get_current_user
 from app.models.user import User
 from app.models.profile import LearnerProfile, ParentProfile, SchoolProfile
-from app.schemas.auth import RegisterRequest, TokenResponse
+from app.models.link import ParentLearnerLink, SchoolLearnerLink
+from app.schemas.auth import RegisterRequest, TokenResponse, CreateChildRequest, CreateStudentRequest
 from app.schemas.user import UserMeResponse, ProfileUpdateRequest
 from datetime import datetime
 
@@ -137,3 +138,94 @@ def update_profile(req: ProfileUpdateRequest, current_user: User = Depends(get_c
         
     db.commit()
     return {"ok": True}
+
+@router.post("/create-child")
+def create_child(req: CreateChildRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if current_user.role != "parent":
+        raise HTTPException(status_code=403, detail="Only parents can create child accounts")
+        
+    if db.query(User).filter(User.username == req.username).first():
+        raise HTTPException(status_code=400, detail="Username already registered")
+        
+    hashed = hash_password(req.password)
+    child_user = User(
+        username=req.username,
+        password_hash=hashed,
+        role="learner",
+        status="active"
+    )
+    db.add(child_user)
+    db.flush()
+    
+    display_name = req.display_name if req.display_name else req.username
+    dob_val = None
+    if req.dob:
+        try:
+            dob_val = datetime.strptime(req.dob, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid DOB format, must be YYYY-MM-DD")
+            
+    profile = LearnerProfile(
+        user_id=child_user.id,
+        display_name=display_name,
+        dob=dob_val,
+        avatar_url=None,
+        learning_streak=0,
+        xp=0
+    )
+    db.add(profile)
+    
+    # Auto approve link
+    link = ParentLearnerLink(
+        parent_user_id=current_user.id,
+        learner_user_id=child_user.id,
+        status="approved",
+        approved_at=datetime.utcnow()
+    )
+    db.add(link)
+    
+    db.commit()
+    return {"ok": True, "child_id": str(child_user.id)}
+
+@router.post("/create-student")
+def create_student(req: CreateStudentRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if current_user.role != "school":
+        raise HTTPException(status_code=403, detail="Only schools can create student accounts")
+        
+    if db.query(User).filter(User.username == req.username).first():
+        raise HTTPException(status_code=400, detail="Username already registered")
+        
+    hashed = hash_password(req.password)
+    student_user = User(
+        username=req.username,
+        password_hash=hashed,
+        role="learner",
+        status="active"
+    )
+    db.add(student_user)
+    db.flush()
+    
+    display_name = req.display_name if req.display_name else req.username
+    profile = LearnerProfile(
+        user_id=student_user.id,
+        display_name=display_name,
+        dob=None,
+        avatar_url=None,
+        learning_streak=0,
+        xp=0
+    )
+    db.add(profile)
+    
+    # Auto approve link
+    link = SchoolLearnerLink(
+        school_user_id=current_user.id,
+        learner_user_id=student_user.id,
+        class_name=req.class_name,
+        student_code=req.student_code,
+        status="approved",
+        approved_at=datetime.utcnow()
+    )
+    db.add(link)
+    
+    db.commit()
+    return {"ok": True, "student_id": str(student_user.id)}

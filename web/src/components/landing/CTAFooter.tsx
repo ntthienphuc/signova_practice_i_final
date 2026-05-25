@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { CTAFooterData, FooterData } from "../../types/landing";
 
 interface CTAFooterProps {
@@ -8,38 +9,43 @@ interface CTAFooterProps {
 export function CTAFooter({ data, footerData }: CTAFooterProps) {
   return (
     <>
-      {/* CTA band */}
-      <section className="relative overflow-hidden py-20 lg:py-28">
-        {/* Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-sky-400 to-cyan-300 pointer-events-none" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-white/20 rounded-full blur-3xl pointer-events-none" />
+      {/* CTA Band */}
+      <section className="relative overflow-hidden py-24 lg:py-32" id="cta">
+        {/* Rich gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1cb0f6] via-[#536ef9] to-[#7f00ff] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-white/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-6 leading-tight">
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
+          <h2 className="text-3xl sm:text-4xl lg:text-[3.2rem] font-extrabold text-white leading-none tracking-tight m-0">
             {data.heading}
           </h2>
-          <p className="text-lg text-sky-50/90 mb-10 max-w-xl mx-auto leading-relaxed">
+          
+          <p className="text-base sm:text-lg text-sky-100/90 font-bold max-w-xl mx-auto leading-relaxed m-0">
             {data.sub}
           </p>
-          <a
-            href="#"
-            className="inline-block px-10 py-4 bg-white text-indigo-600 font-bold text-base rounded-xl hover:bg-slate-50 transition-colors shadow-xl shadow-sky-200/40"
-          >
-            {data.cta}
-          </a>
+          
+          <div className="pt-2">
+            <Link
+              to="/learn-dashboard"
+              className="inline-block px-10 py-4 bg-white border-b-4 border-slate-250 hover:bg-slate-50 active:border-b-0 active:translate-y-[2px] text-[#1cb0f6] font-black text-sm uppercase tracking-wider rounded-2xl transition-all shadow-xl shadow-indigo-900/20"
+            >
+              {data.cta} 🚀
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="bg-white border-t border-slate-200 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-sky-400 flex items-center justify-center">
-              <span className="text-white font-bold text-xs">S</span>
+            {/* Mascot logo */}
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-100 flex items-center justify-center p-0.5 bg-white shadow-sm flex-shrink-0">
+              <img src="/signova-mascot.png" alt="Mascot" className="w-full h-full object-cover rounded-md" />
             </div>
-            <p className="text-slate-500 text-sm">{footerData.tagline}</p>
+            <p className="text-slate-500 font-bold text-sm m-0">{footerData.tagline}</p>
           </div>
-          <p className="text-slate-400 text-sm">{footerData.copy}</p>
+          <p className="text-slate-400 font-bold text-xs m-0">{footerData.copy}</p>
         </div>
       </footer>
     </>

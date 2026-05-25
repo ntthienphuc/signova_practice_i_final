@@ -123,7 +123,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { id: "learner", label: "Học sinh" },
+                  { id: "learner", label: "Cá nhân" },
                   { id: "parent", label: "Phụ huynh" },
                   { id: "school", label: "Trường học" },
                 ].map((item) => (

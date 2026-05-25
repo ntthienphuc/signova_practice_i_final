@@ -41,7 +41,9 @@ export {
   approveSchoolLink,
   rejectSchoolLink,
   getLearnerDashboard,
-  getMyProgress
+  getMyProgress,
+  createChild,
+  createStudent
 } from "./client";
 export { loadAppConfig, loadCurriculum } from "./endpoints/app";
 export { createRandomTask, analyzeAttempt } from "./endpoints/practice";

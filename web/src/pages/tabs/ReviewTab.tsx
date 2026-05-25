@@ -16,6 +16,145 @@ interface ReviewTabProps {
   onCompleteReview: () => Promise<void>;
 }
 
+function categorizeWord(word: any): "need_practice" | "improving" | "mastered" {
+  const lastScore = word.last_practice1_score !== null ? Math.round(word.last_practice1_score) : null;
+  const failed = word.failed_attempt_count || 0;
+  if (word.accepted_once && (lastScore === null || lastScore >= 75)) return "mastered";
+  if (lastScore !== null && lastScore >= 55) return "improving";
+  return "need_practice";
+}
+
+function WordCard({
+  word,
+  loadingReviewWord,
+  onStartReviewPractice,
+}: {
+  word: any;
+  loadingReviewWord: string | null;
+  onStartReviewPractice: (gloss: string) => void;
+}) {
+  const failed = word.failed_attempt_count || 0;
+  const correct = word.correct_attempt_count || 0;
+  const bestScore = word.best_practice1_score !== null ? Math.round(word.best_practice1_score) : null;
+  const lastScore = word.last_practice1_score !== null ? Math.round(word.last_practice1_score) : null;
+  const cat = categorizeWord(word);
+  const isLoading = loadingReviewWord === word.gloss;
+
+  const catConfig = {
+    need_practice: {
+      border: "border-[#ef5d66]",
+      badge: "bg-[#ef5d66] text-white",
+      badgeText: "Cần luyện",
+      btnBg: "bg-[#ef5d66] border-b-2 border-[#c94040] text-white hover:bg-[#f47070]",
+      btnLabel: "🔥 Luyện ngay!",
+      scoreColor: "text-[#ef5d66]",
+    },
+    improving: {
+      border: "border-[#ff9600]",
+      badge: "bg-[#ff9600] text-white",
+      badgeText: "Đang tiến bộ",
+      btnBg: "bg-[#ff9600] border-b-2 border-[#cc7a00] text-white hover:bg-[#ffb133]",
+      btnLabel: "📈 Luyện thêm",
+      scoreColor: "text-[#ff9600]",
+    },
+    mastered: {
+      border: "border-[#58cc02]",
+      badge: "bg-[#58cc02] text-white",
+      badgeText: "Thành thạo ⭐",
+      btnBg: "bg-white border-2 border-b-2 border-slate-200 text-[#58cc02] hover:bg-green-50",
+      btnLabel: "✅ Ôn lại",
+      scoreColor: "text-[#58cc02]",
+    },
+  }[cat];
+
+  return (
+    <div className={`bg-white rounded-[24px] border-2 border-b-4 ${catConfig.border} p-5 flex flex-col gap-3 transition-all hover:scale-[1.01]`}>
+      {/* Word name + badge */}
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-2xl font-black text-slate-800 m-0">{word.gloss}</h3>
+        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${catConfig.badge}`}>
+          {catConfig.badgeText}
+        </span>
+      </div>
+
+      {/* Score + stats row */}
+      <div className="flex gap-3 text-sm font-bold">
+        {lastScore !== null && (
+          <div className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-center">
+            <div className="text-[10px] uppercase text-slate-400 font-black tracking-wider">Điểm gần nhất</div>
+            <strong className={`text-xl font-black block mt-0.5 ${catConfig.scoreColor}`}>{lastScore}đ</strong>
+          </div>
+        )}
+        <div className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-center">
+          <div className="text-[10px] uppercase text-slate-400 font-black tracking-wider">Đúng / Sai</div>
+          <strong className="text-base font-black block mt-0.5 text-slate-700">
+            <span className="text-[#58cc02]">{correct}</span>
+            <span className="text-slate-400 mx-1">/</span>
+            <span className="text-[#ef5d66]">{failed}</span>
+          </strong>
+        </div>
+        {bestScore !== null && (
+          <div className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-center">
+            <div className="text-[10px] uppercase text-slate-400 font-black tracking-wider">Cao nhất</div>
+            <strong className="text-xl font-black block mt-0.5 text-[#1cb0f6]">{bestScore}đ</strong>
+          </div>
+        )}
+      </div>
+
+      {/* Action button */}
+      <button
+        onClick={() => onStartReviewPractice(word.gloss)}
+        disabled={isLoading}
+        type="button"
+        className={`w-full py-3 rounded-2xl font-black text-sm transition-all cursor-pointer flex items-center justify-center gap-2 active:translate-y-[2px] active:border-b-0 disabled:opacity-50 ${catConfig.btnBg}`}
+      >
+        {isLoading ? (
+          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        ) : catConfig.btnLabel}
+      </button>
+    </div>
+  );
+}
+
+function SectionGroup({
+  title,
+  emoji,
+  words,
+  color,
+  loadingReviewWord,
+  onStartReviewPractice,
+}: {
+  title: string;
+  emoji: string;
+  words: any[];
+  color: string;
+  loadingReviewWord: string | null;
+  onStartReviewPractice: (gloss: string) => void;
+}) {
+  if (words.length === 0) return null;
+  return (
+    <div className="space-y-3">
+      <div className={`flex items-center gap-3 px-1`}>
+        <span className="text-2xl">{emoji}</span>
+        <div>
+          <h3 className={`text-lg font-black m-0 ${color}`}>{title}</h3>
+          <span className="text-xs text-slate-500 font-bold">{words.length} từ</span>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {words.map((word) => (
+          <WordCard
+            key={word.word_id}
+            word={word}
+            loadingReviewWord={loadingReviewWord}
+            onStartReviewPractice={onStartReviewPractice}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ReviewTab({
   currentUser,
   activeReviewWord,
@@ -32,18 +171,18 @@ export function ReviewTab({
 }: ReviewTabProps) {
   if (!currentUser) {
     return (
-      <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7 text-center py-12">
-        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">🔑 Yêu cầu đăng nhập</p>
-        <h2>Hãy đăng nhập học sinh để sử dụng tính năng luyện tập</h2>
-        <p className="text-[var(--ink-soft)] leading-[1.62] mb-6">
-          Tính năng này giúp bạn xem lại các từ đã học, thống kê số lần sai và luyện tập lại để tăng điểm số.
+      <section className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-8 text-center py-16">
+        <div className="text-5xl mb-4">🔑</div>
+        <h2 className="m-0 font-black text-slate-800 text-2xl">Đăng nhập để luyện tập</h2>
+        <p className="text-slate-500 font-bold mt-2 max-w-xs mx-auto text-sm">
+          Xem lại các từ đã học và luyện tập những từ còn yếu nhé!
         </p>
         <button
           onClick={onOpenAuth}
           type="button"
-          className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold rounded-xl border-0 cursor-pointer shadow-lg hover:shadow-indigo-200 transition-all"
+          className="px-6 py-3 bg-[#1cb0f6] border-b-4 border-[#1899d6] text-white font-black rounded-2xl cursor-pointer hover:bg-[#24c4ff] active:border-b-0 active:translate-y-[3px] transition-all text-base mt-6"
         >
-          Đăng nhập / Đăng ký ngay
+          Đăng nhập ngay 🚀
         </button>
       </section>
     );
@@ -70,128 +209,96 @@ export function ReviewTab({
 
   if (loadingReview) {
     return (
-      <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
-        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Đang tải</p>
-        <h2>Đang tải danh sách từ cần ôn tập...</h2>
+      <section className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-12 text-center">
+        <div className="w-10 h-10 rounded-full border-4 border-sky-100 border-t-[#1cb0f6] animate-spin mx-auto mb-4" />
+        <p className="text-slate-500 font-black text-base">Đang tải danh sách từ...</p>
       </section>
     );
   }
 
   if (reviewError) {
     return (
-      <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
-        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Lỗi</p>
-        <h2>Không thể tải danh sách ôn tập</h2>
-        <p className="text-[#b33f47]">{reviewError}</p>
-        <button onClick={onLoadReviewData} className="border-0 rounded-full min-h-[48px] px-5 transition-all font-extrabold bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white shadow-[0_16px_30px_rgba(83,110,249,0.22)] hover:-translate-y-px cursor-pointer mt-4">Tải lại</button>
+      <section className="bg-white border-2 border-b-4 border-rose-200 rounded-[28px] p-8 text-center">
+        <div className="text-5xl mb-3">😢</div>
+        <h2 className="m-0 mt-1 font-black text-slate-800 text-xl">Không thể tải danh sách</h2>
+        <p className="text-rose-500 font-bold text-sm mt-2">{reviewError}</p>
+        <button
+          onClick={onLoadReviewData}
+          className="px-5 py-2.5 bg-[#1cb0f6] border-b-2 border-[#1899d6] text-white font-black rounded-2xl cursor-pointer hover:bg-[#24c4ff] active:border-b-0 active:translate-y-[2px] transition-all text-sm mt-4"
+        >
+          Tải lại
+        </button>
       </section>
     );
   }
 
-  const failedWordsCount = reviewWords.filter((w) => w.failed_attempt_count > 0).length;
+  const needPractice = reviewWords.filter((w) => categorizeWord(w) === "need_practice");
+  const improving = reviewWords.filter((w) => categorizeWord(w) === "improving");
+  const mastered = reviewWords.filter((w) => categorizeWord(w) === "mastered");
 
   return (
     <section className="space-y-6">
-      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
-        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-indigo-600 font-bold">Tab Luyện Tập</p>
-        <h2>Ôn tập các từ đã học</h2>
-        <p className="text-[var(--ink-soft)] leading-[1.62]">
-          Xếp hạng các từ theo số lần làm sai nhiều nhất. Hãy luyện tập lại những từ khó để thành thạo hơn nhé!
-        </p>
+      {/* Header */}
+      <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6">
+        <p className="m-0 text-sm uppercase tracking-[0.18em] text-[#1cb0f6] font-black">🏋️ Luyện Tập</p>
+        <h2 className="m-0 mt-1 font-black text-slate-800 text-2xl">Ôn lại từ đã học</h2>
 
-        <div className="flex gap-4 mt-6 text-sm">
-          <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl px-4 py-3 flex-1">
-            <span className="block text-slate-500 text-xs uppercase font-bold tracking-wider">Đã học</span>
-            <strong className="text-2xl text-indigo-700 font-bold block mt-1">{reviewWords.length} từ</strong>
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-3 mt-4">
+          <div className="bg-[#fff0f0] border-2 border-b-4 border-[#ef5d66]/30 rounded-2xl px-3 py-3 text-center">
+            <div className="text-2xl font-black text-[#ef5d66]">{needPractice.length}</div>
+            <div className="text-[10px] font-black text-[#ef5d66]/80 uppercase tracking-wider mt-0.5">Cần luyện</div>
           </div>
-          <div className="bg-rose-50/50 border border-rose-100 rounded-xl px-4 py-3 flex-1">
-            <span className="block text-slate-500 text-xs uppercase font-bold tracking-wider">Từ hay sai</span>
-            <strong className="text-2xl text-rose-700 font-bold block mt-1">{failedWordsCount} từ</strong>
+          <div className="bg-[#fff8ee] border-2 border-b-4 border-[#ff9600]/30 rounded-2xl px-3 py-3 text-center">
+            <div className="text-2xl font-black text-[#ff9600]">{improving.length}</div>
+            <div className="text-[10px] font-black text-[#ff9600]/80 uppercase tracking-wider mt-0.5">Tiến bộ</div>
+          </div>
+          <div className="bg-[#f0fff4] border-2 border-b-4 border-[#58cc02]/30 rounded-2xl px-3 py-3 text-center">
+            <div className="text-2xl font-black text-[#58cc02]">{mastered.length}</div>
+            <div className="text-[10px] font-black text-[#58cc02]/80 uppercase tracking-wider mt-0.5">Thành thạo</div>
           </div>
         </div>
       </div>
 
       {reviewWords.length === 0 ? (
-        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7 text-center py-16">
-          <p className="text-slate-400 mb-4 text-sm font-semibold">Bạn chưa học từ nào trong bất kỳ Topic nào.</p>
+        <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-12 text-center">
+          <div className="text-6xl mb-4">📚</div>
+          <h3 className="font-black text-slate-700 text-xl m-0">Chưa có từ nào để ôn tập</h3>
+          <p className="text-slate-400 font-bold text-sm mt-2">Hãy học vài từ mới trước nhé!</p>
           <button
             onClick={() => onSetActiveTab("learn")}
             type="button"
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl border-0 cursor-pointer transition-colors text-sm"
+            className="px-6 py-3 bg-[#1cb0f6] border-b-4 border-[#1899d6] text-white font-black rounded-2xl cursor-pointer hover:bg-[#24c4ff] active:border-b-0 active:translate-y-[3px] transition-all text-base mt-5"
           >
-            Qua tab Học ngay
+            Đi học ngay 🚀
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {reviewWords.map((word) => {
-            const failed = word.failed_attempt_count || 0;
-            const correct = word.correct_attempt_count || 0;
-            const bestScore = word.best_practice1_score !== null ? Math.round(word.best_practice1_score) : null;
-            const lastScore = word.last_practice1_score !== null ? Math.round(word.last_practice1_score) : null;
-            const isFailedMuch = failed >= 2;
-
-            return (
-              <div
-                key={word.word_id}
-                className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-5 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden"
-              >
-                {word.accepted_once && (lastScore === null || lastScore >= 60) ? (
-                  <div className="absolute top-0 right-0 bg-emerald-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
-                    Đã Đạt
-                  </div>
-                ) : word.accepted_once && lastScore !== null && lastScore < 60 ? (
-                  <div className="absolute top-0 right-0 bg-amber-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
-                    Cần Ôn Tập
-                  </div>
-                ) : !word.accepted_once && isFailedMuch ? (
-                  <div className="absolute top-0 right-0 bg-rose-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
-                    Cần Cải Thiện
-                  </div>
-                ) : !word.accepted_once && failed > 0 ? (
-                  <div className="absolute top-0 right-0 bg-amber-500 text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
-                    Đang Luyện Tập
-                  </div>
-                ) : null}
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800">{word.gloss}</h3>
-                  <div className="grid grid-cols-2 gap-3 my-4 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
-                    <div>
-                      ❌ Sai nhiều: <strong className="text-rose-600">{failed} lần</strong>
-                    </div>
-                    <div>
-                       Đúng: <strong className="text-emerald-600">{correct} lần</strong>
-                    </div>
-                    <div>
-                      ⭐ Luyện tốt nhất: <strong>{bestScore !== null ? `${bestScore}đ` : "--"}</strong>
-                    </div>
-                    <div>
-                       Lần cuối: <strong>{lastScore !== null ? `${lastScore}đ` : "--"}</strong>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => onStartReviewPractice(word.gloss)}
-                  disabled={loadingReviewWord === word.gloss}
-                  type="button"
-                  className="w-full py-2.5 bg-indigo-55 hover:bg-indigo-100 disabled:bg-slate-100 text-indigo-700 disabled:text-slate-400 font-bold rounded-xl text-xs transition-colors border-0 cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  {loadingReviewWord === word.gloss ? (
-                    <span className="w-4 h-4 border-2 border-indigo-700 border-t-transparent rounded-full animate-spin"></span>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Luyện tập lại
-                    </>
-                  )}
-                </button>
-              </div>
-            );
-          })}
+        <div className="space-y-8">
+          <SectionGroup
+            title="Cần luyện tập"
+            emoji="🔥"
+            words={needPractice}
+            color="text-[#ef5d66]"
+            loadingReviewWord={loadingReviewWord}
+            onStartReviewPractice={onStartReviewPractice}
+          />
+          <SectionGroup
+            title="Đang tiến bộ"
+            emoji="📈"
+            words={improving}
+            color="text-[#ff9600]"
+            loadingReviewWord={loadingReviewWord}
+            onStartReviewPractice={onStartReviewPractice}
+          />
+          <SectionGroup
+            title="Đã thành thạo"
+            emoji="⭐"
+            words={mastered}
+            color="text-[#58cc02]"
+            loadingReviewWord={loadingReviewWord}
+            onStartReviewPractice={onStartReviewPractice}
+          />
         </div>
       )}
     </section>

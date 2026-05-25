@@ -10,18 +10,22 @@ export function Products({ data }: ProductsProps) {
     <section className="bg-white py-20 lg:py-28" id="products">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-16">
-          <div className="flex items-center justify-center gap-4 mb-5">
-            <div className="w-10 h-1 rounded-full bg-brand-primary" />
-            <span className="text-sm font-semibold text-brand-primary uppercase tracking-widest">
-              Products
+        <div className="text-center mb-16 space-y-4">
+          <div className="flex items-center justify-center gap-3">
+            <div className="w-8 h-1 rounded-full bg-[#1cb0f6]" />
+            <span className="text-xs font-black text-[#1cb0f6] uppercase tracking-[0.2em]">
+              Sản Phẩm
             </span>
-            <div className="w-10 h-1 rounded-full bg-brand-primary" />
+            <div className="w-8 h-1 rounded-full bg-[#1cb0f6]" />
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-5">
+          
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-800 tracking-tight leading-tight">
             {data.heading}
           </h2>
-          <p className="text-lg text-slate-500 max-w-2xl mx-auto">{data.subheading}</p>
+          
+          <p className="text-base sm:text-lg text-slate-500 font-bold max-w-2xl mx-auto">
+            {data.subheading}
+          </p>
         </div>
 
         {/* Cards */}
@@ -29,41 +33,37 @@ export function Products({ data }: ProductsProps) {
           {data.items.map((item) => (
             <div
               key={item.title}
-              className="group bg-white rounded-2xl border border-slate-200 hover:shadow-xl hover:shadow-sky-100 hover:border-sky-300 transition-all duration-300 flex flex-col p-6"
+              className="group bg-white rounded-[28px] border-2 border-b-4 border-slate-200 hover:border-[#1cb0f6] transition-all duration-150 hover:-translate-y-1 hover:shadow-lg hover:shadow-sky-50/50 flex flex-col p-6 justify-between"
             >
-              {/* Tag */}
-              <span className="inline-block self-start px-3 py-1 text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-full mb-5">
-                {item.tag}
-              </span>
+              <div>
+                {/* Tag */}
+                <span className="inline-block px-3 py-1 text-[10px] font-black uppercase tracking-wider text-sky-600 bg-sky-50 border border-sky-100 rounded-full mb-5">
+                  {item.tag}
+                </span>
 
-              {/* Icon */}
-              <div className="text-4xl mb-4">{item.icon}</div>
+                {/* Icon */}
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform select-none">{item.icon}</div>
 
-              {/* Content */}
-              <h3 className="text-lg font-bold text-slate-900 mb-2">{item.title}</h3>
-              <p className="text-slate-500 text-sm leading-relaxed flex-1">{item.description}</p>
+                {/* Content */}
+                <h3 className="text-base sm:text-lg font-black text-slate-805 mb-2 group-hover:text-[#1cb0f6] transition-colors">{item.title}</h3>
+                <p className="text-slate-500 font-bold text-xs leading-relaxed mb-6">{item.description}</p>
+              </div>
 
               {/* Link */}
-              <div className="mt-6">
+              <div className="mt-4">
                 {item.path ? (
                   <Link
                     to={item.path}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-sky-500 transition-colors"
+                    className="inline-flex items-center justify-center w-full py-2.5 bg-[#1cb0f6] border-b-4 border-[#1899d6] hover:bg-[#24c4ff] text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all active:border-b-0 active:translate-y-[2px]"
                   >
-                    Open app
-                    <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
+                    Mở Ứng Dụng 🚀
                   </Link>
                 ) : (
                   <a
-                    href="#"
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+                    href="#pricing"
+                    className="inline-flex items-center justify-center w-full py-2.5 bg-slate-50 border-2 border-b-4 border-slate-200 hover:bg-slate-100 text-slate-550 text-xs font-black uppercase tracking-wider rounded-xl transition-all active:border-b-0 active:translate-y-[2px]"
                   >
-                    Contact us
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
+                    Liên Hệ Tư Vấn
                   </a>
                 )}
               </div>

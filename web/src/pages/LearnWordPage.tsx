@@ -40,6 +40,18 @@ export default function LearnWordPage() {
   }, [topicId]);
 
   useEffect(() => {
+    if (!curriculum) return;
+    const token = localStorage.getItem("signova_token");
+    if (!token) {
+      const firstTopicId = curriculum.topics[0]?.id;
+      const order = Number(wordOrder ?? "0");
+      if (topicId !== firstTopicId || order >= 3) {
+        navigate("/learn-dashboard?require_login=true");
+      }
+    }
+  }, [curriculum, topicId, wordOrder, navigate]);
+
+  useEffect(() => {
     setStage("learn");
   }, [topicId, wordOrder]);
 
@@ -58,10 +70,10 @@ export default function LearnWordPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)]">
+      <div className="min-h-screen bg-[#f0f6ff]">
         <div className="flex flex-col items-center gap-5">
-          <div className="w-12 h-12 rounded-full border-4 border-[rgba(83,110,249,0.15)] border-t-[#536ef9] animate-spin" />
-          <p className="m-0 text-[0.9rem] font-semibold text-black] tracking-wide">Đang chuẩn bị bài học...</p>
+          <div className="w-10 h-10 rounded-full border-4 border-sky-100 border-t-[#1cb0f6] animate-spin" />
+          <p className="m-0 text-sm font-black text-slate-500">Đang chuẩn bị bài học...</p>
         </div>
       </div>
     );
@@ -69,10 +81,10 @@ export default function LearnWordPage() {
 
   if (error || !topic || !word) {
     return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)]">
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(78,255,158,0.1),transparent_22%),radial-gradient(circle_at_top_right,rgba(85,206,255,0.15),transparent_24%),linear-gradient(180deg,#f8fafc_0%,#e0f2fe_100%)]">
         <main className="min-h-screen">
           <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
-            <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Lỗi</p>
+            <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-sky-600 font-extrabold">Lỗi</p>
             <h2>{error || "Không tìm thấy bài học"}</h2>
             <button
               className="border-0 rounded-full min-h-[48px] px-5 transition-all font-extrabold bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white shadow-[0_16px_30px_rgba(83,110,249,0.22)] hover:-translate-y-px cursor-pointer mt-4"
@@ -88,7 +100,7 @@ export default function LearnWordPage() {
 
   if (stage === "practice") {
     return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)]">
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(78,255,158,0.1),transparent_22%),radial-gradient(circle_at_top_right,rgba(85,206,255,0.15),transparent_24%),linear-gradient(180deg,#f8fafc_0%,#e0f2fe_100%)]">
         <main className="min-h-screen">
           <PracticeWorkspace
             mode="practice_i"
@@ -116,7 +128,7 @@ export default function LearnWordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,203,134,0.18),transparent_22%),radial-gradient(circle_at_top_right,rgba(134,196,255,0.18),transparent_24%),linear-gradient(180deg,#fff8f1_0%,#eef7ff_100%)]">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(78,255,158,0.1),transparent_22%),radial-gradient(circle_at_top_right,rgba(85,206,255,0.15),transparent_24%),linear-gradient(180deg,#f8fafc_0%,#e0f2fe_100%)]">
       <main className="min-h-screen">
         <StudyStage
           topic={topic}

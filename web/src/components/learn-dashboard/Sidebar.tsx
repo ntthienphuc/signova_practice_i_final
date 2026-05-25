@@ -1,141 +1,187 @@
-import type { ChangeEvent } from "react";
 import type { AppTab, CurriculumTopicSummary } from "../../types/learn";
 
 interface SidebarProps {
   activeTab: AppTab;
   onTabChange: (tab: AppTab) => void;
-  apiBase: string;
-  onApiBaseChange: (value: string) => void;
+  apiBase?: string;
+  onApiBaseChange?: (value: string) => void;
   curriculumTopics: CurriculumTopicSummary[];
   currentUser: any;
   onOpenAuth: () => void;
   onLogout: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export function Sidebar({
   activeTab,
   onTabChange,
-  apiBase,
-  onApiBaseChange,
-  curriculumTopics,
   currentUser,
   onOpenAuth,
   onLogout,
 }: SidebarProps) {
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onApiBaseChange(event.target.value);
-  };
-
-  // Dynamically filter tabs based on role
   const role = currentUser?.role;
-  const tabs: Array<{ id: AppTab; label: string }> = [];
+  const tabs: Array<{ id: AppTab; label: string; icon: string }> = [];
 
   if (role === "learner") {
-    tabs.push({ id: "learn", label: "Học" });
-    tabs.push({ id: "review", label: "Luyện tập" });
-    tabs.push({ id: "progress", label: "Tiến độ" });
-    tabs.push({ id: "account", label: "Tài khoản" });
+    tabs.push({ id: "learn", label: "Học", icon: "📖" });
+    tabs.push({ id: "review", label: "Luyện tập", icon: "🏋️" });
+    tabs.push({ id: "progress", label: "Tiến độ", icon: "⚡" });
+    tabs.push({ id: "account", label: "Tài khoản", icon: "👤" });
   } else if (role === "parent") {
-    tabs.push({ id: "family", label: "Dashboard Gia đình" });
-    tabs.push({ id: "progress", label: "Tiến độ con" });
-    tabs.push({ id: "account", label: "Tài khoản" });
+    tabs.push({ id: "learn", label: "Học", icon: "📖" });
+    tabs.push({ id: "review", label: "Luyện tập", icon: "🏋️" });
+    tabs.push({ id: "family", label: "Gia đình", icon: "👨‍👩‍👧" });
+    tabs.push({ id: "account", label: "Tài khoản", icon: "👤" });
   } else if (role === "school") {
-    tabs.push({ id: "school", label: "Dashboard Trường học" });
-    tabs.push({ id: "custom_package", label: "Gói học tùy chỉnh" });
-    tabs.push({ id: "account", label: "Tài khoản" });
+    tabs.push({ id: "school", label: "Trường học", icon: "🏫" });
+    tabs.push({ id: "custom_package", label: "Tùy chỉnh", icon: "📋" });
+    tabs.push({ id: "account", label: "Tài khoản", icon: "👤" });
   } else {
-    // Guest
-    tabs.push({ id: "learn", label: "Học" });
-    tabs.push({ id: "account", label: "Đăng nhập" });
+    tabs.push({ id: "learn", label: "Học", icon: "📖" });
+    tabs.push({ id: "account", label: "Đăng nhập", icon: "🔑" });
   }
 
-  const handleTabClick = (tabId: AppTab) => {
-    if (!currentUser && tabId !== "learn") {
-      onOpenAuth();
-      return;
-    }
-    onTabChange(tabId);
-  };
-
   return (
-    <aside className="sidebar">
-      <div className="brand-block">
-        <div className="brand-mark-row">
-          <div className="brand-mark">
-            <img src="/signova-mascot.png" alt="Signova mascot" className="brand-mark-image" />
+    <>
+      {/* ── Desktop top bar ────────────────────────────────── */}
+      <aside className="sidebar hidden sm:flex">
+        {/* Brand logo */}
+        <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={() => onTabChange("learn")}>
+          <div className="w-11 h-11 rounded-2xl overflow-hidden bg-white border border-slate-100 flex-shrink-0 flex items-center justify-center p-0.5">
+            <img src="/signova-mascot.png" alt="Mascot" className="w-full h-full object-cover rounded-[14px]" />
           </div>
-          <div className="brand-badge">20 từ • 2 topic</div>
+          <span className="font-black text-lg tracking-[0.12em] text-sky-600 uppercase leading-none">SIGNOVA</span>
         </div>
-        <p className="eyebrow">SIGNOVA</p>
-        <h1>Học ký hiệu cùng mascot Signova</h1>
-      </div>
 
-      {/* User Auth Section */}
-      <div className="card-surface" style={{ padding: "12px", marginBottom: "16px" }}>
-        {currentUser ? (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-400 flex items-center justify-center text-white font-bold shadow-sm flex-shrink-0">
+        {/* Desktop tabs */}
+        <nav className="flex items-center gap-1.5 overflow-x-auto py-1 custom-scrollbar flex-1 justify-center">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => onTabChange(tab.id)}
+                className={`flex items-center gap-2 px-5 py-2 rounded-2xl font-black text-[0.92rem] transition-all whitespace-nowrap cursor-pointer ${
+                  isActive
+                    ? "bg-[#1cb0f6] border-b-2 border-[#1899d6] text-white"
+                    : "bg-white border-2 border-b-2 border-slate-200 text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                <span className="text-base">{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Desktop user block */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {currentUser ? (
+            <div className="flex items-center gap-2 bg-white/80 border border-slate-100 rounded-3xl p-1.5 pr-3">
+              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
                 {currentUser.username[0].toUpperCase()}
               </div>
-              <div className="overflow-hidden">
-                <h4 className="font-semibold text-slate-800 text-sm leading-tight truncate">
+              <div className="hidden md:flex flex-col">
+                <span className="font-extrabold text-slate-800 text-sm leading-none truncate max-w-[80px]">
                   {currentUser.username}
-                </h4>
-                <span className="text-[10px] text-indigo-600 font-bold capitalize bg-indigo-50 px-2 py-0.5 rounded-full inline-block mt-0.5">
-                  {role === "learner" ? "Học sinh" : role === "parent" ? "Phụ huynh" : "Trường học"}
+                </span>
+                <span className="text-[9px] text-sky-600 font-black uppercase tracking-wider mt-1">
+                  {role === "learner" ? "Cá nhân" : role === "parent" ? "Phụ huynh" : "Trường"}
                 </span>
               </div>
+
+              {(role === "learner" || role === "parent") && currentUser.learner_profile && (
+                <div className="flex items-center gap-2 border-l border-slate-150 pl-2 ml-1 text-xs">
+                  <span className="font-black text-amber-600">🔥 {currentUser.learner_profile.learning_streak}</span>
+                  <span className="font-black text-indigo-600">⭐ {currentUser.learner_profile.xp}</span>
+                </div>
+              )}
+
+              <button
+                onClick={onLogout}
+                type="button"
+                className="p-2 bg-white border-2 border-b-2 border-rose-200 text-rose-500 hover:bg-rose-50 active:border-b-0 active:translate-y-[1px] rounded-xl transition-all cursor-pointer text-xs"
+                title="Đăng xuất"
+              >
+                ❌
+              </button>
             </div>
-            {role === "learner" && currentUser.learner_profile && (
-              <div className="text-xs text-slate-600 bg-slate-50 p-2 rounded-lg mt-1 flex justify-between">
-                <span>🔥 Streak: <strong>{currentUser.learner_profile.learning_streak} ngày</strong></span>
-                <span>⭐ XP: <strong>{currentUser.learner_profile.xp}</strong></span>
-              </div>
-            )}
-            <button
-              onClick={onLogout}
-              type="button"
-              className="w-full mt-2 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 font-bold rounded-lg border-0 cursor-pointer transition-colors text-xs"
-            >
-              Đăng xuất
-            </button>
-          </div>
-        ) : (
-          <div className="text-center py-1">
-            <p className="text-xs text-slate-500 mb-2.5 font-medium">Đăng nhập để lưu tiến độ và thi đua nhé!</p>
+          ) : (
             <button
               onClick={onOpenAuth}
               type="button"
-              className="w-full py-2 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold rounded-lg border-0 cursor-pointer hover:opacity-95 transition-all text-xs shadow-md shadow-indigo-100"
+              className="px-5 py-2.5 bg-[#1cb0f6] border-b-2 border-[#1899d6] text-white font-black rounded-2xl cursor-pointer hover:bg-[#24c4ff] active:border-b-0 active:translate-y-[2px] transition-all text-sm"
             >
-              🔑 Đăng nhập / Đăng ký
+              🔑 Đăng nhập
             </button>
+          )}
+        </div>
+      </aside>
+
+      {/* ── Mobile top mini-bar ────────────────────────────── */}
+      <header className="sm:hidden sticky top-0 z-50 bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between">
+        {/* Brand */}
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => onTabChange("learn")}>
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-slate-100">
+            <img src="/signova-mascot.png" alt="Mascot" className="w-full h-full object-cover" />
           </div>
-        )}
-      </div>
+          <span className="font-black text-base tracking-[0.12em] text-sky-600 uppercase">SIGNOVA</span>
+        </div>
 
-      <div className="tab-list">
-        {tabs.map((tab) => (
+        {/* User pill or login */}
+        {currentUser ? (
+          <div className="flex items-center gap-2">
+            {currentUser.learner_profile && (
+              <div className="flex items-center gap-2 text-xs font-black">
+                <span className="text-amber-600">🔥{currentUser.learner_profile.learning_streak}</span>
+                <span className="text-indigo-600">⭐{currentUser.learner_profile.xp}</span>
+              </div>
+            )}
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white font-black text-sm">
+              {currentUser.username[0].toUpperCase()}
+            </div>
+          </div>
+        ) : (
           <button
-            key={tab.id}
+            onClick={onOpenAuth}
             type="button"
-            className={activeTab === tab.id ? "nav-tab active" : "nav-tab"}
-            onClick={() => handleTabClick(tab.id)}
+            className="px-4 py-2 bg-[#1cb0f6] border-b-2 border-[#1899d6] text-white font-black rounded-xl text-sm cursor-pointer"
           >
-            {tab.label}
+            Đăng nhập
           </button>
-        ))}
-      </div>
+        )}
+      </header>
 
-      <div className="card-surface sidebar-helper-card">
-        <p className="eyebrow">Cách chơi</p>
-        <ul className="helper-list">
-          <li>Xem hình và video mẫu trước.</li>
-          <li>Học xong một từ thì luyện ngay.</li>
-          <li>Mỗi 5 từ sẽ có một bài kiểm tra nhỏ.</li>
-        </ul>
-      </div>
-    </aside>
+      {/* ── Mobile bottom tab bar (Duolingo-style) ────────── */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-slate-200 safe-area-bottom">
+        <div className="flex items-center justify-around px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => onTabChange(tab.id)}
+                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition-all cursor-pointer min-w-[56px] ${
+                  isActive ? "text-[#1cb0f6]" : "text-slate-400"
+                }`}
+              >
+                <span className={`text-2xl leading-none transition-transform ${isActive ? "scale-110" : ""}`}>
+                  {tab.icon}
+                </span>
+                <span className={`text-[10px] font-black leading-none whitespace-nowrap ${isActive ? "text-[#1cb0f6]" : "text-slate-400"}`}>
+                  {tab.label}
+                </span>
+                {isActive && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1cb0f6] mt-0.5" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+    </>
   );
 }

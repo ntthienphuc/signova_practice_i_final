@@ -15,10 +15,10 @@ function QuizIntro({ scope, topic, onStart, onBack }: QuizIntroProps) {
   const lessonGlosses = topic.words.slice(0, scope).map((word) => word.gloss);
   return (
     <section className="grid place-items-center min-h-[calc(100vh-80px)]">
-      <div className="max-w-[860px] w-full grid gap-[18px] p-[34px] rounded-[30px] bg-[radial-gradient(circle_at_top_right,rgba(116,186,255,0.18),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,251,255,0.96))] shadow-[0_18px_42px_rgba(62,88,149,0.1)] border border-white/[0.82]">
+      <div className="max-w-[860px] w-full grid gap-[18px] p-[34px] rounded-[30px] bg-white border-2 border-slate-200">
         <div className="grid gap-[10px]">
-          <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Practice II</p>
-          <div className="inline-flex items-center rounded-full py-2 px-3 font-bold text-[0.92rem] bg-[#ffdff1] text-[#a8517e]">🏁 Bài kiểm tra nhỏ</div>
+          <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#1cb0f6] font-extrabold">Practice II</p>
+          <div className="inline-flex items-center rounded-full py-2 px-3 font-bold text-[0.92rem] bg-emerald-100 text-emerald-800">🏁 Bài kiểm tra nhỏ</div>
           <h2 className="m-0 text-[clamp(2rem,4vw,3.2rem)] leading-[1.05] font-display">{scope === 5 ? "Checkpoint sau 5 từ đầu" : "Bài tổng kết 10 từ"}</h2>
           <p className="text-[var(--ink-soft)] leading-[1.62]">
             {scope === 5
@@ -54,6 +54,8 @@ interface LearnTabProps {
   session: PracticeSession | null;
   topics: Topic[];
   progressByTopic: ProgressByTopic;
+  currentUser?: any;
+  onOpenAuth: () => void;
   onBackToTopics: () => void;
   onStartWordPractice: () => void;
   onGoToLearnWord: (nextIndex: number) => void;
@@ -69,6 +71,8 @@ export function LearnTab({
   session,
   topics,
   progressByTopic,
+  currentUser,
+  onOpenAuth,
   onBackToTopics,
   onStartWordPractice,
   onGoToLearnWord,
@@ -100,7 +104,7 @@ export function LearnTab({
   if (bootError) {
     return (
       <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
-        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Lỗi tải app</p>
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-sky-600 font-extrabold">Lỗi tải app</p>
         <h2>Không thể lấy curriculum từ backend</h2>
         <p className="text-[#b33f47]">{bootError}</p>
       </section>
@@ -110,7 +114,7 @@ export function LearnTab({
   if (!curriculum) {
     return (
       <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
-        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">Loading</p>
+        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-sky-600 font-extrabold">Loading</p>
         <h2>Đang chuẩn bị bài học cho bạn...</h2>
       </section>
     );
@@ -119,7 +123,7 @@ export function LearnTab({
   if (!session) {
     return (
       <section className="grid gap-6">
-        <TopicGrid topics={topics} progressByTopic={progressByTopic} />
+        <TopicGrid topics={topics} progressByTopic={progressByTopic} currentUser={currentUser} onOpenAuth={onOpenAuth} />
       </section>
     );
   }

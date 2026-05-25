@@ -1,14 +1,14 @@
 import type { Topic } from "../../types/learn";
 
 const DEFAULT_BADGES = [
-  { code: "first_attempt", name: "Khởi đầu mới", description: "Thực hiện lượt luyện tập đầu tiên.", icon: "🚀" },
-  { code: "first_correct_word", name: "Đúng chuẩn", description: "Đạt trạng thái Đạt (Accepted) cho một từ.", icon: "✅" },
-  { code: "five_words_done", name: "Chăm chỉ", description: "Học xong 5 từ vựng.", icon: "📚" },
-  { code: "checkpoint_clear", name: "Vượt ải", description: "Vượt qua bài checkpoint kiểm tra 5 từ.", icon: "🏁" },
-  { code: "topic_finisher", name: "Làm chủ chủ đề", description: "Hoàn thành tất cả các từ trong chủ đề.", icon: "👑" },
-  { code: "three_day_streak", name: "Kiên trì", description: "Duy trì chuỗi học tập 3 ngày liên tục.", icon: "🔥" },
-  { code: "practice_master_80", name: "Cao thủ 80+", description: "Đạt điểm số 80 trở lên trong một lần tập.", icon: "🎖️" },
-  { code: "practice_master_90", name: "Đỉnh cao 90+", description: "Đạt điểm số 90 trở lên trong một lần tập.", icon: "🏆" },
+  { code: "first_attempt", name: "Khởi đầu mới", description: "Lượt luyện tập đầu tiên.", icon: "🚀" },
+  { code: "first_correct_word", name: "Đúng chuẩn", description: "Đạt chuẩn một từ vựng.", icon: "✅" },
+  { code: "five_words_done", name: "Chăm chỉ", description: "Đã học xong 5 từ vựng.", icon: "📚" },
+  { code: "checkpoint_clear", name: "Vượt ải", description: "Vượt checkpoint 5 từ.", icon: "🏁" },
+  { code: "topic_finisher", name: "Làm chủ", description: "Hoàn thành một chủ đề.", icon: "👑" },
+  { code: "three_day_streak", name: "Kiên trì", description: "Học liên tục 3 ngày.", icon: "🔥" },
+  { code: "practice_master_80", name: "Cao thủ 80+", description: "Đạt 80 điểm trở lên.", icon: "🎖️" },
+  { code: "practice_master_90", name: "Đỉnh cao 90+", description: "Đạt 90 điểm trở lên.", icon: "🏆" },
 ];
 
 interface ProgressTabProps {
@@ -28,7 +28,7 @@ interface ProgressTabProps {
   onRejectLink: (type: "parent" | "school", id: string) => void;
 }
 
-function LearnerProgressDetails({ data, topics }: { data: any; topics: Topic[] }) {
+export function LearnerProgressDetails({ data, topics }: { data: any; topics: Topic[] }) {
   const activeStreak = data.learning_streak || 0;
   const currentXp = data.xp || 0;
   const progressList = data.topic_progress || [];
@@ -50,60 +50,52 @@ function LearnerProgressDetails({ data, topics }: { data: any; topics: Topic[] }
   const totalStudiedWords = progressList.reduce((acc: number, cur: any) => acc + (cur.completed_words || 0), 0);
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 border border-amber-100 rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-5 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Chuỗi liên tục</span>
-            <strong className="block text-3xl font-black text-amber-700 mt-1">{activeStreak} ngày</strong>
-          </div>
-          <div className="text-4xl">🔥</div>
+    <div className="space-y-5">
+      {/* Big stat cards */}
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-[#fff8ee] border-2 border-b-4 border-[#ff9600]/40 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 text-center">
+          <div className="text-3xl sm:text-5xl select-none mb-1 sm:mb-2">🔥</div>
+          <strong className="block text-3xl sm:text-5xl font-black text-[#ff9600] leading-none">{activeStreak}</strong>
+          <span className="block text-[11px] sm:text-sm font-black text-[#cc7a00] mt-1">Ngày liên tục</span>
         </div>
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50/50 border border-indigo-100 rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-5 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Tổng điểm kinh nghiệm</span>
-            <strong className="block text-3xl font-black text-indigo-700 mt-1">{currentXp} XP</strong>
-          </div>
-          <div className="text-4xl">⭐</div>
+        <div className="bg-[#f0f8ff] border-2 border-b-4 border-[#1cb0f6]/40 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 text-center">
+          <div className="text-3xl sm:text-5xl select-none mb-1 sm:mb-2">⭐</div>
+          <strong className="block text-3xl sm:text-5xl font-black text-[#1cb0f6] leading-none">{currentXp}</strong>
+          <span className="block text-[11px] sm:text-sm font-black text-[#1899d6] mt-1">Kiến thưức XP</span>
         </div>
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 border border-emerald-100 rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-5 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Từ vựng đã học</span>
-            <strong className="block text-3xl font-black text-emerald-700 mt-1">{totalStudiedWords} từ</strong>
-          </div>
-          <div className="text-4xl">📖</div>
+        <div className="bg-[#f0fff4] border-2 border-b-4 border-[#58cc02]/40 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 text-center">
+          <div className="text-3xl sm:text-5xl select-none mb-1 sm:mb-2">📖</div>
+          <strong className="block text-3xl sm:text-5xl font-black text-[#58cc02] leading-none">{totalStudiedWords}</strong>
+          <span className="block text-[11px] sm:text-sm font-black text-[#46a302] mt-1">Từ đã học</span>
         </div>
       </div>
 
-      <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 space-y-4">
-        <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
-          🏅 Bộ sưu tập Huy hiệu
+      {/* Badges */}
+      <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-5 space-y-4">
+        <h3 className="text-xl font-black text-slate-800 border-b-2 border-slate-100 pb-3 flex items-center gap-2 m-0 select-none">
+          🏅 Huy hiệu
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {DEFAULT_BADGES.map((badge) => {
             const isUnlocked = earnedBadges.some((eb: any) => eb.code === badge.code);
             return (
               <div
                 key={badge.code}
-                className={`p-4 rounded-2xl border text-center flex flex-col justify-between items-center transition-all ${
+                className={`p-3 sm:p-4 rounded-2xl border-2 transition-all text-center flex flex-col items-center gap-1.5 sm:gap-2 ${
                   isUnlocked
-                    ? "bg-gradient-to-br from-amber-50/60 to-orange-50/30 border-amber-200 shadow-md shadow-amber-50/30 scale-100"
-                    : "bg-slate-50/50 border-slate-100 opacity-60 filter grayscale"
+                    ? "bg-white border-b-4 border-[#1cb0f6]/40 border-x-slate-200 border-t-slate-200"
+                    : "bg-slate-50 border-slate-200 opacity-40 grayscale"
                 }`}
               >
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-3xl shadow-inner mb-3 ${
-                  isUnlocked ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-400"
-                }`}>
-                  {badge.icon}
-                </div>
+                <div className="text-2xl sm:text-3xl select-none">{badge.icon}</div>
                 <div>
-                  <h4 className="font-bold text-slate-800 text-xs leading-snug">{badge.name}</h4>
-                  <p className="text-[10px] text-slate-500 mt-1 leading-normal">{badge.description}</p>
+                  <h4 className="font-black text-slate-800 text-xs sm:text-sm leading-snug m-0">{badge.name}</h4>
+                  <p className="text-[9px] sm:text-[10px] text-slate-400 mt-0.5 leading-tight m-0 hidden sm:block">{badge.description}</p>
                 </div>
-                <span className={`mt-3 px-2 py-0.5 text-[9px] font-bold rounded-full uppercase tracking-wider ${
-                  isUnlocked ? "bg-amber-100 text-amber-800" : "bg-slate-150 text-slate-500"
+                <span className={`px-2 py-0.5 text-[9px] sm:text-[10px] font-black rounded-full uppercase tracking-wider ${
+                  isUnlocked ? "bg-[#1cb0f6] text-white" : "bg-slate-200 text-slate-400"
                 }`}>
-                  {isUnlocked ? "Đã Đạt" : "Chưa Đạt"}
+                  {isUnlocked ? "✓ Đạt" : "Chưa"}
                 </span>
               </div>
             );
@@ -111,35 +103,33 @@ function LearnerProgressDetails({ data, topics }: { data: any; topics: Topic[] }
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 space-y-4">
-          <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3">
-            📚 Tiến trình các Chủ đề
+      {/* Topic progress + History */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-5 space-y-4">
+          <h3 className="text-xl font-black text-slate-800 border-b-2 border-slate-100 pb-3 m-0 select-none">
+            📚 Tiến trình Chủ đề
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-5">
             {mergedProgress.map((tp) => {
               const percent = Math.round((tp.completedWords / 10) * 100);
               return (
-                <div key={tp.id} className="space-y-1.5">
-                  <div className="flex justify-between items-center text-xs">
-                    <strong className="font-semibold text-slate-800">{tp.title}</strong>
-                    <span className="font-semibold text-indigo-700">{tp.completedWords}/10 từ ({percent}%)</span>
+                <div key={tp.id} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <strong className="font-black text-slate-800 text-base">{tp.title}</strong>
+                    <span className="font-black text-[#1cb0f6] text-base">{tp.completedWords}/10</span>
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2">
+                  <div className="w-full bg-slate-100 border border-slate-200 rounded-full h-4 p-0.5">
                     <div
-                      className="bg-gradient-to-r from-indigo-500 to-sky-400 h-2 rounded-full transition-all duration-500"
+                      className="bg-[#1cb0f6] h-full rounded-full transition-all duration-500 relative"
                       style={{ width: `${percent}%` }}
-                    ></div>
+                    />
                   </div>
-                  <div className="flex gap-2.5 mt-1 text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                    <span className={`flex items-center gap-1 ${tp.checkpoint5_passed ? "text-emerald-600" : "text-slate-350"}`}>
-                      {tp.checkpoint5_passed ? "✅ Checkpoint 5" : "⚪ Checkpoint 5"}
+                  <div className="flex gap-2 flex-wrap">
+                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-black border-2 ${tp.checkpoint5_passed ? "bg-[#1cb0f6] text-white border-[#1899d6]" : "bg-slate-100 text-slate-400 border-slate-200"}`}>
+                      {tp.checkpoint5_passed ? "✓" : "○"} Điểm giữa
                     </span>
-                    <span className={`flex items-center gap-1 ${tp.practice2_final_passed ? "text-emerald-600" : "text-slate-350"}`}>
-                      {tp.practice2_final_passed ? "✅ Practice II" : "⚪ Practice II"}
-                    </span>
-                    <span className={`flex items-center gap-1 ${tp.completed ? "text-emerald-600" : "text-slate-350"}`}>
-                      {tp.completed ? "✅ Đã xong" : "⚪ Đang học"}
+                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-black border-2 ${tp.completed ? "bg-[#58cc02] text-white border-[#46a302]" : "bg-slate-100 text-slate-400 border-slate-200"}`}>
+                      {tp.completed ? "✓" : "○"} Hoàn thành
                     </span>
                   </div>
                 </div>
@@ -148,11 +138,11 @@ function LearnerProgressDetails({ data, topics }: { data: any; topics: Topic[] }
           </div>
         </div>
 
-        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 space-y-4">
-          <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3">
-            ⚡ Lịch sử luyện tập gần đây
+        <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-5 space-y-4">
+          <h3 className="text-xl font-black text-slate-800 border-b-2 border-slate-100 pb-3 m-0 select-none">
+            ⚡ Lịch sử gần đây
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {recentAttempts.length > 0 ? (
               recentAttempts.map((att: any) => {
                 const date = new Date(att.created_at).toLocaleDateString("vi-VN", {
@@ -162,35 +152,31 @@ function LearnerProgressDetails({ data, topics }: { data: any; topics: Topic[] }
                   minute: "2-digit",
                 });
                 return (
-                  <div key={att.id} className="bg-slate-50/60 hover:bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between text-xs transition-colors">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wide ${
-                          att.practice_mode === "practice_i"
-                            ? "bg-indigo-100 text-indigo-800"
-                            : "bg-sky-100 text-sky-850"
+                  <div key={att.id} className="bg-slate-50 hover:bg-slate-100/80 px-4 py-3 rounded-2xl border-2 border-slate-100 flex items-center justify-between transition-colors">
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-base font-black text-slate-800">{att.target_gloss}</span>
+                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wide ${
+                          att.practice_mode === "practice_i" ? "bg-sky-100 text-[#1cb0f6]" : "bg-indigo-100 text-indigo-600"
                         }`}>
                           {att.practice_mode === "practice_i" ? "Luyện từ" : "Kiểm tra"}
                         </span>
-                        <strong className="text-slate-800 font-semibold">{att.target_gloss}</strong>
                       </div>
-                      <span className="block text-[10px] text-slate-400">{date}</span>
+                      <span className="text-[11px] text-slate-400 font-bold">{date}</span>
                     </div>
-                    <div className="text-right space-y-1">
-                      <div className="font-bold text-slate-700">{Math.round(att.score)} điểm</div>
-                      <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                        att.accepted
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-amber-100 text-amber-850"
+                    <div className="text-right">
+                      <div className="text-xl font-black text-slate-700">{Math.round(att.score)}đ</div>
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                        att.accepted ? "bg-[#f0fff4] text-[#58cc02]" : "bg-[#fff8ee] text-[#ff9600]"
                       }`}>
-                        {att.accepted ? "Đạt" : "Cần ôn tập"}
+                        {att.accepted ? "✓ Đạt" : "Cần ôn"}
                       </span>
                     </div>
                   </div>
                 );
               })
             ) : (
-              <div className="text-xs text-slate-400 text-center py-6">Chưa có bài làm nào gần đây. Hãy bắt đầu luyện tập!</div>
+              <div className="text-slate-400 font-black text-center py-8">Chưa có bài làm nào 😊</div>
             )}
           </div>
         </div>
@@ -217,11 +203,16 @@ export function ProgressTab({
 }: ProgressTabProps) {
   if (!currentUser) {
     return (
-      <section className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7 text-center py-12">
-        <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#c07f42] font-extrabold">🔑 Yêu cầu đăng nhập</p>
-        <h2>Hãy đăng nhập để theo dõi tiến độ</h2>
-        <button onClick={onOpenAuth} type="button" className="border-0 rounded-full min-h-[48px] px-5 transition-all font-extrabold bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white shadow-[0_16px_30px_rgba(83,110,249,0.22)] hover:-translate-y-px cursor-pointer mt-4">
-          Đăng nhập / Đăng ký
+      <section className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-8 text-center py-16">
+        <div className="text-5xl mb-4">📊</div>
+        <h2 className="m-0 font-black text-slate-800 text-2xl">Đăng nhập để xem tiến độ</h2>
+        <p className="text-slate-500 font-bold mt-2 max-w-xs mx-auto text-sm">Theo dõi hành trình học tập và các huy hiệu đạt được của bạn!</p>
+        <button
+          onClick={onOpenAuth}
+          type="button"
+          className="px-6 py-3 bg-[#1cb0f6] border-b-4 border-[#1899d6] text-white font-black rounded-2xl cursor-pointer hover:bg-[#24c4ff] active:border-b-0 active:translate-y-[3px] transition-all text-base mt-6"
+        >
+          Đăng nhập ngay 🚀
         </button>
       </section>
     );
@@ -233,39 +224,39 @@ export function ProgressTab({
     const kids = parentDashData?.linked_learners || [];
     return (
       <section className="space-y-6">
-        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
-          <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-indigo-600 font-bold">Tiến độ của con</p>
-          <h2>Theo dõi chi tiết kết quả học tập của các con</h2>
-          <p className="text-[var(--ink-soft)] leading-[1.62]">Xem chuỗi ngày học, huy hiệu đạt được và lịch sử làm bài chi tiết.</p>
+        <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6">
+          <p className="m-0 text-sm uppercase tracking-[0.18em] text-[#1cb0f6] font-black">📈 Tiến độ của con</p>
+          <h2 className="m-0 mt-1 font-black text-slate-800 text-2xl">Kết quả học tập của con</h2>
+          <p className="text-slate-500 mt-1 font-bold text-sm">Xem chuỗi ngày học, huy hiệu và lịch sử làm bài của con.</p>
         </div>
 
         {kids.length === 0 ? (
-          <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-8 text-center text-slate-500 font-medium">
+          <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-8 text-center text-slate-400 font-bold">
             Chưa có tài khoản con nào được liên kết. Vui lòng vào tab <strong>Tài khoản</strong> để thêm con.
           </div>
         ) : (
           <div className="space-y-6">
-            <label className="grid gap-2 my-[18px] max-w-xs">
-              <span className="text-[0.84rem] uppercase tracking-[0.12em] text-[#7c88a1]">Chọn con để xem tiến độ</span>
+            <label className="grid gap-1.5 max-w-xs">
+              <span className="text-[0.76rem] uppercase tracking-wider text-slate-450 font-black">Chọn con xem tiến độ</span>
               <select
                 value={selectedChildId}
                 onChange={(e) => onSetSelectedChildId(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full bg-white border-2 border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none focus:border-[#1cb0f6] font-bold text-slate-700"
               >
                 {kids.map((kid: any) => (
                   <option key={kid.learner_id} value={kid.learner_id}>
-                    {kid.display_name || kid.username} ({kid.username})
+                    {kid.display_name || kid.username}
                   </option>
                 ))}
               </select>
             </label>
 
             {loadingChildProgress ? (
-              <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center text-slate-500">Đang tải dữ liệu tiến độ của con...</div>
+              <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-6 text-center text-slate-400 font-bold">Đang tải tiến độ...</div>
             ) : selectedChildProgress ? (
               <LearnerProgressDetails data={selectedChildProgress} topics={topics} />
             ) : (
-              <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center text-slate-500">Vui lòng chọn một người con.</div>
+              <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-6 text-center text-slate-400 font-bold">Hãy chọn một người con.</div>
             )}
           </div>
         )}
@@ -276,74 +267,20 @@ export function ProgressTab({
   if (role === "learner") {
     return (
       <section className="space-y-6">
-        <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-7">
-          <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-indigo-600 font-bold">Tiến độ cá nhân</p>
-          <h2>Thành tích học tập của bạn</h2>
-          <p className="text-[var(--ink-soft)] leading-[1.62]">Duy trì ngọn lửa học tập hàng ngày để tích lũy XP và mở khóa huy hiệu quý giá.</p>
+        <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6">
+          <p className="m-0 text-sm uppercase tracking-[0.18em] text-[#1cb0f6] font-black">⚡ Tiến độ của bạn</p>
+          <h2 className="m-0 mt-1 font-black text-slate-800 text-2xl">Thành tích học tập 🏆</h2>
+          <p className="text-slate-500 mt-1 font-bold text-sm">Học mỗi ngày để giữ chuỗi liên tục và mở khóa huy hiệu!</p>
         </div>
 
         {loadingProgress ? (
-          <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center text-slate-500 font-medium">Đang tải dữ liệu thành tích...</div>
+          <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-6 text-center text-slate-400 font-bold">Đang tải thành tích...</div>
         ) : progressError ? (
-          <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center text-rose-600 font-medium">Lỗi: {progressError}</div>
+          <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-6 text-center text-rose-600 font-bold">Lỗi: {progressError}</div>
         ) : learnerDashData ? (
-          <>
-            {((pendingLinks.parent_links && pendingLinks.parent_links.length > 0) ||
-              (pendingLinks.school_links && pendingLinks.school_links.length > 0)) && (
-              <div className="bg-amber-50/40 border border-amber-200 rounded-2xl shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-5 space-y-3">
-                <h4 className="text-amber-800 font-bold text-sm flex items-center gap-1.5">
-                  ⚠️ Có yêu cầu kết nối tài khoản mới!
-                </h4>
-                <div className="divide-y divide-amber-100">
-                  {pendingLinks.parent_links.map((pl: any) => (
-                    <div key={pl.id} className="py-2.5 flex items-center justify-between text-xs">
-                      <span className="text-slate-700">
-                        Phụ huynh <strong>{pl.parent_display_name}</strong> muốn liên kết để theo dõi tiến trình của bạn.
-                      </span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => onApproveLink("parent", pl.id)}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 border-0 rounded-lg cursor-pointer text-[10px]"
-                        >
-                          Đồng ý
-                        </button>
-                        <button
-                          onClick={() => onRejectLink("parent", pl.id)}
-                          className="bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold px-3 py-1.5 border-0 rounded-lg cursor-pointer text-[10px]"
-                        >
-                          Từ chối
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  {pendingLinks.school_links.map((sl: any) => (
-                    <div key={sl.id} className="py-2.5 flex items-center justify-between text-xs">
-                      <span className="text-slate-700">
-                        Trường học <strong>{sl.school_name}</strong> muốn liên kết (Lớp: <strong>{sl.class_name}</strong>, MSSV: <strong>{sl.student_code}</strong>).
-                      </span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => onApproveLink("school", sl.id)}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 border-0 rounded-lg cursor-pointer text-[10px]"
-                        >
-                          Đồng ý
-                        </button>
-                        <button
-                          onClick={() => onRejectLink("school", sl.id)}
-                          className="bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold px-3 py-1.5 border-0 rounded-lg cursor-pointer text-[10px]"
-                        >
-                          Từ chối
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            <LearnerProgressDetails data={learnerDashData} topics={topics} />
-          </>
+          <LearnerProgressDetails data={learnerDashData} topics={topics} />
         ) : (
-          <div className="bg-[var(--surface)] border border-white/[0.82] rounded-[32px] shadow-[0_12px_34px_rgba(83,110,249,0.1)] backdrop-blur-[12px] p-6 text-center text-slate-500 font-medium">Không thể lấy dữ liệu tiến độ.</div>
+          <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-6 text-center text-slate-400 font-bold">Không thể lấy dữ liệu tiến độ.</div>
         )}
       </section>
     );

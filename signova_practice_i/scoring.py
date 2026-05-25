@@ -44,7 +44,7 @@ def decision_for_target(
     score = target_result["score"]
     valid_fraction = float(target_result.get("valid_fraction", 1.0))
     top1_gap = 0.0 if top1_score is None else float(top1_score) - float(score)
-    low_tracking_quality = valid_fraction < min_valid_fraction
+    low_tracking_quality = (valid_fraction < min_valid_fraction) or bool(target_result.get("low_tracking_quality", False))
     soft_accept = (
         not low_tracking_quality
         and valid_fraction >= min_valid_fraction
@@ -63,6 +63,7 @@ def decision_for_target(
         "needs_component_feedback": score < 95,
         "low_tracking_quality": low_tracking_quality,
     }
+
 
 
 def normalize_lesson_predictions(predictions: list[dict[str, Any]]) -> list[dict[str, Any]]:

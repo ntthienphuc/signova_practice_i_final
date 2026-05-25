@@ -11,14 +11,26 @@ from datetime import datetime, timezone
 
 router = APIRouter(prefix="/progress", tags=["progress"])
 
+def get_or_create_learner_profile(user: User, db: Session) -> LearnerProfile:
+    profile = user.learner_profile
+    if not profile:
+        profile = LearnerProfile(
+            user_id=user.id,
+            display_name=user.username,
+            learning_streak=0,
+            xp=0
+        )
+        db.add(profile)
+        db.commit()
+        db.refresh(profile)
+    return profile
+
 @router.get("/me", response_model=UserProgressSummary)
 def get_my_progress(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role != "learner":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only learners have progress")
+    if current_user.role not in ["learner", "parent"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only learners and parents have progress")
 
-    profile = current_user.learner_profile
-    if not profile:
-        raise HTTPException(status_code=404, detail="Learner profile not found")
+    profile = get_or_create_learner_profile(current_user, db)
 
     topic_progress_list = db.query(LearnerTopicProgress).filter(
         LearnerTopicProgress.learner_user_id == current_user.id
@@ -50,8 +62,10 @@ def get_my_progress(current_user: User = Depends(get_current_user), db: Session 
 
 @router.get("/topic/{topic_id}")
 def get_topic_progress(topic_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role != "learner":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only learners have progress")
+    if current_user.role not in ["learner", "parent"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only learners and parents have progress")
+        
+    get_or_create_learner_profile(current_user, db)
         
     topic = db.query(Topic).filter(Topic.id == topic_id).first()
     if not topic:
@@ -118,8 +132,8 @@ def get_topic_progress(topic_id: str, current_user: User = Depends(get_current_u
 
 @router.post("/word-viewed")
 def mark_word_viewed(req: WordViewedRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role != "learner":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only learners can study vocabulary")
+    if current_user.role not in ["learner", "parent"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only learners and parents can study vocabulary")
         
     word = db.query(Word).filter(Word.id == req.word_id).first()
     if not word:
@@ -146,7 +160,7 @@ def mark_word_viewed(req: WordViewedRequest, current_user: User = Depends(get_cu
         is_newly_studied = True
         
     if is_newly_studied:
-        profile = current_user.learner_profile
+        profile = get_or_create_learner_profile(current_user, db)
         profile.xp += 5
         
         tp = db.query(LearnerTopicProgress).filter(
@@ -178,12 +192,10 @@ def mark_word_viewed(req: WordViewedRequest, current_user: User = Depends(get_cu
 
 @router.post("/resume")
 def update_resume_state(req: ResumeStateRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role != "learner":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only learners have resume states")
+    if current_user.role not in ["learner", "parent"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only learners and parents have resume states")
         
-    profile = current_user.learner_profile
-    if not profile:
-        raise HTTPException(status_code=404, detail="Learner profile not found")
+    profile = get_or_create_learner_profile(current_user, db)
         
     profile.resume_state_json = {
         "topic_id": req.topic_id,
@@ -197,8 +209,8 @@ def update_resume_state(req: ResumeStateRequest, current_user: User = Depends(ge
 
 @router.get("/review-words")
 def get_review_words(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role != "learner":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only learners can review words")
+    if current_user.role not in ["learner", "parent"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only learners and parents can review words")
         
     progress_list = db.query(LearnerWordProgress).filter(
         LearnerWordProgress.learner_user_id == current_user.id,

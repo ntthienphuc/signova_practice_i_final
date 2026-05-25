@@ -36,20 +36,20 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-sm leading-none">S</span>
+            <div className="w-9 h-9 rounded-xl overflow-hidden border border-slate-100 flex items-center justify-center p-0.5 bg-white shadow-sm transition-transform hover:scale-105">
+              <img src="/signova-mascot.png" alt="Mascot" className="w-full h-full object-cover rounded-lg" />
             </div>
-            <span className="font-bold text-slate-900 text-lg tracking-tight">Signova</span>
+            <span className="font-black text-slate-800 text-xl tracking-[0.1em] uppercase leading-none">Signova</span>
           </Link>
 
           {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-7">
+          <div className="hidden md:flex items-center gap-8">
             {data.links.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
-                className="text-slate-500 hover:text-slate-900 transition-colors text-sm font-medium cursor-pointer"
+                className="text-slate-500 hover:text-[#1cb0f6] transition-colors text-sm font-black uppercase tracking-wider cursor-pointer"
               >
                 {link.label}
               </a>
@@ -57,19 +57,19 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
           </div>
 
           {/* Desktop locale toggle + CTA */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-4">
             <button
               type="button"
               onClick={() => onLocaleChange(locale === "vi" ? "en" : "vi")}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900 text-xs font-semibold tracking-wide transition-colors bg-white/70"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl border-2 border-slate-200 hover:border-slate-350 text-slate-500 hover:text-slate-800 text-xs font-black transition-all bg-white cursor-pointer active:translate-y-px"
             >
-              <span className={locale === "vi" ? "text-slate-900" : "text-slate-400"}>VI</span>
-              <span className="text-slate-400">/</span>
-              <span className={locale === "en" ? "text-slate-900" : "text-slate-400"}>EN</span>
+              <span className={locale === "vi" ? "text-sky-600 font-black" : "text-slate-400 font-bold"}>VI</span>
+              <span className="text-slate-300">|</span>
+              <span className={locale === "en" ? "text-sky-600 font-black" : "text-slate-400 font-bold"}>EN</span>
             </button>
             <Link
               to="/learn-dashboard"
-              className="px-5 py-2 bg-gradient-to-r from-indigo-500 to-sky-400 hover:opacity-95 text-white text-sm font-semibold rounded-lg transition-colors shadow-md shadow-sky-200"
+              className="px-6 py-2.5 bg-[#1cb0f6] border-b-4 border-[#1899d6] hover:bg-[#24c4ff] text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all active:border-b-0 active:translate-y-1"
             >
               {data.cta}
             </Link>
@@ -119,9 +119,9 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
               <span className={locale === "en" ? "text-slate-900" : "text-slate-400"}>English</span>
             </button>
             <Link
-              to="/practice"
+              to="/learn-dashboard"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center py-3 bg-gradient-to-r from-indigo-500 to-sky-400 hover:opacity-95 text-white text-sm font-semibold rounded-lg transition-colors"
+              className="flex items-center justify-center py-3 bg-[#1cb0f6] border-b-4 border-[#1899d6] hover:bg-[#24c4ff] active:border-b-0 active:translate-y-1 text-white text-sm font-black uppercase tracking-wider rounded-xl transition-all"
             >
               {data.cta}
             </Link>
