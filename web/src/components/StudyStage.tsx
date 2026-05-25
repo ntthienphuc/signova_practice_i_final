@@ -192,7 +192,7 @@ export function StudyStage({
           <div>
             <strong className="text-amber-800 text-[11px] font-black uppercase tracking-wider block mb-0.5 select-none">🦉 Lời khuyên học tập</strong>
             <p className="text-xs sm:text-sm font-bold text-amber-700 m-0 leading-relaxed">
-              Bé hãy quan sát thật kỹ hình minh họa và video mẫu bên trên rồi chọn bấm thực hành để ghi hình nhé! Mascot sẽ cổ vũ bé đó!
+              Bé xem kỹ hình và video mẫu rồi bấm Thực hành để ghi hình nha! Mascot đang chờ cổ vũ bé đó
             </p>
           </div>
         </div>

@@ -22,7 +22,7 @@ export function ChapterHeader({ topicIndex, title, subtitle, accentColor, accent
         <button
           type="button"
           onClick={onBack}
-          className="absolute left-0 top-0 p-2 rounded-full transition-all hover:bg-black/5 active:scale-95 cursor-pointer z-10"
+          className="absolute left-0 top-0 p-2 rounded-full transition-all hover:bg-black/5 active:scale-95 cursor-pointer z-50"
           style={{ border: "none", background: "transparent" }}
           aria-label="Quay lại"
         >

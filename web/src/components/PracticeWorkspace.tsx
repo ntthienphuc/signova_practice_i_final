@@ -468,6 +468,8 @@ export function PracticeWorkspace({
                     className="absolute inset-0 w-full h-full object-contain block bg-white"
                     playsInline
                     muted
+                    autoPlay={!analysis}
+                    loop={!analysis}
                     controls={!analysis}
                     {...buildVideoHandlers("reference")}
                   />
@@ -538,12 +540,12 @@ export function PracticeWorkspace({
               <div className="flex flex-col gap-4">
                 <div
                   className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-inner"
-                  style={isFromCamera ? { transform: "scaleX(-1)" } : undefined}
                 >
                   <video
                     ref={userVideoRef}
                     src={userVideoUrl}
                     className="absolute inset-0 w-full h-full object-contain block bg-white"
+                    style={isFromCamera ? { transform: "scaleX(-1)" } : undefined}
                     playsInline
                     muted
                     autoPlay
@@ -556,10 +558,7 @@ export function PracticeWorkspace({
                         src={mascots[3]}
                         alt="Analyzing Mascot"
                         className="w-24 h-24 object-contain animate-bounce-subtle"
-                        style={{
-                          animationDuration: "3s",
-                          transform: isFromCamera ? "scaleX(-1)" : undefined,
-                        }}
+                        style={{ animationDuration: "3s" }}
                       />
                       <div className="text-center">
                         <p className="font-black text-sm m-0">Mascot Signova đang chấm điểm...</p>
