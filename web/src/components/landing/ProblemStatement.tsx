@@ -14,7 +14,7 @@ export function ProblemStatement({ data }: ProblemStatementProps) {
             <span>⚠️ Thách thức</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-800 tracking-tight leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-7xl font-black text-slate-800 tracking-tight leading-tight">
             {data.heading}
           </h2>
           

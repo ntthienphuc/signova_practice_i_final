@@ -20,7 +20,7 @@ const landingData = {
     },
 
     problem: {
-      heading: 'Học ký hiệu không có phản hồi — học xong vẫn không biết mình đúng hay sai',
+      heading: 'Học ký hiệu không có phản hồi',
       body: 'Hầu hết nền tảng học ngôn ngữ ký hiệu chỉ cung cấp video mẫu hoặc từ điển. Người học vẫn phải tự đoán xem mình làm đúng không. Signova giải quyết khoảng trống này với phản hồi AI nhanh.',
     },
 

@@ -1,6 +1,7 @@
 import type { AppTab, CurriculumTopicSummary } from "../../types/learn";
 import logo from '../../assets/image/logo.jpeg'
 import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface SidebarProps {
   activeTab: AppTab;
@@ -21,6 +22,7 @@ export function Sidebar({
   onLogout,
 }: SidebarProps) {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const role = currentUser?.role;
   const tabs: Array<{ id: AppTab; label: string; icon: string }> = [];
 
@@ -48,7 +50,7 @@ export function Sidebar({
       {/* ── Desktop top bar ────────────────────────────────── */}
       <aside className="sidebar hidden sm:flex">
         {/* Brand logo */}
-        <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={() => onTabChange("learn")}>
+        <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={() => navigate("/")}>
           <div className="w-11 h-11 rounded-2xl overflow-hidden bg-white border border-slate-100 flex-shrink-0 flex items-center justify-center p-0.5">
             <img src={logo} alt="Mascot" className="w-full h-full object-cover rounded-[14px]" />
           </div>
@@ -124,7 +126,7 @@ export function Sidebar({
       {/* ── Mobile top mini-bar ────────────────────────────── */}
       <header className="sm:hidden sticky top-0 z-50 bg-white border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between">
         {/* Brand */}
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => onTabChange("learn")}>
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
           <div className="w-9 h-9 rounded-xl overflow-hidden border border-slate-100">
             <img src="/signova-mascot.png" alt="Mascot" className="w-full h-full object-cover" />
           </div>

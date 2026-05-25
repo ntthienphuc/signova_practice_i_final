@@ -49,7 +49,7 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
                 key={link.href}
                 href={link.href}
                 onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
-                className="text-slate-500 hover:text-[#1cb0f6] transition-colors text-sm font-black uppercase tracking-wider cursor-pointer"
+                className="text-black hover:text-[#1cb0f6] transition-colors text-sm font-black uppercase tracking-wider cursor-pointer"
               >
                 {link.label}
               </a>

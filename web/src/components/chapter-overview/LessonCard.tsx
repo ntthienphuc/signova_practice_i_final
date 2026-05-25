@@ -56,11 +56,8 @@ export function LessonCard({
     >
       <div className="flex-1 min-w-0">
         <p className="m-0 font-black text-slate-800 text-sm sm:text-base leading-tight">
-          Từ {index + 1}
+          {index + 1}.  {gloss || subtitle}
           {isCompleted && <span className="ml-1.5 text-[#58cc02]">✓</span>}
-        </p>
-        <p className="m-0 text-slate-500 text-xs sm:text-sm font-semibold mt-0.5 truncate">
-          {gloss || subtitle}
         </p>
       </div>
 

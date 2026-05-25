@@ -6,8 +6,13 @@ interface PricingProps {
 
 export function Pricing({ data }: PricingProps) {
   return (
-    <section className="bg-gradient-to-b from-sky-50 to-white py-20 lg:py-28" id="pricing">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative bg-sky-50 pt-32 pb-36 lg:pt-36 lg:pb-40" id="pricing">
+      {/* Top wave: white → sky-50, organic hill */}
+      <svg className="absolute top-0 left-0 w-full" viewBox="0 0 1440 110" preserveAspectRatio="none" style={{ display: 'block' }}>
+        <path fill="white" d="M0,0 L0,65 C240,65 480,5 760,3 C1040,1 1240,52 1440,65 L1440,0 Z" />
+      </svg>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-20 space-y-4">
           <div className="flex items-center justify-center gap-3">
@@ -18,11 +23,11 @@ export function Pricing({ data }: PricingProps) {
             <div className="w-8 h-1 rounded-full bg-[#1cb0f6]" />
           </div>
           
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-800 tracking-tight leading-tight">
+          <h2 className="text-5xl sm:text-6xl lg:text-7xl font-black text-slate-800 tracking-tight leading-tight">
             {data.heading}
           </h2>
-          
-          <p className="text-base sm:text-lg text-slate-500 font-bold max-w-2xl mx-auto">
+
+          <p className="text-xl sm:text-2xl text-slate-500 font-bold max-w-2xl mx-auto">
             {data.subheading}
           </p>
         </div>
@@ -63,7 +68,7 @@ export function Pricing({ data }: PricingProps) {
 
                   {/* Plan name */}
                   <h3
-                    className={`text-lg font-black mb-3 ${item.highlight ? "text-white" : "text-slate-800"}`}
+                    className={`text-2xl font-black mb-3 ${item.highlight ? "text-white" : "text-slate-800"}`}
                   >
                     {item.name}
                   </h3>
@@ -71,13 +76,13 @@ export function Pricing({ data }: PricingProps) {
                   {/* Price */}
                   <div className="mb-6 flex flex-wrap items-baseline gap-1">
                     <span
-                      className={`text-2xl font-black leading-none ${item.highlight ? "text-white" : "text-slate-805"}`}
+                      className={`text-4xl font-black leading-none ${item.highlight ? "text-white" : "text-slate-805"}`}
                     >
                       {item.price}
                     </span>
                     {item.period && (
                       <span
-                        className={`text-xs font-bold ${item.highlight ? "text-sky-100" : "text-slate-400"}`}
+                        className={`text-sm font-bold ${item.highlight ? "text-sky-100" : "text-slate-400"}`}
                       >
                         {item.period}
                       </span>
@@ -89,7 +94,7 @@ export function Pricing({ data }: PricingProps) {
                     {item.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-2.5">
                         <svg
-                          className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                          className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
                             item.highlight ? "text-emerald-300" : "text-[#58cc02]"
                           }`}
                           fill="none"
@@ -100,7 +105,7 @@ export function Pricing({ data }: PricingProps) {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                         <span
-                          className={`text-xs font-bold leading-tight ${
+                          className={`text-sm font-bold leading-tight ${
                             item.highlight ? "text-white/90" : "text-slate-500"
                           }`}
                         >
@@ -144,6 +149,11 @@ export function Pricing({ data }: PricingProps) {
           ))}
         </div>
       </div>
+
+      {/* Bottom wave: sky-50 → white, hill right-of-center */}
+      <svg className="absolute bottom-[-2px] left-0 w-full" viewBox="0 0 1440 110" preserveAspectRatio="none" style={{ display: 'block' }}>
+        <path fill="white" d="M0,55 C200,55 440,105 720,108 C1000,110 1250,60 1440,55 L1440,110 L0,110 Z" />
+      </svg>
     </section>
   );
 }
