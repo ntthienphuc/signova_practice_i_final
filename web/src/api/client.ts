@@ -32,8 +32,8 @@ export interface AnalysisResponse {
 
 export function ensureBaseUrl(value: string): string {
   // Use remote HF Spaces backend as default, not local localhost
-  // const defaultUrl = "https://thienphuc12339-signova-backend.hf.space";
-  const defaultUrl = "http://127.0.0.1:8010";
+  const defaultUrl = "https://thienphuc12339-signova-backend.hf.space";
+  // const defaultUrl = "http://127.0.0.1:8010";
 
   const baseUrl = value || defaultUrl;
   // Normalize: ensure trailing slash, handle both with and without it

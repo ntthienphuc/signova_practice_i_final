@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { NavData } from "../../types/landing";
-
+import logo from '../../assets/image/logo.jpeg'
 interface NavbarProps {
   data: NavData;
   locale: "vi" | "en";
@@ -37,7 +37,7 @@ export function Navbar({ data, locale, onLocaleChange }: NavbarProps) {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
             <div className="w-9 h-9 rounded-xl overflow-hidden border border-slate-100 flex items-center justify-center p-0.5 bg-white shadow-sm transition-transform hover:scale-105">
-              <img src="/signova-mascot.png" alt="Mascot" className="w-full h-full object-cover rounded-lg" />
+              <img src={logo} alt="Mascot" className="w-full h-full object-cover rounded-lg" />
             </div>
             <span className="font-black text-slate-800 text-xl tracking-[0.1em] uppercase leading-none">Signova</span>
           </Link>

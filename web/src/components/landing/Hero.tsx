@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { HeroData } from "../../types/landing";
+import heroImage from '../../assets/image/hero-image.jpeg'
 
 interface HeroProps {
   data: HeroData;
@@ -49,7 +50,7 @@ export function Hero({ data }: HeroProps) {
             <div className="relative w-full h-full rounded-[24px] overflow-hidden border-2 border-slate-150 bg-slate-50">
               {/* Image from local public directory */}
               <img 
-                src="/child-signing.png" 
+                src={heroImage}
                 alt="AI Camera Feed Mockup" 
                 className="w-full h-full object-cover pointer-events-none select-none" 
               />
