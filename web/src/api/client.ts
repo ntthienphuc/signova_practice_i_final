@@ -81,7 +81,7 @@ export function handleAxiosError(error: unknown): never {
 }
 
 export const BASE_URL = ensureBaseUrl(
-  (import.meta.env.VITE_API_BASE_URL as string) || "http://127.0.0.1:8010"
+  (import.meta.env.VITE_API_BASE_URL as string) || "https://thienphuc12339-signova-backend.hf.space"
 );
 export const apiClient = createApiClient(BASE_URL);
 

@@ -165,6 +165,8 @@ export function StudyStage({
                   controls
                   playsInline
                   muted
+                  autoPlay={true}
+                  loop
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-slate-300 font-black text-lg">

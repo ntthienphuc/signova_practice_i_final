@@ -19,30 +19,34 @@ React 18 · TypeScript · Vite 5 · Tailwind CSS v3 · Axios · React Router v7 
 
 ## Routing
 
-`router.tsx` defines four top-level routes:
+`router.tsx` defines the current active routes:
 
 | Path | Component | Notes |
 |---|---|---|
 | `/` | `LandingLayout` → `LandingPage` | Navbar persists via layout |
-| `/practice` | `PracticePage` | Main production app |
-| `/learn-dashboard` | `PracticePage` | Same component, alias route |
+| `/learn-dashboard` | `LearnDashboard` | Main production app (tab shell) |
+| `/chapter-overview/:topicId` | `ChapterOverviewPage` | Topic word list + per-word progress |
 | `/learn/:topicId/:wordOrder` | `LearnWordPage` | Word-level learn + Practice I cycle |
 
-`LandingLayout` owns the `locale` state (`"vi" | "en"`) and passes it via `useOutletContext<LandingOutletContext>()`. Landing child pages must call `useOutletContext` to get the locale.
+There is no `/practice` route in the router. `LandingLayout` owns the `locale` state (`"vi" | "en"`) and passes it via `useOutletContext<LandingOutletContext>()`.
 
-## Two-Component Architecture
+## Production App Architecture
 
-**`App.tsx`** is a legacy debug/lab tool for raw API access. It renders `ControlPanel` + `StagePanel` and owns file upload, direct analyze calls, and the skeleton overlay playback loop. It is accessible at `/practice` only if you wire the router to it — currently the router points `/practice` to `PracticePage`.
-
-**`PracticePage.tsx`** is the production app. It:
-- Manages auth (JWT in `localStorage` as `signova_token`), user roles, and role-based tab visibility.
+**`LearnDashboard.tsx`** (`src/pages/LearnDashboard.tsx`) is the production tab shell. It:
+- Uses `useAuth()` from `AuthContext`, `usePracticeSession()` and `useConnectionManager()` from `hook/`.
 - Boots by calling `GET /app-config` and `GET /curriculum` in parallel.
-- Renders a `Sidebar` (tab nav + curriculum overview) and a `<main>` that switches between tabs.
+- Renders `Sidebar` (tab nav) and switches between tab components in `src/pages/tabs/`.
 - Drives the full learning session state machine (see Session Flow below).
+
+Note: `router.tsx` imports this as both `PracticePage` and `LearnDashboard` — both aliases resolve to the same file.
+
+**`ChapterOverviewPage.tsx`** shows a topic's word list with per-word completion state. It calls `getMyProgress()` to decorate words with server-side progress. Navigates to `/learn/:topicId/:wordOrder` on word selection.
 
 ## Auth System
 
-Token stored in `localStorage` under key `signova_token`. `createApiClient` in `client.ts` injects `Authorization: Bearer <token>` via an Axios request interceptor on every call. There is no shared singleton that needs resetting — a fresh client is created per `createApiClient(baseUrl)` call, each reading the token from localStorage at call time.
+`AuthContext.tsx` (`src/contexts/AuthContext.tsx`) provides `useAuth()` — a context hook with `{ currentUser, isLoading, login, logout, refreshUser }`. All pages and hooks that need auth state call `useAuth()` rather than reading localStorage directly.
+
+Token stored in `localStorage` under key `signova_token`. `createApiClient` in `client.ts` injects `Authorization: Bearer <token>` via an Axios request interceptor at call time.
 
 User roles: `learner` | `parent` | `school`. Role determines which tabs the Sidebar renders:
 - **learner** — Học, Luyện tập, Tiến độ, Tài khoản
@@ -51,6 +55,13 @@ User roles: `learner` | `parent` | `school`. Role determines which tabs the Side
 - **guest** — Học, Đăng nhập
 
 `AppTab` union: `"learn" | "review" | "progress" | "family" | "school" | "account" | "custom_package"`.
+
+## Custom Hooks (`hook/`)
+
+These files live at `web/hook/` (outside `src/`), not in `src/hooks/`. Import paths from `src/` use `../../hook/`.
+
+- **`usePracticeSession.ts`** — session state machine for an in-progress topic. Manages `PracticeSession`, `progressByTopic`, quiz queues, and server sync.
+- **`useConnectionManager.ts`** — learner search + parent/school link request flow. Uses `useAuth()` internally.
 
 ## LearnWordPage (`src/pages/LearnWordPage.tsx`)
 
@@ -73,7 +84,7 @@ learn → practice_i → (word 4) → quiz_intro (scope=5) → practice_ii → l
       → practice_i → ... → quiz_intro (scope=10) → practice_ii → summary
 ```
 
-**Current state**: the `learn`, `practice_i`, `quiz_intro`, and `practice_ii` branches inside `LearnTab` are commented out. The per-word learn + Practice I cycle is now handled by `LearnWordPage` (URL navigation). `LearnTab` currently only renders:
+**Current state**: the per-word learn + Practice I cycle is handled by `LearnWordPage` via URL navigation, not `LearnTab`. `LearnTab` currently only renders:
 - No session → `TopicGrid`
 - `summary` stage → `TopicSummary`
 - All other stages → `null`
@@ -166,12 +177,12 @@ The live curriculum comes from `GET /curriculum` at runtime, not from these file
 
 ## Key Gotchas
 
-**React 19 ref types** — `useRef<T>(null)` returns `RefObject<T | null>`. Props accepting refs must be typed as `RefObject<HTMLVideoElement | null>`.
+**Ref types** — `useRef<T>(null)` returns `RefObject<T | null>`. Props accepting refs must be typed as `RefObject<HTMLVideoElement | null>`.
 
 **Single API client** — all endpoints (`loadAppConfig`, `loadCurriculum`, `createRandomTask`, `analyzeAttempt`) and auth functions use the `apiClient` singleton from `client.ts`. The base URL is set once at module load time from `VITE_API_BASE_URL`. Do not pass `apiBase` as a prop or parameter — read `apiClient.defaults.baseURL` directly if a component needs the URL for resolving relative paths.
 
 **Auth token** — `createApiClient` reads `localStorage.getItem("signova_token")` at request time via interceptor, so creating the client before login is safe — the token will be present by the time the request fires.
 
-**Page specs** — UI generation specs for new pages live in `guide/`. Read the relevant spec before implementing a new page.
-
 **`.jsx` legacy components** — some older components use `.jsx` not `.tsx`. Do not convert them unless also updating all their imports and type annotations.
+
+**Mock topic padding** — `LearnDashboard.tsx` and `ChapterOverviewPage.tsx` both append `MOCK_EXTRA_TOPICS` to the curriculum response so the UI always shows at least 4 topics. These are display-only; they have no server-side progress records.

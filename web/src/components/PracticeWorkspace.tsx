@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEventHandler } from "react";
-import { ArrowRight, UploadCloud } from "lucide-react";
+import { ArrowRight, UploadCloud, Camera } from "lucide-react";
+import { CameraRecorderModal } from "./CameraRecorderModal";
 import {
   analyzeAttempt,
   type AnalyzeResponse,
@@ -125,6 +126,8 @@ export function PracticeWorkspace({
   onComplete,
 }: PracticeWorkspaceProps) {
   const [file, setFile] = useState<File | null>(null);
+  const [isFromCamera, setIsFromCamera] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState<NormalizedAnalysis | null>(null);
   const [error, setError] = useState("");
@@ -252,6 +255,7 @@ export function PracticeWorkspace({
     const nextFile = event.target.files?.[0];
     if (nextFile) {
       setFile(nextFile);
+      setIsFromCamera(false);
       setAnalysis(null);
       setError("");
       setPlaying(false);
@@ -497,37 +501,58 @@ export function PracticeWorkspace({
 
             {/* Content states based on user file upload & analysis */}
             {!file ? (
-              /* No file uploaded yet: Giant Friendly Upload Dropzone */
-              <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-slate-100/50 rounded-[24px] p-10 text-center cursor-pointer transition-all duration-300 group">
-                <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
-                <div className="w-16 h-16 bg-sky-50 rounded-full flex items-center justify-center text-[#1cb0f6] mb-4 group-hover:scale-105 transition-transform duration-300">
-                  <UploadCloud size={32} className="animate-pulse" />
+              /* No file yet: two-button choice */
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 bg-slate-50 rounded-[24px] p-10 gap-5">
+                <div className="w-16 h-16 bg-sky-50 rounded-full flex items-center justify-center text-[#1cb0f6]">
+                  <UploadCloud size={32} />
                 </div>
-                <h4 className="text-lg font-black text-slate-700 mb-1">📤 Tải video lên</h4>
-                <p className="text-slate-450 text-xs font-bold max-w-xs">
-                  Nhấp vào đây để chọn video bài làm của bạn
-                </p>
-              </label>
+                <div className="text-center">
+                  <h4 className="text-lg font-black text-slate-700 mb-1">Thêm video bài làm</h4>
+                  <p className="text-slate-400 text-xs font-bold">Tải lên video có sẵn hoặc quay trực tiếp</p>
+                </div>
+                <div className="flex gap-3">
+                  <label className="flex items-center gap-2 py-3 px-5 bg-white border-2 border-b-2 border-slate-200 text-slate-700 font-black rounded-2xl text-sm cursor-pointer transition-all active:border-b-0 active:translate-y-[2px] hover:bg-slate-50">
+                    <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
+                    <UploadCloud size={16} className="text-[#1cb0f6]" />
+                    Tải video lên
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCameraOpen(true)}
+                    className="flex items-center gap-2 py-3 px-5 bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white font-black rounded-2xl text-sm cursor-pointer transition-all active:border-b-0 active:translate-y-[2px]"
+                  >
+                    <Camera size={16} />
+                    Quay video
+                  </button>
+                </div>
+              </div>
             ) : !analysis ? (
               /* File selected, not analyzed yet: Show raw video & analyze button */
               <div className="flex flex-col gap-4">
-                <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-inner">
+                <div
+                  className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-inner"
+                  style={isFromCamera ? { transform: "scaleX(-1)" } : undefined}
+                >
                   <video
                     ref={userVideoRef}
                     src={userVideoUrl}
                     className="absolute inset-0 w-full h-full object-contain block bg-white"
                     playsInline
                     muted
-                    controls
+                    autoPlay
+                    loop
                     {...buildVideoHandlers("user")}
                   />
                 </div>
                 
                 <div className="flex gap-3 items-center">
-                  <label className="py-2.5 px-4 bg-white border-2 border-b-2 border-slate-200 text-slate-655 font-black rounded-2xl text-xs transition-all cursor-pointer flex items-center gap-1.5 active:border-b-0 active:translate-y-[2px]">
-                    <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
+                  <button
+                    type="button"
+                    onClick={() => { setFile(null); setIsFromCamera(false); setError(""); setPlaying(false); }}
+                    className="py-2.5 px-4 bg-white border-2 border-b-2 border-slate-200 text-slate-655 font-black rounded-2xl text-xs transition-all cursor-pointer flex items-center gap-1.5 active:border-b-0 active:translate-y-[2px] hover:bg-slate-50"
+                  >
                     🔄 Chọn lại
-                  </label>
+                  </button>
                   
                   <button
                     className="flex-1 py-3 px-6 bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white font-black rounded-2xl text-sm cursor-pointer flex items-center justify-center gap-2 active:border-b-0 active:translate-y-[2px] transition-all disabled:opacity-50"
@@ -551,7 +576,10 @@ export function PracticeWorkspace({
             ) : (
               /* Analyzed: Show video with overlay + custom controls + kid-friendly score card */
               <div className="flex flex-col gap-4">
-                <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-inner">
+                <div
+                  className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-inner"
+                  style={isFromCamera ? { transform: "scaleX(-1)" } : undefined}
+                >
                   <video
                     ref={userVideoRef}
                     src={userVideoUrl}
@@ -572,50 +600,93 @@ export function PracticeWorkspace({
                   >
                     {playing ? "⏸️ Tạm dừng" : "▶️ Xem lại"}
                   </button>
-                  <label className="py-2 px-4 bg-white border-2 border-b-2 border-slate-200 text-slate-650 font-black rounded-2xl text-xs cursor-pointer flex items-center gap-1.5 active:border-b-0 active:translate-y-[1px] transition-all">
-                    <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
+                  <button
+                    type="button"
+                    onClick={() => { setFile(null); setIsFromCamera(false); setAnalysis(null); setError(""); setPlaying(false); }}
+                    className="py-2 px-4 bg-white border-2 border-b-2 border-slate-200 text-slate-650 font-black rounded-2xl text-xs cursor-pointer flex items-center gap-1.5 active:border-b-0 active:translate-y-[1px] transition-all hover:bg-slate-50"
+                  >
                     📂 Đổi video
-                  </label>
+                  </button>
                 </div>
 
                 {/* Friendly Score & Feedback Card */}
-                <div className={`border-2 border-b-2 rounded-[24px] p-5 flex flex-col items-center text-center gap-3 ${feedbackBg}`}>
-                  {/* Stars */}
-                  <div className="text-2xl tracking-widest select-none">
-                    {score >= 85 ? "⭐ ⭐ ⭐ ⭐ ⭐" : score >= 70 ? "⭐ ⭐ ⭐ ⭐" : score >= 50 ? "⭐ ⭐ ⭐" : "⭐ ⭐"}
+                {isLowTracking ? (
+                  /* Hands not visible — skip score, show re-record prompt only */
+                  <div className="border-2 border-b-2 border-amber-300 rounded-[24px] p-6 flex flex-col items-center text-center gap-4 bg-amber-50">
+                    <span className="text-5xl">📷</span>
+                    <div className="flex flex-col gap-1">
+                      <strong className="text-lg font-black text-amber-800">Video chất lượng chưa đủ</strong>
+                      <p className="text-sm font-bold text-amber-700">Vui lòng quay lại để nhận kết quả chính xác nhé!</p>
+                    </div>
+                    <div className="flex gap-2 w-full">
+                      <button
+                        type="button"
+                        onClick={() => setIsCameraOpen(true)}
+                        className="flex-1 py-3 px-4 bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white font-black rounded-2xl text-sm cursor-pointer flex items-center justify-center gap-1.5 active:border-b-0 active:translate-y-[2px] transition-all"
+                      >
+                        📷 Quay lại
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setFile(null); setIsFromCamera(false); setAnalysis(null); setError(""); setPlaying(false); }}
+                        className="flex-1 py-3 px-4 bg-white border-2 border-b-2 border-slate-200 text-slate-700 font-black rounded-2xl text-sm cursor-pointer flex items-center justify-center gap-1.5 active:border-b-0 active:translate-y-[2px] transition-all hover:bg-slate-50"
+                      >
+                        📤 Tải video khác
+                      </button>
+                    </div>
                   </div>
-                  
-                  {/* Fun Badge & Message */}
-                  <div className="flex flex-col gap-1.5">
-                    <strong className={`text-xl font-black ${feedbackTextColor}`}>
-                      {feedbackTitle}
-                    </strong>
-                    <span className="text-slate-800 text-sm font-bold leading-relaxed max-w-sm">
-                      {feedbackText}
-                    </span>
-                  </div>
+                ) : (
+                  <div className={`border-2 border-b-2 rounded-[24px] p-5 flex flex-col items-center text-center gap-3 ${feedbackBg}`}>
+                    {/* Stars */}
+                    <div className="text-2xl tracking-widest select-none">
+                      {score >= 85 ? "⭐ ⭐ ⭐ ⭐ ⭐" : score >= 70 ? "⭐ ⭐ ⭐ ⭐" : score >= 50 ? "⭐ ⭐ ⭐" : "⭐ ⭐"}
+                    </div>
 
-                  {/* Visual Hint */}
-                  <div className="text-[10px] font-bold text-slate-500">
-                    🟢 Khung xương xanh lá là đúng • 🔴 Vùng màu đỏ là cần sửa nhé!
+                    {/* Fun Badge & Message */}
+                    <div className="flex flex-col gap-1.5">
+                      <strong className={`text-xl font-black ${feedbackTextColor}`}>
+                        {feedbackTitle}
+                      </strong>
+                      <span className="text-slate-800 text-sm font-bold leading-relaxed max-w-sm">
+                        {feedbackText}
+                      </span>
+                    </div>
+
+                    {/* Visual Hint */}
+                    <div className="text-[10px] font-bold text-slate-500">
+                      🟢 Khung xương xanh lá là đúng • 🔴 Vùng màu đỏ là cần sửa nhé!
+                    </div>
+
+                    <button
+                      type="button"
+                      className={`w-full py-3 px-5 rounded-2xl text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-2 ${nextButtonBg}`}
+                      onClick={handleComplete}
+                    >
+                      <span>{completionLabel}</span>
+                      <ArrowRight size={16} />
+                    </button>
                   </div>
-                  
-                  {/* Next Button inside Card */}
-                  <button
-                    type="button"
-                    className={`w-full py-3 px-5 rounded-2xl text-sm font-black transition-all cursor-pointer flex items-center justify-center gap-2 ${nextButtonBg}`}
-                    onClick={handleComplete}
-                  >
-                    <span>{completionLabel}</span>
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
+                )}
               </div>
             )}
           </article>
-          
+
         </div>
       </div>
+
+      {isCameraOpen && (
+        <CameraRecorderModal
+          onSave={(recordedFile) => {
+            setFile(recordedFile);
+            setIsFromCamera(true);
+            setAnalysis(null);
+            setError("");
+            setPlaying(false);
+            setIsCameraOpen(false);
+          }}
+          onClose={() => setIsCameraOpen(false)}
+        />
+      )}
     </section>
   );
 }

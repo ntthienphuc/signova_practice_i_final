@@ -61,6 +61,16 @@ cd web && npx tsc --noEmit
 
 No test runner is configured — type checking and build are the verification path.
 
+### Python Unit Tests
+
+```bash
+source .venv/bin/activate
+python -m pytest tests/                          # run all tests
+python -m pytest tests/test_scoring_engine.py   # run a single test file
+```
+
+Tests in `tests/` exercise the scoring engine and DB/auth layer directly (no API server needed). They import from `signova_practice_i/` and `app/` so must be run from the repo root.
+
 ### Database Migrations (Alembic)
 
 ```bash
@@ -120,6 +130,14 @@ Request flow for `POST /practice-i/analyze-video`:
 - **`ReferenceBank`** — loaded from `.npz` via `load_reference_bank_npz`; holds multiple reference templates + tolerance arrays for scoring.
 - **`BankStore`** (`bank_store.py`) — lazy-loads `ReferenceBank` per gloss from `reference_bank_manifest.json`; also maps glosses to display reference clips via `display_reference_manifest.json`.
 
+### Services Layer (`app/services/`)
+
+Business logic called by routers, not by `api.py` directly:
+
+- **`practice.py`** — `save_practice_attempt()` persists a `PracticeAttempt` row and updates `LearnerWordProgress` (best score, fail/correct counts) when an authenticated user submits a video.
+- **`gamification.py`** — XP and streak calculations; called after a successful practice save.
+- **`gemini.py`** — `generate_recommendation()` calls the Google Gemini 1.5 Flash API to produce a Vietnamese coaching message for parent/school dashboards. Falls back to a rules-based generator if `GEMINI_API_KEY` is not set. Results are cached in the `ai_recommendations` DB table and refreshed after `GEMINI_UPDATE_INTERVAL_MINUTES`.
+
 ### User Management Layer (`app/`)
 
 All routers live in `app/routers/` and are registered in `api.py:create_app()`:
@@ -146,6 +164,8 @@ All routers live in `app/routers/` and are registered in `api.py:create_app()`:
 | `DATABASE_URL` | Neon PostgreSQL connection string in `app/config.py` | PostgreSQL DB for user/progress data |
 | `JWT_SECRET_KEY` | Default in `app/config.py` | Access token signing key |
 | `JWT_REFRESH_SECRET_KEY` | Default in `app/config.py` | Refresh token signing key |
+| `GEMINI_API_KEY` | None (optional) | Google Gemini 1.5 Flash key for AI dashboard recommendations |
+| `GEMINI_UPDATE_INTERVAL_MINUTES` | `60` | How often to regenerate cached recommendations |
 
 All settings are loaded by `app/config.py` via pydantic-settings; override via `.env` file or shell env. The defaults in `app/config.py` point to the shared Neon instance — set `DATABASE_URL` to a local Postgres for local development. A `docker-compose.yml` at the root starts a local PostgreSQL container on port 5432.
 
@@ -182,9 +202,14 @@ outputs/reference_bank_20_best_allcam1_fe/
   display_reference_manifest.json  # 1 display clip per gloss for frontend panel
   <gloss_slug>/
     bank.npz                     # reference templates + tolerances
+
+outputs/learn_img/
+  <gloss>.png                    # custom illustration for each word
 ```
 
 `bank.npz` is the scoring bank (multiple references per gloss). `display_reference_manifest.json` maps each gloss to one "best" clip for frontend playback. These are intentionally separate — scoring needs many references, display needs one clean example.
+
+Word illustrations in `outputs/learn_img/<gloss>.png` are served at `GET /learn-image/{gloss}`. The endpoint falls back to a placeholder if the PNG is missing — it does **not** 404.
 
 ## Important Notes
 
@@ -193,5 +218,4 @@ outputs/reference_bank_20_best_allcam1_fe/
 - Practice II classifier is optional — `GET /health` reports `practice_ii_ready: false` if the model files are missing, and `/practice-ii/analyze-video` returns 503.
 - Reference videos in `display_reference_manifest.json` point to `All_cam1/` dataset clips. API starts without them; `/playback/reference/{gloss}` will 404 if clips are missing.
 - `npm run build` runs `vite build` only — it does **not** run `tsc`. Run `npx tsc --noEmit` separately to type-check.
-- Page UI specs for new pages live in `web/src/guide/` — read the relevant spec before implementing a new page.
 - After editing any `app/models/` SQLAlchemy model, run `alembic revision --autogenerate` and `alembic upgrade head`. The DB schema is never modified manually.
