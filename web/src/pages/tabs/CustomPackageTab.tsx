@@ -1,38 +1,432 @@
+import { useEffect, useState, useMemo } from "react";
 import { mascots } from "../../utils/mascot";
+import {
+  getWordBank,
+  getCustomPackages,
+  createCustomPackage,
+  deleteCustomPackage,
+} from "../../api";
+import type { BankWordItem, CustomPackageData } from "../../api";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+type ViewMode = "list" | "create";
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function formatDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString("vi-VN", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function PackageCard({ pkg, onDelete }: { pkg: CustomPackageData; onDelete: (id: string) => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteCustomPackage(pkg.id);
+      onDelete(pkg.id);
+    } catch {
+      alert("Không thể xóa gói bài tập. Vui lòng thử lại.");
+    } finally {
+      setDeleting(false);
+      setConfirming(false);
+    }
+  };
+
+  return (
+    <div className="custom-pkg-card">
+      <div className="custom-pkg-card-header">
+        <div>
+          <div className="custom-pkg-card-badge">
+            📦 {pkg.word_count} từ
+          </div>
+          <h3 className="custom-pkg-card-title">{pkg.title}</h3>
+          {pkg.description && (
+            <p className="custom-pkg-card-desc">{pkg.description}</p>
+          )}
+        </div>
+        <div className="custom-pkg-card-date">
+          {formatDate(pkg.created_at)}
+        </div>
+      </div>
+
+      <div className="custom-pkg-card-glosses">
+        {pkg.glosses.slice(0, 12).map((g) => (
+          <span key={g} className="custom-pkg-gloss-chip">{g}</span>
+        ))}
+        {pkg.glosses.length > 12 && (
+          <span className="custom-pkg-gloss-chip custom-pkg-gloss-more">
+            +{pkg.glosses.length - 12}
+          </span>
+        )}
+      </div>
+
+      <div className="custom-pkg-card-actions">
+        {confirming ? (
+          <>
+            <span className="custom-pkg-confirm-text">Xóa gói này?</span>
+            <button
+              className="custom-pkg-btn-cancel"
+              onClick={() => setConfirming(false)}
+              disabled={deleting}
+            >
+              Hủy
+            </button>
+            <button
+              className="custom-pkg-btn-delete-confirm"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? "Đang xóa…" : "Xác nhận"}
+            </button>
+          </>
+        ) : (
+          <button
+            className="custom-pkg-btn-delete"
+            onClick={() => setConfirming(true)}
+          >
+            🗑️ Xóa
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Word Picker ──────────────────────────────────────────────────────────────
+
+function WordPicker({
+  words,
+  selected,
+  onToggle,
+}: {
+  words: BankWordItem[];
+  selected: Set<string>;
+  onToggle: (gloss: string) => void;
+}) {
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(
+    () =>
+      words.filter((w) =>
+        w.gloss.toLowerCase().includes(search.toLowerCase())
+      ),
+    [words, search]
+  );
+
+  return (
+    <div className="custom-pkg-word-picker">
+      <div className="custom-pkg-picker-search">
+        <span className="custom-pkg-picker-search-icon">🔍</span>
+        <input
+          type="text"
+          placeholder="Tìm từ trong kho..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="custom-pkg-picker-input"
+        />
+        {search && (
+          <button
+            className="custom-pkg-picker-clear"
+            onClick={() => setSearch("")}
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      <div className="custom-pkg-picker-info">
+        {selected.size > 0 ? (
+          <span className="custom-pkg-picker-count">✅ Đã chọn <strong>{selected.size}</strong> từ</span>
+        ) : (
+          <span className="custom-pkg-picker-hint">Chọn các từ muốn đưa vào gói bài tập</span>
+        )}
+        {filtered.length < words.length && (
+          <span className="custom-pkg-picker-filter-count">Hiển thị {filtered.length}/{words.length} từ</span>
+        )}
+      </div>
+
+      <div className="custom-pkg-picker-grid">
+        {filtered.map((w) => {
+          const isSelected = selected.has(w.gloss);
+          return (
+            <button
+              key={w.gloss}
+              className={`custom-pkg-word-chip ${isSelected ? "selected" : ""} ${!w.has_reference ? "no-ref" : ""}`}
+              onClick={() => onToggle(w.gloss)}
+              title={!w.has_reference ? "Từ này chưa có video tham khảo" : ""}
+            >
+              {isSelected && <span className="custom-pkg-chip-check">✓</span>}
+              <span>{w.gloss}</span>
+              {!w.has_reference && <span className="custom-pkg-chip-warn">⚠</span>}
+            </button>
+          );
+        })}
+        {filtered.length === 0 && (
+          <div className="custom-pkg-picker-empty">
+            Không tìm thấy từ nào với "{search}"
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Create Form ──────────────────────────────────────────────────────────────
+
+function CreatePackageForm({
+  words,
+  onCreated,
+  onCancel,
+}: {
+  words: BankWordItem[];
+  onCreated: (pkg: CustomPackageData) => void;
+  onCancel: () => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const toggleWord = (gloss: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(gloss)) next.delete(gloss);
+      else next.add(gloss);
+      return next;
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) { setError("Vui lòng nhập tên gói bài tập."); return; }
+    if (selected.size === 0) { setError("Vui lòng chọn ít nhất 1 từ."); return; }
+
+    setSaving(true);
+    setError("");
+    try {
+      const pkg = await createCustomPackage({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        glosses: Array.from(selected),
+      });
+      onCreated(pkg);
+    } catch (err: any) {
+      setError(err?.message || "Tạo gói thất bại. Vui lòng thử lại.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="custom-pkg-create-form">
+      <div className="custom-pkg-create-header">
+        <button type="button" className="custom-pkg-back-btn" onClick={onCancel}>
+          ← Quay lại
+        </button>
+        <h2 className="custom-pkg-create-title">✏️ Tạo gói bài tập mới</h2>
+      </div>
+
+      <div className="custom-pkg-field">
+        <label className="custom-pkg-label">Tên gói bài tập *</label>
+        <input
+          type="text"
+          className="custom-pkg-input"
+          placeholder="VD: Từ vựng lớp 3A - Chủ đề gia đình"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          maxLength={200}
+        />
+      </div>
+
+      <div className="custom-pkg-field">
+        <label className="custom-pkg-label">Mô tả (không bắt buộc)</label>
+        <textarea
+          className="custom-pkg-textarea"
+          placeholder="Ghi chú thêm về mục tiêu của gói học này..."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={2}
+          maxLength={500}
+        />
+      </div>
+
+      <div className="custom-pkg-field">
+        <label className="custom-pkg-label">Chọn từ vựng từ kho *</label>
+        <WordPicker words={words} selected={selected} onToggle={toggleWord} />
+      </div>
+
+      {error && <div className="custom-pkg-error">⚠️ {error}</div>}
+
+      <div className="custom-pkg-create-actions">
+        <button type="button" className="custom-pkg-btn-secondary" onClick={onCancel} disabled={saving}>
+          Hủy
+        </button>
+        <button type="submit" className="custom-pkg-btn-primary" disabled={saving || selected.size === 0}>
+          {saving ? (
+            <span className="custom-pkg-saving">
+              <span className="custom-pkg-spinner" />
+              Đang lưu...
+            </span>
+          ) : (
+            <>📦 Tạo gói ({selected.size} từ)</>
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function CustomPackageTab() {
-  return (
-    <section className="space-y-6">
-      <div className="bg-white border-2 border-b-5 border-slate-200 rounded-[32px] p-7">
-        <p className="m-0 text-xs uppercase tracking-[0.18em] text-[#1cb0f6] font-black">Gói học tùy chỉnh 📦</p>
-        <h2 className="m-0 mt-1 font-black text-slate-800 text-2xl">Chương trình đào tạo riêng biệt cho trường của bạn</h2>
-        <p className="text-slate-500 mt-2 font-bold text-sm">Tự thiết lập kho từ vựng, lộ trình bài giảng và giao bài tập theo lớp.</p>
-      </div>
+  const [view, setView] = useState<ViewMode>("list");
+  const [packages, setPackages] = useState<CustomPackageData[]>([]);
+  const [words, setWords] = useState<BankWordItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingWords, setLoadingWords] = useState(false);
+  const [error, setError] = useState("");
 
-      <div className="bg-white border-2 border-b-5 border-slate-200 rounded-[32px] p-8 text-center max-w-xl mx-auto space-y-4">
-        <div className="w-24 h-24 flex items-center justify-center mx-auto select-none">
-          <img 
-            src={mascots[8]} 
-            alt="Custom Package Mascot" 
-            className="w-full h-full object-contain animate-bounce-subtle" 
-            style={{ 
-              animationDuration: '4s',
-              filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08))"
-            }} 
-          />
+  useEffect(() => {
+    loadPackages();
+  }, []);
+
+  const loadPackages = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await getCustomPackages();
+      setPackages(data?.packages ?? []);
+    } catch (err: any) {
+      setError("Không thể tải danh sách gói bài tập.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenCreate = async () => {
+    if (words.length === 0) {
+      setLoadingWords(true);
+      try {
+        const data = await getWordBank();
+        setWords(data?.words ?? []);
+      } catch {
+        alert("Không thể tải kho từ vựng.");
+        return;
+      } finally {
+        setLoadingWords(false);
+      }
+    }
+    setView("create");
+  };
+
+  const handleCreated = (pkg: CustomPackageData) => {
+    setPackages((prev) => [pkg, ...prev]);
+    setView("list");
+  };
+
+  const handleDeleted = (id: string) => {
+    setPackages((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  // ── List view ────────────────────────────────────────────────────────────
+  if (view === "list") {
+    return (
+      <section className="custom-pkg-section">
+        {/* Header */}
+        <div className="custom-pkg-hero">
+          <div className="custom-pkg-hero-text">
+            <p className="custom-pkg-hero-label">Công cụ giảng dạy 🎒</p>
+            <h2 className="custom-pkg-hero-title">Gói bài tập tùy chỉnh</h2>
+            <p className="custom-pkg-hero-sub">
+              Tự thiết kế bộ từ vựng theo chủ đề, lớp học hoặc nhu cầu của từng học sinh.
+            </p>
+          </div>
+          <div className="custom-pkg-hero-mascot">
+            <img
+              src={mascots[8]}
+              alt="Teacher mascot"
+              className="custom-pkg-mascot-img"
+            />
+          </div>
         </div>
-        <h3 className="text-xl font-black text-slate-800 m-0">Tính năng đang được thiết lập</h3>
-        <p className="text-slate-500 text-sm leading-relaxed font-bold">
-          Hệ thống đang tích hợp cổng thiết kế giáo án tùy chỉnh cho các đối tác trường học.
-          Để đăng ký khóa học, phân bổ giáo viên, hoặc tạo giáo trình riêng cho trường của bạn,
-          vui lòng liên hệ với ban quản trị viên.
-        </p>
-        <div className="bg-slate-50 p-4 rounded-2xl text-left text-xs font-bold text-slate-600 space-y-2.5 inline-block w-full border-2 border-slate-200">
-          <div>📞 <strong>Hotline hỗ trợ trường học:</strong> 1900 8198 (Nhánh số 3)</div>
-          <div>✉️ <strong>Email hỗ trợ:</strong> partner@signova.edu.vn</div>
-          <div>🏢 <strong>Địa chỉ làm việc:</strong> Tòa nhà văn phòng Signova, Hà Nội / TP. HCM</div>
+
+        {/* Actions bar */}
+        <div className="custom-pkg-toolbar">
+          <div className="custom-pkg-toolbar-left">
+            <span className="custom-pkg-pkg-count">
+              {loading ? "…" : `${packages.length} gói bài tập`}
+            </span>
+          </div>
+          <button
+            className="custom-pkg-btn-create"
+            onClick={handleOpenCreate}
+            disabled={loadingWords}
+          >
+            {loadingWords ? (
+              <>
+                <span className="custom-pkg-spinner-sm" /> Đang tải kho từ...
+              </>
+            ) : (
+              <>+ Tạo gói mới</>
+            )}
+          </button>
         </div>
-      </div>
+
+        {/* Content */}
+        {loading ? (
+          <div className="custom-pkg-loading">
+            <div className="custom-pkg-spinner-lg" />
+            <p>Đang tải danh sách gói bài tập...</p>
+          </div>
+        ) : error ? (
+          <div className="custom-pkg-error-box">
+            <p>{error}</p>
+            <button className="custom-pkg-btn-retry" onClick={loadPackages}>Thử lại</button>
+          </div>
+        ) : packages.length === 0 ? (
+          <div className="custom-pkg-empty">
+            <img
+              src={mascots[9]}
+              alt="Empty state"
+              className="custom-pkg-empty-mascot"
+            />
+            <h3 className="custom-pkg-empty-title">Chưa có gói bài tập nào</h3>
+            <p className="custom-pkg-empty-sub">
+              Tạo gói bài tập đầu tiên để giao cho học sinh luyện tập!
+            </p>
+            <button className="custom-pkg-btn-create-empty" onClick={handleOpenCreate}>
+              + Tạo gói bài tập đầu tiên
+            </button>
+          </div>
+        ) : (
+          <div className="custom-pkg-grid">
+            {packages.map((pkg) => (
+              <PackageCard key={pkg.id} pkg={pkg} onDelete={handleDeleted} />
+            ))}
+          </div>
+        )}
+      </section>
+    );
+  }
+
+  // ── Create view ──────────────────────────────────────────────────────────
+  return (
+    <section className="custom-pkg-section">
+      <CreatePackageForm
+        words={words}
+        onCreated={handleCreated}
+        onCancel={() => setView("list")}
+      />
     </section>
   );
 }

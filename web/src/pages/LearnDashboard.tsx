@@ -114,6 +114,9 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
   const [selectedChildId, setSelectedChildId] = useState<string>("");
   const [selectedChildProgress, setSelectedChildProgress] = useState<any>(null);
   const [loadingChildProgress, setLoadingChildProgress] = useState(false);
+  const [selectedSchoolStudentId, setSelectedSchoolStudentId] = useState<string>("");
+  const [selectedSchoolStudentProgress, setSelectedSchoolStudentProgress] = useState<any>(null);
+  const [loadingSchoolStudentProgress, setLoadingSchoolStudentProgress] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -191,6 +194,9 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
       } else if (currentUser.role === "school") {
         const data = await getSchoolDashboard();
         setSchoolDashData(data);
+        if (data.linked_learners?.length > 0 && !selectedSchoolStudentId) {
+          setSelectedSchoolStudentId(data.linked_learners[0].learner_id);
+        }
       }
     } catch (err) {
       console.error("Lỗi khi tải dữ liệu dashboard:", err);
@@ -249,6 +255,40 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
     };
     fetchChildProgress();
   }, [selectedChildId, activeTab, currentUser]);
+
+  useEffect(() => {
+    if (currentUser?.role !== "school") return;
+    const learners = schoolDashData?.linked_learners || [];
+    if (learners.length === 0) {
+      setSelectedSchoolStudentId("");
+      setSelectedSchoolStudentProgress(null);
+      return;
+    }
+    const selectedStillExists = learners.some((learner: any) => learner.learner_id === selectedSchoolStudentId);
+    if (!selectedSchoolStudentId || !selectedStillExists) {
+      setSelectedSchoolStudentId(learners[0].learner_id);
+    }
+  }, [schoolDashData, currentUser?.role, selectedSchoolStudentId]);
+
+  useEffect(() => {
+    const fetchSchoolStudentProgress = async () => {
+      if (!selectedSchoolStudentId || activeTab !== "school" || currentUser?.role !== "school") {
+        setSelectedSchoolStudentProgress(null);
+        return;
+      }
+      setLoadingSchoolStudentProgress(true);
+      try {
+        const data = await getLearnerDashboard(selectedSchoolStudentId);
+        setSelectedSchoolStudentProgress(data);
+      } catch (err) {
+        console.error("Lỗi khi tải chi tiết học sinh:", err);
+        setSelectedSchoolStudentProgress(null);
+      } finally {
+        setLoadingSchoolStudentProgress(false);
+      }
+    };
+    fetchSchoolStudentProgress();
+  }, [selectedSchoolStudentId, activeTab, currentUser]);
 
   const handleApproveLink = async (type: "parent" | "school", id: string) => {
     try {
@@ -349,10 +389,15 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
         )}
         {activeTab === "school" && (
           <SchoolTab
+            topics={topics}
             loadingDash={loadingDash}
             schoolDashData={schoolDashData}
             loadingAI={loadingAI}
             onRefreshAI={handleRefreshAI}
+            selectedStudentId={selectedSchoolStudentId}
+            selectedStudentProgress={selectedSchoolStudentProgress}
+            loadingStudentProgress={loadingSchoolStudentProgress}
+            onSelectStudent={setSelectedSchoolStudentId}
           />
         )}
       </main>

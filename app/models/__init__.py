@@ -7,6 +7,7 @@ from app.models.progress import LearnerTopicProgress, LearnerWordProgress
 from app.models.attempt import PracticeAttempt, PracticeAttemptFeedback, PracticeAttemptMetrics
 from app.models.gamification import Badge, LearnerBadge, StreakLog
 from app.models.ai_recommendation import AIRecommendation
+from app.models.custom_package import CustomPackage
 
 __all__ = [
     "Base",
@@ -27,4 +28,5 @@ __all__ = [
     "LearnerBadge",
     "StreakLog",
     "AIRecommendation",
+    "CustomPackage",
 ]

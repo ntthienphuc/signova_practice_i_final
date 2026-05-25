@@ -44,7 +44,12 @@ export {
   getMyProgress,
   createChild,
   createStudent,
-  refreshAIRecommendation
+  refreshAIRecommendation,
+  getWordBank,
+  getCustomPackages,
+  createCustomPackage,
+  deleteCustomPackage,
 } from "./client";
+export type { BankWordItem, CustomPackage as CustomPackageData } from "./client";
 export { loadAppConfig, loadCurriculum } from "./endpoints/app";
 export { createRandomTask, analyzeAttempt } from "./endpoints/practice";

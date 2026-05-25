@@ -432,3 +432,58 @@ export async function refreshAIRecommendation(): Promise<any> {
     handleAxiosError(error);
   }
 }
+
+// ─── Teacher / Custom Package APIs ─────────────────────────────────────────
+
+export interface BankWordItem {
+  gloss: string;
+  has_reference: boolean;
+}
+
+export interface CustomPackage {
+  id: string;
+  title: string;
+  description: string | null;
+  glosses: string[];
+  word_count: number;
+  created_at: string;
+}
+
+export async function getWordBank(): Promise<{ words: BankWordItem[]; total: number }> {
+  try {
+    const response = await apiClient.get("/teacher/word-bank");
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function getCustomPackages(): Promise<{ packages: CustomPackage[] }> {
+  try {
+    const response = await apiClient.get("/teacher/packages");
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function createCustomPackage(data: {
+  title: string;
+  description?: string;
+  glosses: string[];
+}): Promise<CustomPackage> {
+  try {
+    const response = await apiClient.post("/teacher/packages", data);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function deleteCustomPackage(packageId: string): Promise<void> {
+  try {
+    await apiClient.delete(`/teacher/packages/${packageId}`);
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}

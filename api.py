@@ -76,12 +76,13 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    from app.routers import auth as auth_router, curriculum as curriculum_router, progress as progress_router, link as link_router, dashboard as dashboard_router
+    from app.routers import auth as auth_router, curriculum as curriculum_router, progress as progress_router, link as link_router, dashboard as dashboard_router, teacher as teacher_router
     app.include_router(auth_router.router)
     app.include_router(curriculum_router.router)
     app.include_router(progress_router.router)
     app.include_router(link_router.router)
     app.include_router(dashboard_router.router)
+    app.include_router(teacher_router.router)
 
     @app.on_event("startup")
     def repair_database_progress():
