@@ -80,6 +80,30 @@ def normalize_lesson_predictions(predictions: list[dict[str, Any]]) -> list[dict
     ]
 
 
+def with_lesson_scores(
+    predictions: list[dict[str, Any]],
+    lesson_glosses: list[str],
+) -> list[dict[str, Any]]:
+    lesson_set = set(lesson_glosses)
+    lesson_total = float(
+        sum(float(item["score"]) for item in predictions if item.get("gloss") in lesson_set)
+    )
+    if lesson_total <= 1e-9:
+        lesson_total = 1.0
+    return [
+        {
+            "gloss": item["gloss"],
+            "raw_score": float(item["score"]),
+            "lesson_score": (
+                float(item["score"]) / lesson_total
+                if item.get("gloss") in lesson_set
+                else 0.0
+            ),
+        }
+        for item in predictions
+    ]
+
+
 def decision_for_practice_ii(
     target_gloss: str,
     target_result: Dict[str, Any],
@@ -90,6 +114,8 @@ def decision_for_practice_ii(
     wrong_word_min_lesson_score: float = 0.45,
     wrong_word_min_margin: float = 0.10,
     target_accept_min_lesson_score: float = 0.95,
+    target_accept_min_raw_score: float = 0.01,
+    wrong_word_min_raw_score: float = 0.35,
     min_classifier_raw_score: float = 0.01,
     bank_target_confirm_score: float = 90.0,
     bank_fallback_min_score: float = 95.0,
@@ -110,7 +136,10 @@ def decision_for_practice_ii(
     classifier_supports_target = bool(
         predicted_gloss == target_gloss
         and predicted_raw_score >= min_classifier_raw_score
-        and predicted_lesson_score >= target_accept_min_lesson_score
+        and (
+            predicted_lesson_score >= target_accept_min_lesson_score
+            or predicted_raw_score >= target_accept_min_raw_score
+        )
     )
     bank_supports_target = bool(
         bank_top1_gloss == target_gloss
@@ -124,13 +153,13 @@ def decision_for_practice_ii(
         and
         predicted_gloss is not None
         and predicted_gloss != target_gloss
-        and predicted_raw_score >= min_classifier_raw_score
-        and predicted_lesson_score >= wrong_word_min_lesson_score
+        and predicted_raw_score >= wrong_word_min_raw_score
         and (
             predicted_gloss == bank_top1_gloss
             or target_rank != 1
             or target_result["score"] < 80
             or predicted_margin >= wrong_word_min_margin
+            or predicted_lesson_score == 0.0
         )
     )
     bank_wrong_word_fallback = bool(
