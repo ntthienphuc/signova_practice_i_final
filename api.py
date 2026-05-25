@@ -785,8 +785,7 @@ def create_app() -> FastAPI:
         from urllib.parse import unquote
         decoded_gloss = unquote(gloss)
         
-        bank_root = Path(os.getenv("SIGNOVA_BANK_ROOT", str(DEFAULT_BANK_ROOT)))
-        img_path = bank_root / "learn_img" / f"{decoded_gloss}.png"
+        img_path = APP_DIR / "outputs" / "learn_img" / f"{decoded_gloss}.png"
         
         if img_path.exists():
             return FileResponse(img_path, media_type="image/png", filename=img_path.name)
