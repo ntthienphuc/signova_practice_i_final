@@ -64,14 +64,14 @@ def seed():
                         topic_id=topic_id,
                         order_index=local_index,
                         checkpoint_group=1 if local_index <= 5 else 2,
-                        poster_url=f"/poster/reference/{gloss}",
+                        poster_url=f"/learn-image/{gloss}",
                         reference_video_url=f"/reference-video/{gloss}",
                         reference_playback_url=f"/playback/reference/{gloss}"
                     )
                     db.add(word)
                     print(f"Added word index {local_index} to {topic_id}")
                 else:
-                    word.poster_url = f"/poster/reference/{gloss}"
+                    word.poster_url = f"/learn-image/{gloss}"
                     word.reference_video_url = f"/reference-video/{gloss}"
                     word.reference_playback_url = f"/playback/reference/{gloss}"
                     print(f"Updated word paths at index {local_index}")

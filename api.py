@@ -316,7 +316,7 @@ def create_app() -> FastAPI:
             "gloss": gloss,
             "video_id": asset.get("video_id"),
             "score": asset.get("score"),
-            "poster_url": f"/poster/reference/{quote(gloss, safe='')}",
+            "poster_url": f"/learn-image/{quote(gloss, safe='')}",
             "reference": {
                 "video_url": reference_asset["video_url"],
                 "playback_url": reference_asset["playback_url"],
@@ -773,6 +773,35 @@ def create_app() -> FastAPI:
             capture_second = min(max(duration_seconds * 0.35, 0.4), max(0.4, duration_seconds - 0.2))
         poster = ensure_reference_poster(
             gloss,
+            source_path,
+            (str(asset.get("video_id")) if asset.get("video_id") is not None else None),
+            capture_second,
+        )
+        path = Path(poster["poster_path"])
+        return FileResponse(path, media_type="image/jpeg", filename=path.name)
+
+    @app.get("/learn-image/{gloss}")
+    def learn_image(gloss: str) -> FileResponse:
+        from urllib.parse import unquote
+        decoded_gloss = unquote(gloss)
+        
+        bank_root = Path(os.getenv("SIGNOVA_BANK_ROOT", str(DEFAULT_BANK_ROOT)))
+        img_path = bank_root / "learn_img" / f"{decoded_gloss}.png"
+        
+        if img_path.exists():
+            return FileResponse(img_path, media_type="image/png", filename=img_path.name)
+            
+        # Fallback to standard poster frame extraction
+        asset = store.get_display_reference(decoded_gloss)
+        if asset is None:
+            raise HTTPException(status_code=404, detail=f"No reference image/poster for gloss: {decoded_gloss}")
+        source_path = Path(str(asset["video_path"]))
+        duration_seconds = probe_duration_seconds(source_path)
+        capture_second = 0.8
+        if duration_seconds > 0:
+            capture_second = min(max(duration_seconds * 0.35, 0.4), max(0.4, duration_seconds - 0.2))
+        poster = ensure_reference_poster(
+            decoded_gloss,
             source_path,
             (str(asset.get("video_id")) if asset.get("video_id") is not None else None),
             capture_second,
