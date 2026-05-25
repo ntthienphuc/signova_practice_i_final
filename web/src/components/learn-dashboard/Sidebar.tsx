@@ -1,4 +1,5 @@
 import type { AppTab, CurriculumTopicSummary } from "../../types/learn";
+import logo from '../../assets/image/logo.jpeg'
 
 interface SidebarProps {
   activeTab: AppTab;
@@ -49,7 +50,7 @@ export function Sidebar({
         {/* Brand logo */}
         <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={() => onTabChange("learn")}>
           <div className="w-11 h-11 rounded-2xl overflow-hidden bg-white border border-slate-100 flex-shrink-0 flex items-center justify-center p-0.5">
-            <img src="/signova-mascot.png" alt="Mascot" className="w-full h-full object-cover rounded-[14px]" />
+            <img src={logo} alt="Mascot" className="w-full h-full object-cover rounded-[14px]" />
           </div>
           <span className="font-black text-lg tracking-[0.12em] text-sky-600 uppercase leading-none">SIGNOVA</span>
         </div>

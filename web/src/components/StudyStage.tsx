@@ -1,4 +1,7 @@
+import { useState } from "react";
+import { useBlocker } from "react-router-dom";
 import { Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { ExitDrawer } from "./ExitDrawer";
 import { apiClient } from "../api/client";
 import type { Topic, WordItem } from "../types/learn";
 
@@ -28,6 +31,30 @@ export function StudyStage({
   isAlreadyLearned,
   onNextWord,
 }: StudyStageProps) {
+  const [localDrawer, setLocalDrawer] = useState(false);
+
+  // Intercept browser back / trackpad swipe-back
+  const blocker = useBlocker(({ historyAction }) => historyAction === "POP");
+
+  const showExitDrawer = localDrawer || blocker.state === "blocked";
+  const requestExit = () => setLocalDrawer(true);
+
+  const handleConfirmExit = () => {
+    setLocalDrawer(false);
+    if (blocker.state === "blocked") {
+      blocker.proceed();
+    } else {
+      onBackToTopics();
+    }
+  };
+
+  const handleCancelExit = () => {
+    setLocalDrawer(false);
+    if (blocker.state === "blocked") {
+      blocker.reset();
+    }
+  };
+
   const posterUrl = absoluteUrl(word.study?.poster_url);
   const referenceUrl = absoluteUrl(
     word.study?.reference?.playback_url ?? word.study?.reference?.video_url
@@ -42,7 +69,7 @@ export function StudyStage({
         <div className="max-w-[900px] mx-auto px-4 py-3 flex items-center gap-4">
           <button
             type="button"
-            onClick={onBackToTopics}
+            onClick={requestExit}
             className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-200 flex items-center justify-center text-slate-600 transition-all cursor-pointer flex-shrink-0"
           >
             <ChevronLeft size={20} />
@@ -162,11 +189,11 @@ export function StudyStage({
         <div className="max-w-[900px] mx-auto px-4 py-3 sm:py-4 flex items-center gap-2 sm:gap-3">
           <button
             type="button"
-            onClick={wordIndex === 0 ? onBackToTopics : () => onPreviousWord?.(wordIndex - 1)}
+            onClick={wordIndex === 0 ? requestExit : () => onPreviousWord?.(wordIndex - 1)}
             className="h-12 sm:h-14 px-4 sm:px-5 bg-white border-2 border-b-4 border-slate-200 text-slate-600 font-black rounded-2xl cursor-pointer flex items-center gap-1 sm:gap-1.5 hover:bg-slate-50 active:border-b-0 active:translate-y-[2px] transition-all text-sm flex-shrink-0"
           >
             <ChevronLeft size={18} />
-            <span className="hidden sm:inline">{wordIndex === 0 ? "Topics" : "Trước"}</span>
+            <span className="hidden sm:inline">{wordIndex === 0 ? "Thoát" : "Trước"}</span>
           </button>
 
           {isAlreadyLearned && onNextWord && (
@@ -191,6 +218,12 @@ export function StudyStage({
           </button>
         </div>
       </div>
+
+      <ExitDrawer
+        open={showExitDrawer}
+        onConfirm={handleConfirmExit}
+        onCancel={handleCancelExit}
+      />
     </section>
   );
 }

@@ -74,11 +74,6 @@ export function LearnTab({
   currentUser,
   onOpenAuth,
   onBackToTopics,
-  onStartWordPractice,
-  onGoToLearnWord,
-  onPracticeIComplete,
-  onStartQuiz,
-  onPracticeIIComplete,
   onRestartTopic,
 }: LearnTabProps) {
   const currentWord = useMemo(() => {

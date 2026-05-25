@@ -5,7 +5,8 @@ from app.auth import get_current_user
 from app.models.user import User
 from app.models.profile import LearnerProfile
 from app.models.link import ParentLearnerLink, SchoolLearnerLink
-from app.models.progress import LearnerTopicProgress
+from app.models.progress import LearnerTopicProgress, LearnerWordProgress
+from app.models.curriculum import Word
 from app.models.attempt import PracticeAttempt
 from app.models.gamification import LearnerBadge, Badge
 from typing import Any, List, Optional
@@ -24,9 +25,14 @@ def get_learner_dashboard_data(db: Session, learner: User) -> dict:
     
     formatted_progress = []
     for tp in progress_list:
+        studied_count = db.query(LearnerWordProgress).join(Word).filter(
+            LearnerWordProgress.learner_user_id == learner.id,
+            Word.topic_id == tp.topic_id,
+            LearnerWordProgress.studied == True
+        ).count()
         formatted_progress.append({
             "topic_id": tp.topic_id,
-            "completed_words": tp.completed_words,
+            "completed_words": studied_count,
             "completed": tp.completed,
             "checkpoint5_passed": tp.checkpoint5_passed,
             "practice2_final_passed": tp.practice2_final_passed

@@ -4,6 +4,7 @@ import LandingPage from "./pages/LandingPage";
 import PracticePage from "./pages/LearnDashboard";
 import LearnWordPage from "./pages/LearnWordPage";
 import LearnDashboard from "./pages/LearnDashboard";
+import ChapterOverviewPage from "./pages/ChapterOverviewPage";
 
 export const router = createBrowserRouter([
   {
@@ -16,6 +17,10 @@ export const router = createBrowserRouter([
   {
     path: "/learn-dashboard",
     element: <LearnDashboard />,
+  },
+  {
+    path: "/chapter-overview/:topicId",
+    element: <ChapterOverviewPage />,
   },
   {
     path: "/learn/:topicId/:wordOrder",
