@@ -29,9 +29,9 @@ from signova_practice_i.pose_utils import (
 from signova_practice_i.scoring import (
     decision_for_practice_ii,
     decision_for_target,
-    normalize_lesson_predictions,
     public_result,
     rank_sequence_against_banks,
+    with_lesson_scores,
 )
 from signova_practice_i.segmentation import select_best_segment
 from signova_practice_i.sign_classifier import SPOTERONNXInferer, load_id2label
@@ -611,10 +611,10 @@ def create_app() -> FastAPI:
         classifier = get_sign_classifier()
         ranked_predictions = classifier.infer_ranked(
             analysis["scoring_results"],
-            allowed_glosses=analysis["lesson_glosses"],
-            top_k=max(len(analysis["lesson_glosses"]), classifier_top_k),
+            allowed_glosses=None,
+            top_k=max(20, len(analysis["lesson_glosses"]), classifier_top_k),
         )
-        normalized_predictions = normalize_lesson_predictions(ranked_predictions)
+        normalized_predictions = with_lesson_scores(ranked_predictions, analysis["lesson_glosses"])
         decision = decision_for_practice_ii(
             target_gloss=analysis["target_gloss"],
             target_result=analysis["target_result"],
