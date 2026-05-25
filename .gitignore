@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# Local temp
+.tmp_pypdf/
+tmp/
+temp/
+*.tmp
+*.bak
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Web dependencies / build
+web/node_modules/
+web/dist/
+
+# Runtime-generated media cache
+outputs/web_playback_cache/
+
+# Optional local-only large files
+All_cam1/
+All_cam1_metadata.json
+
+# Databases
+*.db
+*.sqlite*
+*.tsbuildinfo
+.env
+
+
+# Ignore ONNX model in git to bypass HF 10MB limit
+/models/
+
+web/.env.local
