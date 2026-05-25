@@ -54,7 +54,7 @@ export function Sidebar({
         {/* Brand logo */}
         <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={() => navigate("/")}>
           <div className="w-11 h-11 rounded-2xl overflow-hidden bg-white border border-slate-100 flex-shrink-0 flex items-center justify-center p-0.5">
-            <img src={logo} alt="Mascot" className="w-full h-full object-cover rounded-[14px]" />
+            <img src="/mascot/1.png" alt="Mascot" className="w-full h-full object-contain rounded-[14px]" />
           </div>
           <span className="font-black text-lg tracking-[0.12em] text-sky-600 uppercase leading-none">SIGNOVA</span>
         </div>
@@ -130,7 +130,7 @@ export function Sidebar({
         {/* Brand */}
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
           <div className="w-9 h-9 rounded-xl overflow-hidden border border-slate-100 flex-shrink-0">
-            <img src={logo} alt="Mascot" className="w-full h-full object-cover" />
+            <img src="/mascot/1.png" alt="Mascot" className="w-full h-full object-contain" />
           </div>
           <span className="font-black text-base tracking-[0.12em] text-sky-600 uppercase">SIGNOVA</span>
         </div>

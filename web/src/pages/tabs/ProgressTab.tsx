@@ -267,10 +267,21 @@ export function ProgressTab({
   if (role === "learner") {
     return (
       <section className="space-y-6">
-        <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6">
-          <p className="m-0 text-sm uppercase tracking-[0.18em] text-[#1cb0f6] font-black">⚡ Tiến độ của bạn</p>
-          <h2 className="m-0 mt-1 font-black text-slate-800 text-2xl">Thành tích học tập 🏆</h2>
-          <p className="text-slate-500 mt-1 font-bold text-sm">Học mỗi ngày để giữ chuỗi liên tục và mở khóa huy hiệu!</p>
+        <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
+          <div className="space-y-1 text-center sm:text-left">
+            <p className="m-0 text-sm uppercase tracking-[0.18em] text-[#1cb0f6] font-black">⚡ Tiến độ của bạn</p>
+            <h2 className="m-0 mt-1 font-black text-slate-800 text-2xl">Thành tích học tập 🏆</h2>
+            <p className="text-slate-500 mt-1 font-bold text-sm">Học mỗi ngày để giữ chuỗi liên tục và mở khóa huy hiệu!</p>
+          </div>
+          <img 
+            src="/mascot/9.png" 
+            alt="Progress Mascot" 
+            className="w-16 h-16 object-contain animate-bounce-subtle flex-shrink-0" 
+            style={{ 
+              animationDuration: '5s',
+              filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08))"
+            }} 
+          />
         </div>
 
         {loadingProgress ? (

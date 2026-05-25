@@ -175,10 +175,21 @@ export function AccountTab({
 
   return (
     <section className="space-y-6">
-      <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-6">
-        <p className="m-0 text-xs uppercase tracking-[0.18em] text-[#1cb0f6] font-black">Cài đặt tài khoản ⚙️</p>
-        <h2 className="m-0 mt-1 font-black text-slate-800 text-xl">Thông tin cá nhân và quản lý tài khoản</h2>
-        <p className="text-slate-500 mt-1 font-bold text-xs">Quản lý hồ sơ và tự tạo, quản lý tài khoản cho con/học sinh.</p>
+      <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
+        <div className="space-y-1 text-center sm:text-left">
+          <p className="m-0 text-xs uppercase tracking-[0.18em] text-[#1cb0f6] font-black">Cài đặt tài khoản ⚙️</p>
+          <h2 className="m-0 mt-1 font-black text-slate-800 text-xl">Thông tin cá nhân & Quản lý</h2>
+          <p className="text-slate-500 font-bold text-xs m-0">Quản lý hồ sơ và tự tạo, liên kết tài khoản cho con hoặc học sinh của bạn.</p>
+        </div>
+        <img 
+          src="/mascot/1.png" 
+          alt="Settings Mascot" 
+          className="w-16 h-16 object-contain animate-bounce-subtle flex-shrink-0" 
+          style={{ 
+            animationDuration: '5s',
+            filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08))"
+          }} 
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

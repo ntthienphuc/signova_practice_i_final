@@ -8,10 +8,18 @@ export function CustomPackageTab() {
       </div>
 
       <div className="bg-white border-2 border-b-5 border-slate-200 rounded-[32px] p-8 text-center max-w-xl mx-auto space-y-4">
-        <div className="w-16 h-16 rounded-full bg-slate-50 border-2 border-b-4 border-slate-200 text-indigo-650 flex items-center justify-center mx-auto text-3xl select-none">
-          🏫
+        <div className="w-24 h-24 flex items-center justify-center mx-auto select-none">
+          <img 
+            src="/mascot/8.png" 
+            alt="Custom Package Mascot" 
+            className="w-full h-full object-contain animate-bounce-subtle" 
+            style={{ 
+              animationDuration: '4s',
+              filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08))"
+            }} 
+          />
         </div>
-        <h3 className="text-xl font-black text-slate-800 m-0">Tính năng đang được phát triển</h3>
+        <h3 className="text-xl font-black text-slate-800 m-0">Tính năng đang được thiết lập</h3>
         <p className="text-slate-500 text-sm leading-relaxed font-bold">
           Hệ thống đang tích hợp cổng thiết kế giáo án tùy chỉnh cho các đối tác trường học.
           Để đăng ký khóa học, phân bổ giáo viên, hoặc tạo giáo trình riêng cho trường của bạn,

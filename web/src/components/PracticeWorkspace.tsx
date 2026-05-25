@@ -501,14 +501,20 @@ export function PracticeWorkspace({
 
             {/* Content states based on user file upload & analysis */}
             {!file ? (
-              /* No file yet: two-button choice */
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 bg-slate-50 rounded-[24px] p-10 gap-5">
-                <div className="w-16 h-16 bg-sky-50 rounded-full flex items-center justify-center text-[#1cb0f6]">
-                  <UploadCloud size={32} />
-                </div>
+              /* No file yet: two-button choice with cute Mascot 7 */
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-sky-200 bg-sky-50/30 rounded-[24px] p-8 gap-5 select-none">
+                <img
+                  src="/mascot/7.png"
+                  alt="Review Mascot"
+                  className="w-24 h-24 object-contain animate-bounce-subtle"
+                  style={{
+                    filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))",
+                    animationDuration: "4s",
+                  }}
+                />
                 <div className="text-center">
-                  <h4 className="text-lg font-black text-slate-700 mb-1">Thêm video bài làm</h4>
-                  <p className="text-slate-400 text-xs font-bold">Tải lên video có sẵn hoặc quay trực tiếp</p>
+                  <h4 className="text-base font-black text-slate-700 mb-1">Bé ơi, gửi video bài làm nào!</h4>
+                  <p className="text-slate-500 text-xs font-bold px-4">Tải video quay sẵn từ máy hoặc bấm quay trực tiếp bằng camera nhé! ✨</p>
                 </div>
                 <div className="flex gap-3">
                   <label className="flex items-center gap-2 py-3 px-5 bg-white border-2 border-b-2 border-slate-200 text-slate-700 font-black rounded-2xl text-sm cursor-pointer transition-all active:border-b-0 active:translate-y-[2px] hover:bg-slate-50">
@@ -543,6 +549,26 @@ export function PracticeWorkspace({
                     loop
                     {...buildVideoHandlers("user")}
                   />
+                  {loading && (
+                    <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-white p-6 gap-3 select-none">
+                      <img
+                        src="/mascot/3.png"
+                        alt="Analyzing Mascot"
+                        className="w-24 h-24 object-contain animate-bounce-subtle"
+                        style={{
+                          animationDuration: "3s",
+                          transform: isFromCamera ? "scaleX(-1)" : undefined,
+                        }}
+                      />
+                      <div className="text-center">
+                        <p className="font-black text-sm m-0">Mascot Signova đang chấm điểm...</p>
+                        <p className="text-[10px] text-sky-200 font-bold m-0 mt-1">Bé đợi một chút nhé, Mascot đang soi rất kỹ đó! 🔍</p>
+                      </div>
+                      <div className="w-24 bg-white/20 h-1.5 rounded-full overflow-hidden mt-1">
+                        <div className="bg-sky-400 h-full w-full rounded-full animate-pulse origin-left" style={{ animationDuration: '1.5s' }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex gap-3 items-center">
@@ -640,6 +666,19 @@ export function PracticeWorkspace({
                     {/* Stars */}
                     <div className="text-2xl tracking-widest select-none">
                       {score >= 85 ? "⭐ ⭐ ⭐ ⭐ ⭐" : score >= 70 ? "⭐ ⭐ ⭐ ⭐" : score >= 50 ? "⭐ ⭐ ⭐" : "⭐ ⭐"}
+                    </div>
+
+                    {/* Mascot feedback illustration */}
+                    <div className="w-24 h-24 my-1 select-none">
+                      <img
+                        src={isGoodScore ? "/mascot/4.png" : "/mascot/5.png"}
+                        alt="Feedback Mascot"
+                        className="w-full h-full object-contain animate-bounce-subtle"
+                        style={{
+                          animationDuration: "3s",
+                          filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))",
+                        }}
+                      />
                     </div>
 
                     {/* Fun Badge & Message */}

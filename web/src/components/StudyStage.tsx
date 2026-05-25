@@ -177,12 +177,23 @@ export function StudyStage({
           </div>
         </div>
 
-        {/* Tip box - hidden on small mobile */}
-        <div className="hidden sm:flex bg-[#fff8ee] border-2 border-b-4 border-[#ff9600]/30 rounded-2xl px-5 py-3 items-center gap-3 mb-6">
-          <span className="text-2xl">💡</span>
-          <p className="text-sm font-bold text-[#a06010] m-0">
-            Xem kỹ video mẫu rồi hãy thực hành. Để ý hướng tay và cử động của người mẫu nhé!
-          </p>
+        {/* Tip box with Mascot 6 */}
+        <div className="flex bg-[#fff8ee] border-2 border-b-4 border-amber-300 rounded-[24px] p-4 items-center gap-4 mb-6">
+          <img 
+            src="/mascot/6.png" 
+            alt="Teacher Mascot" 
+            className="w-14 h-14 object-contain flex-shrink-0 animate-bounce-subtle select-none" 
+            style={{ 
+              animationDuration: '5s',
+              filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08))"
+            }}
+          />
+          <div>
+            <strong className="text-amber-800 text-[11px] font-black uppercase tracking-wider block mb-0.5 select-none">🦉 Lời khuyên học tập</strong>
+            <p className="text-xs sm:text-sm font-bold text-amber-700 m-0 leading-relaxed">
+              Bé hãy quan sát thật kỹ hình minh họa và video mẫu bên trên rồi chọn bấm thực hành để ghi hình nhé! Mascot sẽ cổ vũ bé đó!
+            </p>
+          </div>
         </div>
       </div>
 

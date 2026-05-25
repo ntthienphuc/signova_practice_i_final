@@ -15,34 +15,49 @@ interface QuizIntroProps {
 function QuizIntro({ scope, topic, onStart, onBack }: QuizIntroProps) {
   const lessonGlosses = topic.words.slice(0, scope).map((word) => word.gloss);
   return (
-    <section className="grid place-items-center min-h-[calc(100vh-80px)]">
-      <div className="max-w-[860px] w-full grid gap-[18px] p-[34px] rounded-[30px] bg-white border-2 border-slate-200">
-        <div className="grid gap-[10px]">
-          <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#1cb0f6] font-extrabold">Practice II</p>
-          <div className="inline-flex items-center rounded-full py-2 px-3 font-bold text-[0.92rem] bg-emerald-100 text-emerald-800">🏁 Bài kiểm tra nhỏ</div>
-          <h2 className="m-0 text-[clamp(2rem,4vw,3.2rem)] leading-[1.05] font-display">{scope === 5 ? "Checkpoint sau 5 từ đầu" : "Bài tổng kết 10 từ"}</h2>
-          <p className="text-[var(--ink-soft)] leading-[1.62]">
-            {scope === 5
-              ? "Bạn đã đi qua 5 từ đầu tiên rồi. Giờ mình làm một bài kiểm tra nhỏ để xem đã nhớ được bao nhiêu nhé."
-              : "Bạn đã học xong toàn bộ 10 từ trong topic. Giờ là lúc làm bài tổng kết để xem mình đã sẵn sàng chưa."}
-          </p>
+    <section className="grid place-items-center min-h-[calc(100vh-80px)] px-4">
+      <div className="max-w-[860px] w-full grid grid-cols-1 md:grid-cols-[1fr_220px] gap-6 p-[34px] rounded-[30px] bg-white border-2 border-slate-200 shadow-sm items-center">
+        <div className="grid gap-[18px]">
+          <div className="grid gap-[10px]">
+            <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#1cb0f6] font-extrabold">Practice II</p>
+            <div className="inline-flex items-center rounded-full py-1.5 px-3 font-bold text-xs bg-emerald-100 text-emerald-800 w-fit">🏁 Bài kiểm tra nhỏ</div>
+            <h2 className="m-0 text-[clamp(1.8rem,3.5vw,2.6rem)] leading-[1.1] font-black text-slate-800">{scope === 5 ? "Checkpoint sau 5 từ đầu" : "Bài tổng kết 10 từ"}</h2>
+            <p className="text-slate-500 font-bold text-sm leading-relaxed m-0">
+              {scope === 5
+                ? "Bé đã đi qua 5 từ đầu tiên rồi. Giờ mình làm một bài kiểm tra nhỏ với Mascot để xem đã nhớ được bao nhiêu nhé!"
+                : "Bé đã học xong toàn bộ 10 từ trong chủ đề rồi. Giờ là lúc làm bài tổng kết để Mascot đánh giá nhé!"}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {lessonGlosses.map((gloss) => (
+              <span key={gloss} className="inline-flex items-center px-3 py-1.5 rounded-xl bg-sky-50 border-2 border-sky-100 text-sky-700 text-xs font-black">
+                {gloss}
+              </span>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <button type="button" className="border-2 border-b-4 border-slate-200 rounded-2xl min-h-[48px] px-5 transition-all font-black text-slate-500 hover:bg-slate-50 cursor-pointer active:border-b-2 active:translate-y-0.5 text-sm" onClick={onBack}>
+              Quay lại bài học
+            </button>
+            <button type="button" className="border-b-4 border-[#1899d6] rounded-2xl min-h-[48px] px-5 transition-all font-black bg-[#1cb0f6] text-white hover:bg-[#24c4ff] cursor-pointer active:border-b-0 active:translate-y-1 text-sm" onClick={onStart}>
+              Bắt đầu kiểm tra 🚀
+            </button>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-[10px]">
-          {lessonGlosses.map((gloss) => (
-            <span key={gloss} className="inline-flex items-center px-[14px] py-[10px] rounded-full bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white border-transparent text-[1rem] font-bold">
-              {gloss}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <button type="button" className="border border-[rgba(53,84,128,0.08)] rounded-full min-h-[48px] px-5 transition-all font-extrabold bg-white/[0.84] text-[var(--ink)] hover:-translate-y-px cursor-pointer" onClick={onBack}>
-            Quay lại topic
-          </button>
-          <button type="button" className="border-0 rounded-full min-h-[48px] px-5 transition-all font-extrabold bg-gradient-to-br from-[#536ef9] to-[#68c6ff] text-white shadow-[0_16px_30px_rgba(83,110,249,0.22)] hover:-translate-y-px cursor-pointer" onClick={onStart}>
-            Bắt đầu Practice II
-          </button>
+        {/* Mascot Column */}
+        <div className="hidden md:flex flex-col items-center justify-center select-none">
+          <img 
+            src="/mascot/8.png" 
+            alt="Checkpoint Mascot" 
+            className="w-44 h-44 object-contain animate-bounce-subtle" 
+            style={{ 
+              animationDuration: '4s',
+              filter: "drop-shadow(0 8px 12px rgba(0, 0, 0, 0.1))"
+            }} 
+          />
         </div>
       </div>
     </section>

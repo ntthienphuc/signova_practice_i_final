@@ -88,7 +88,7 @@ export function AIRecommendationBox({
         <div className="flex md:flex-col items-center gap-3 shrink-0 mx-auto md:mx-0 select-none">
           <div className="relative">
             <img
-              src={logo}
+              src="/mascot/10.png"
               alt="Signova Mascot"
               className="w-16 h-16 object-contain animate-bounce-subtle"
               style={{

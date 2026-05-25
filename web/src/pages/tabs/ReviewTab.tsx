@@ -261,16 +261,24 @@ export function ReviewTab({
       </div>
 
       {reviewWords.length === 0 ? (
-        <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-12 text-center">
-          <div className="text-6xl mb-4">📚</div>
+        <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-10 text-center select-none flex flex-col items-center justify-center">
+          <img 
+            src="/mascot/7.png" 
+            alt="No Review Words Mascot" 
+            className="w-32 h-32 object-contain animate-bounce-subtle mb-4" 
+            style={{ 
+              animationDuration: '4s',
+              filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08))"
+            }} 
+          />
           <h3 className="font-black text-slate-700 text-xl m-0">Chưa có từ nào để ôn tập</h3>
-          <p className="text-slate-400 font-bold text-sm mt-2">Hãy học vài từ mới trước nhé!</p>
+          <p className="text-slate-500 font-bold text-sm mt-2">Bé hãy hoàn thành học vài từ mới ở phần học để bắt đầu ôn tập nhé! ✨</p>
           <button
             onClick={() => onSetActiveTab("learn")}
             type="button"
             className="px-6 py-3 bg-[#1cb0f6] border-b-4 border-[#1899d6] text-white font-black rounded-2xl cursor-pointer hover:bg-[#24c4ff] active:border-b-0 active:translate-y-[3px] transition-all text-base mt-5"
           >
-            Đi học ngay 🚀
+            Đi học ngay thôi 🚀
           </button>
         </div>
       ) : (
