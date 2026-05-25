@@ -41,8 +41,8 @@ const MOCK_EXTRA_TOPICS: Topic[] = [
   },
 ];
 
-// Import 3 Custom Hooks mới tạo
-import { useAuthAndProfile } from "../../hook/useAuthAndProfile";
+// Import hooks
+import { useAuth } from "../contexts/AuthContext";
 import { useConnectionManager } from "../../hook/useConnectionManager"
 import { usePracticeSession } from "../../hook/usePracticeSession";
 
@@ -68,10 +68,9 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
   const [curriculum, setCurriculum] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<AppTab>(initialTab);
   const [bootError, setBootError] = useState("");
-  const [token, setToken] = useState<string | null>(localStorage.getItem("signova_token"));
 
-  const auth = useAuthAndProfile(token, setToken, activeTab, setActiveTab);
-  const connection = useConnectionManager(auth.currentUser, () => loadDashboardData());
+  const { currentUser, login, logout } = useAuth();
+  const connection = useConnectionManager(() => loadDashboardData());
   const practice = usePracticeSession();
 
   // Độc lập review & dashboard states chưa tách hết
@@ -92,12 +91,12 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
     setLoadingAI(true);
     try {
       const data = await refreshAIRecommendation();
-      if (auth.currentUser?.role === "parent") {
+      if (currentUser?.role === "parent") {
         setParentDashData((prev: any) => ({
           ...prev,
           ai_recommendation: data
         }));
-      } else if (auth.currentUser?.role === "school") {
+      } else if (currentUser?.role === "school") {
         setSchoolDashData((prev: any) => ({
           ...prev,
           ai_recommendation: data
@@ -147,7 +146,7 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
 
   // Hydrate progressByTopic from DB on auth
   useEffect(() => {
-    if (!auth.currentUser || (auth.currentUser.role !== "learner" && auth.currentUser.role !== "parent")) return;
+    if (!currentUser || (currentUser.role !== "learner" && currentUser.role !== "parent")) return;
     let active = true;
     getMyProgress()
       .then((data: any) => {
@@ -157,11 +156,11 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
       })
       .catch(() => {});
     return () => { active = false; };
-  }, [auth.currentUser?.id]);
+  }, [currentUser?.id]);
 
   // Load Review Data
   const loadReviewData = async () => {
-    if (!auth.currentUser) return;
+    if (!currentUser) return;
     setLoadingReview(true);
     setReviewError("");
     try {
@@ -175,21 +174,21 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
   };
 
   useEffect(() => {
-    if (activeTab === "review" && auth.currentUser) loadReviewData();
-  }, [activeTab, auth.currentUser]);
+    if (activeTab === "review" && currentUser) loadReviewData();
+  }, [activeTab, currentUser]);
 
   // Load Dash Data phụ huynh / trường học
   const loadDashboardData = async () => {
-    if (!auth.currentUser) return;
+    if (!currentUser) return;
     setLoadingDash(true);
     try {
-      if (auth.currentUser.role === "parent") {
+      if (currentUser.role === "parent") {
         const data = await getParentDashboard();
         setParentDashData(data);
         if (data.linked_learners?.length > 0 && !selectedChildId) {
           setSelectedChildId(data.linked_learners[0].learner_id);
         }
-      } else if (auth.currentUser.role === "school") {
+      } else if (currentUser.role === "school") {
         const data = await getSchoolDashboard();
         setSchoolDashData(data);
       }
@@ -201,19 +200,19 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
   };
 
   useEffect(() => {
-    if (["family", "school", "progress", "account"].includes(activeTab) && auth.currentUser) {
+    if (["family", "school", "progress", "account"].includes(activeTab) && currentUser) {
       loadDashboardData();
     }
-  }, [activeTab, auth.currentUser]);
+  }, [activeTab, currentUser]);
 
   // Load Tiến độ Học sinh (Learner Progress)
   const loadLearnerProgress = async () => {
-    if (!auth.currentUser || auth.currentUser.role !== "learner") return;
+    if (!currentUser || currentUser.role !== "learner") return;
     setLoadingProgress(true);
     setProgressError("");
     try {
       const [dash, links] = await Promise.all([
-        getLearnerDashboard(auth.currentUser.id),
+        getLearnerDashboard(currentUser.id),
         getPendingLinks(),
       ]);
       setLearnerDashData(dash);
@@ -226,15 +225,15 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
   };
 
   useEffect(() => {
-    if (activeTab === "progress" && auth.currentUser?.role === "learner") {
+    if (activeTab === "progress" && currentUser?.role === "learner") {
       loadLearnerProgress();
     }
-  }, [activeTab, auth.currentUser]);
+  }, [activeTab, currentUser]);
 
   // Load Tiến độ của con (Dành cho phụ huynh)
   useEffect(() => {
     const fetchChildProgress = async () => {
-      if (!selectedChildId || activeTab !== "progress" || auth.currentUser?.role !== "parent") {
+      if (!selectedChildId || activeTab !== "progress" || currentUser?.role !== "parent") {
         setSelectedChildProgress(null);
         return;
       }
@@ -249,7 +248,7 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
       }
     };
     fetchChildProgress();
-  }, [selectedChildId, activeTab, auth.currentUser]);
+  }, [selectedChildId, activeTab, currentUser]);
 
   const handleApproveLink = async (type: "parent" | "school", id: string) => {
     try {
@@ -274,10 +273,15 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
     finally { setLoadingReviewWord(null); }
   };
 
+  useEffect(() => {
+    if (!currentUser) return;
+    if (currentUser.role === "school" && ["learn", "review", "progress", "family"].includes(activeTab)) setActiveTab("school");
+    else if (currentUser.role === "parent" && ["learn", "review", "school", "custom_package"].includes(activeTab)) setActiveTab("family");
+    else if (currentUser.role === "learner" && ["family", "school", "custom_package"].includes(activeTab)) setActiveTab("learn");
+  }, [currentUser]);
+
   const handleLogout = () => {
-    localStorage.removeItem("signova_token");
-    setToken(null);
-    auth.clearUserSession();
+    logout();
     setActiveTab("learn");
     setParentDashData(null);
     setSchoolDashData(null);
@@ -295,7 +299,6 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
             setActiveTab(tab);
           }}
           curriculumTopics={config?.curriculum_topics ?? []}
-          currentUser={auth.currentUser}
           onOpenAuth={() => {
             setIsAuthOpen(true);
           }}
@@ -307,7 +310,7 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
         {activeTab === "learn" && (
           <LearnTab
             bootError={bootError} curriculum={curriculum} session={practice.session} topics={topics} progressByTopic={practice.progressByTopic}
-            currentUser={auth.currentUser} onOpenAuth={() => setIsAuthOpen(true)}
+            onOpenAuth={() => setIsAuthOpen(true)}
             onBackToTopics={practice.handleBackToTopics} onStartWordPractice={practice.handleStartWordPractice} onGoToLearnWord={practice.handleGoToLearnWord}
             onPracticeIComplete={practice.handlePracticeIComplete} onStartQuiz={practice.handleStartQuiz} onPracticeIIComplete={practice.handlePracticeIIComplete} onRestartTopic={practice.handleRestartTopic}
           />
@@ -315,23 +318,21 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
 
         {activeTab === "review" && (
           <ReviewTab
-            currentUser={auth.currentUser} activeReviewWord={activeReviewWord} loadingReview={loadingReview} reviewError={reviewError} reviewWords={reviewWords} loadingReviewWord={loadingReviewWord}
+            activeReviewWord={activeReviewWord} loadingReview={loadingReview} reviewError={reviewError} reviewWords={reviewWords} loadingReviewWord={loadingReviewWord}
             onOpenAuth={() => setIsAuthOpen(true)} onSetActiveTab={setActiveTab} onStartReviewPractice={handleStartReviewPractice} onLoadReviewData={loadReviewData} onClearActiveReviewWord={() => setActiveReviewWord(null)} onCompleteReview={async () => { setActiveReviewWord(null); await loadReviewData(); }}
           />
         )}
 
         {activeTab === "progress" && (
           <ProgressTab
-            currentUser={auth.currentUser} topics={topics} parentDashData={parentDashData} loadingProgress={loadingProgress} progressError={progressError} learnerDashData={learnerDashData} pendingLinks={pendingLinks}
+            topics={topics} parentDashData={parentDashData} loadingProgress={loadingProgress} progressError={progressError} learnerDashData={learnerDashData} pendingLinks={pendingLinks}
             selectedChildId={selectedChildId} selectedChildProgress={selectedChildProgress} loadingChildProgress={loadingChildProgress} onOpenAuth={() => setIsAuthOpen(true)} onSetSelectedChildId={setSelectedChildId} onApproveLink={handleApproveLink} onRejectLink={handleRejectLink}
           />
         )}
 
         {activeTab === "account" && (
           <AccountTab
-            currentUser={auth.currentUser} profileSuccessMsg={auth.profileSuccessMsg} profileErrorMsg={auth.profileErrorMsg} profileLoading={auth.profileLoading} parentDashData={parentDashData} schoolDashData={schoolDashData} onOpenAuth={() => setIsAuthOpen(true)} onUpdateProfile={auth.handleUpdateProfile}
-            displayNameInput={auth.inputs.displayNameInput} dobInput={auth.inputs.dobInput} phoneInput={auth.inputs.phoneInput} schoolNameInput={auth.inputs.schoolNameInput} contactNameInput={auth.inputs.contactNameInput} contactPhoneInput={auth.inputs.contactPhoneInput}
-            onSetDisplayNameInput={auth.inputs.setDisplayNameInput} onSetDobInput={auth.inputs.setDobInput} onSetPhoneInput={auth.inputs.setPhoneInput} onSetSchoolNameInput={auth.inputs.setSchoolNameInput} onSetContactNameInput={auth.inputs.setContactNameInput} onSetContactPhoneInput={auth.inputs.setContactPhoneInput}
+            parentDashData={parentDashData} schoolDashData={schoolDashData} onOpenAuth={() => setIsAuthOpen(true)}
             onReloadDashboard={loadDashboardData}
           />
         )}
@@ -339,7 +340,6 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
         {activeTab === "custom_package" && <CustomPackageTab />}
         {activeTab === "family" && (
           <FamilyTab
-            currentUser={auth.currentUser}
             loadingDash={loadingDash}
             parentDashData={parentDashData}
             topics={topics}
@@ -349,7 +349,6 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
         )}
         {activeTab === "school" && (
           <SchoolTab
-            currentUser={auth.currentUser}
             loadingDash={loadingDash}
             schoolDashData={schoolDashData}
             loadingAI={loadingAI}
@@ -358,7 +357,7 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
         )}
       </main>
 
-      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onSuccess={(newToken) => setToken(newToken)} />
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onSuccess={(newToken) => login(newToken)} />
     </div>
   );
 }

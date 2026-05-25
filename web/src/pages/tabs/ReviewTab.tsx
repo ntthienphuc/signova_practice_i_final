@@ -1,8 +1,8 @@
 import { PracticeWorkspace } from "../../components/PracticeWorkspace";
 import type { AppTab } from "../../types/learn";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface ReviewTabProps {
-  currentUser: any;
   activeReviewWord: any;
   loadingReview: boolean;
   reviewError: string;
@@ -156,7 +156,6 @@ function SectionGroup({
 }
 
 export function ReviewTab({
-  currentUser,
   activeReviewWord,
   loadingReview,
   reviewError,
@@ -169,6 +168,7 @@ export function ReviewTab({
   onClearActiveReviewWord,
   onCompleteReview,
 }: ReviewTabProps) {
+  const { currentUser } = useAuth();
   if (!currentUser) {
     return (
       <section className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-8 text-center py-16">

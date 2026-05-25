@@ -1,5 +1,6 @@
 import type { AppTab, CurriculumTopicSummary } from "../../types/learn";
 import logo from '../../assets/image/logo.jpeg'
+import { useAuth } from "../../contexts/AuthContext";
 
 interface SidebarProps {
   activeTab: AppTab;
@@ -7,7 +8,6 @@ interface SidebarProps {
   apiBase?: string;
   onApiBaseChange?: (value: string) => void;
   curriculumTopics: CurriculumTopicSummary[];
-  currentUser: any;
   onOpenAuth: () => void;
   onLogout: () => void;
   isOpen?: boolean;
@@ -17,10 +17,10 @@ interface SidebarProps {
 export function Sidebar({
   activeTab,
   onTabChange,
-  currentUser,
   onOpenAuth,
   onLogout,
 }: SidebarProps) {
+  const { currentUser } = useAuth();
   const role = currentUser?.role;
   const tabs: Array<{ id: AppTab; label: string; icon: string }> = [];
 

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
 import type { ProgressByTopic, Topic } from "../../types/learn";
+import { useAuth } from "../../contexts/AuthContext";
 
 const TOPIC_ACCENTS = [
   {
@@ -23,7 +24,6 @@ const TOPIC_ACCENTS = [
 interface TopicGridProps {
   topics: Topic[];
   progressByTopic: ProgressByTopic;
-  currentUser?: any;
   onOpenAuth: () => void;
 }
 
@@ -35,7 +35,8 @@ function PlayIcon({ color }: { color: string }) {
   );
 }
 
-export function TopicGrid({ topics, progressByTopic, currentUser, onOpenAuth }: TopicGridProps) {
+export function TopicGrid({ topics, progressByTopic, onOpenAuth }: TopicGridProps) {
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
 
   const normalizedTopics = useMemo(
@@ -45,13 +46,13 @@ export function TopicGrid({ topics, progressByTopic, currentUser, onOpenAuth }: 
         const completedWords = Number(progress.completedWords ?? 0);
         const ratio = topic.word_count > 0 ? Math.min(1, completedWords / topic.word_count) : 0;
         const accent = TOPIC_ACCENTS[index % TOPIC_ACCENTS.length];
-        const isLockedForGuest = !currentUser && index > 0;
+        const isLockedForGuest = index > 1;
         return { topic, progress, completedWords, ratio, accent, isLockedForGuest };
       }),
     [topics, progressByTopic, currentUser]
   );
 
-  const activeTopicId = useMemo(() => {
+const activeTopicId = useMemo(() => {
     if (!currentUser) return normalizedTopics[0]?.topic.id ?? null;
     const inProgress = normalizedTopics.find(
       (t) => !t.isLockedForGuest && !t.progress.completed && t.completedWords > 0

@@ -1,15 +1,16 @@
 import { DashboardPlaceholder } from "../../components/DashboardPlaceholder";
 import { AIRecommendationBox } from "../../components/AIRecommendationBox";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface SchoolTabProps {
-  currentUser: any;
   loadingDash: boolean;
   schoolDashData: any;
   loadingAI: boolean;
   onRefreshAI: () => Promise<void>;
 }
 
-export function SchoolTab({ currentUser, loadingDash, schoolDashData, loadingAI, onRefreshAI }: SchoolTabProps) {
+export function SchoolTab({ loadingDash, schoolDashData, loadingAI, onRefreshAI }: SchoolTabProps) {
+  const { currentUser } = useAuth();
   if (currentUser?.role !== "school") {
     return (
       <DashboardPlaceholder

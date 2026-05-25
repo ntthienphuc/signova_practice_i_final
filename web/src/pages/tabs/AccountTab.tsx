@@ -1,53 +1,76 @@
-import { useState } from "react";
-import { createChild, createStudent } from "../../api";
+import { useState, useEffect } from "react";
+import { createChild, createStudent, updateProfile } from "../../api";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface AccountTabProps {
-  currentUser: any;
-  displayNameInput: string;
-  dobInput: string;
-  phoneInput: string;
-  schoolNameInput: string;
-  contactNameInput: string;
-  contactPhoneInput: string;
-  profileSuccessMsg: string;
-  profileErrorMsg: string;
-  profileLoading: boolean;
   parentDashData: any;
   schoolDashData: any;
   onOpenAuth: () => void;
-  onUpdateProfile: (e: React.FormEvent) => void;
-  onSetDisplayNameInput: (value: string) => void;
-  onSetDobInput: (value: string) => void;
-  onSetPhoneInput: (value: string) => void;
-  onSetSchoolNameInput: (value: string) => void;
-  onSetContactNameInput: (value: string) => void;
-  onSetContactPhoneInput: (value: string) => void;
   onReloadDashboard: () => void;
 }
 
 export function AccountTab({
-  currentUser,
-  displayNameInput,
-  dobInput,
-  phoneInput,
-  schoolNameInput,
-  contactNameInput,
-  contactPhoneInput,
-  profileSuccessMsg,
-  profileErrorMsg,
-  profileLoading,
   parentDashData,
   schoolDashData,
   onOpenAuth,
-  onUpdateProfile,
-  onSetDisplayNameInput,
-  onSetDobInput,
-  onSetPhoneInput,
-  onSetSchoolNameInput,
-  onSetContactNameInput,
-  onSetContactPhoneInput,
   onReloadDashboard,
 }: AccountTabProps) {
+  const { currentUser, refreshUser } = useAuth();
+
+  const [displayNameInput, setDisplayNameInput] = useState("");
+  const [dobInput, setDobInput] = useState("");
+  const [phoneInput, setPhoneInput] = useState("");
+  const [schoolNameInput, setSchoolNameInput] = useState("");
+  const [contactNameInput, setContactNameInput] = useState("");
+  const [contactPhoneInput, setContactPhoneInput] = useState("");
+  const [profileSuccessMsg, setProfileSuccessMsg] = useState("");
+  const [profileErrorMsg, setProfileErrorMsg] = useState("");
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    if (currentUser.role === "learner" && currentUser.learner_profile) {
+      setDisplayNameInput(currentUser.learner_profile.display_name || "");
+      setDobInput(currentUser.learner_profile.dob || "");
+    } else if (currentUser.role === "parent" && currentUser.parent_profile) {
+      setDisplayNameInput(currentUser.parent_profile.display_name || "");
+      setPhoneInput(currentUser.parent_profile.phone || "");
+    } else if (currentUser.role === "school" && currentUser.school_profile) {
+      setSchoolNameInput(currentUser.school_profile.school_name || "");
+      setContactNameInput(currentUser.school_profile.contact_name || "");
+      setContactPhoneInput(currentUser.school_profile.contact_phone || "");
+    }
+  }, [currentUser]);
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    setProfileSuccessMsg("");
+    setProfileErrorMsg("");
+    setProfileLoading(true);
+    try {
+      const payload: any = {};
+      if (currentUser.role === "learner") {
+        payload.display_name = displayNameInput;
+        payload.dob = dobInput || null;
+      } else if (currentUser.role === "parent") {
+        payload.display_name = displayNameInput;
+        payload.phone = phoneInput || null;
+      } else if (currentUser.role === "school") {
+        payload.school_name = schoolNameInput;
+        payload.contact_name = contactNameInput || null;
+        payload.contact_phone = contactPhoneInput || null;
+      }
+      await updateProfile(payload);
+      setProfileSuccessMsg("Cập nhật thông tin tài khoản thành công!");
+      await refreshUser();
+    } catch (err: any) {
+      setProfileErrorMsg(err instanceof Error ? err.message : "Đã có lỗi xảy ra.");
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
   // Local states for direct creation
   const [childUsername, setChildUsername] = useState("");
   const [childPassword, setChildPassword] = useState("");
@@ -165,7 +188,7 @@ export function AccountTab({
             👤 Thông tin hồ sơ
           </h3>
 
-          <form onSubmit={onUpdateProfile} className="space-y-3">
+          <form onSubmit={handleUpdateProfile} className="space-y-3">
             {role === "learner" && (
               <>
                 <label className="grid gap-1.5">
@@ -174,7 +197,7 @@ export function AccountTab({
                     type="text"
                     required
                     value={displayNameInput}
-                    onChange={(e) => onSetDisplayNameInput(e.target.value)}
+                    onChange={(e) => setDisplayNameInput(e.target.value)}
                     placeholder="Nhập tên hiển thị"
                     className="w-full border-2 border-slate-200 focus:border-[#1cb0f6] focus:outline-none rounded-xl px-4 py-2.5 bg-white text-[var(--ink)] text-sm font-bold transition-all"
                   />
@@ -184,7 +207,7 @@ export function AccountTab({
                   <input
                     type="date"
                     value={dobInput}
-                    onChange={(e) => onSetDobInput(e.target.value)}
+                    onChange={(e) => setDobInput(e.target.value)}
                     className="w-full border-2 border-slate-200 focus:border-[#1cb0f6] focus:outline-none rounded-xl px-4 py-2.5 bg-white text-[var(--ink)] text-sm font-bold transition-all"
                   />
                 </label>
@@ -199,7 +222,7 @@ export function AccountTab({
                     type="text"
                     required
                     value={displayNameInput}
-                    onChange={(e) => onSetDisplayNameInput(e.target.value)}
+                    onChange={(e) => setDisplayNameInput(e.target.value)}
                     placeholder="Nhập họ tên phụ huynh"
                     className="w-full border-2 border-slate-200 focus:border-[#1cb0f6] focus:outline-none rounded-xl px-4 py-2.5 bg-white text-[var(--ink)] text-sm font-bold transition-all"
                   />
@@ -209,7 +232,7 @@ export function AccountTab({
                   <input
                     type="tel"
                     value={phoneInput}
-                    onChange={(e) => onSetPhoneInput(e.target.value)}
+                    onChange={(e) => setPhoneInput(e.target.value)}
                     placeholder="Nhập số điện thoại liên hệ"
                     className="w-full border-2 border-slate-200 focus:border-[#1cb0f6] focus:outline-none rounded-xl px-4 py-2.5 bg-white text-[var(--ink)] text-sm font-bold transition-all"
                   />
@@ -225,7 +248,7 @@ export function AccountTab({
                     type="text"
                     required
                     value={schoolNameInput}
-                    onChange={(e) => onSetSchoolNameInput(e.target.value)}
+                    onChange={(e) => setSchoolNameInput(e.target.value)}
                     placeholder="Nhập tên trường học"
                     className="w-full border-2 border-slate-200 focus:border-[#1cb0f6] focus:outline-none rounded-xl px-4 py-2.5 bg-white text-[var(--ink)] text-sm font-bold transition-all"
                   />
@@ -235,7 +258,7 @@ export function AccountTab({
                   <input
                     type="text"
                     value={contactNameInput}
-                    onChange={(e) => onSetContactNameInput(e.target.value)}
+                    onChange={(e) => setContactNameInput(e.target.value)}
                     placeholder="Họ tên người liên hệ"
                     className="w-full border-2 border-slate-200 focus:border-[#1cb0f6] focus:outline-none rounded-xl px-4 py-2.5 bg-white text-[var(--ink)] text-sm font-bold transition-all"
                   />
@@ -245,7 +268,7 @@ export function AccountTab({
                   <input
                     type="tel"
                     value={contactPhoneInput}
-                    onChange={(e) => onSetContactPhoneInput(e.target.value)}
+                    onChange={(e) => setContactPhoneInput(e.target.value)}
                     placeholder="Số điện thoại liên hệ"
                     className="w-full border-2 border-slate-200 focus:border-[#1cb0f6] focus:outline-none rounded-xl px-4 py-2.5 bg-white text-[var(--ink)] text-sm font-bold transition-all"
                   />

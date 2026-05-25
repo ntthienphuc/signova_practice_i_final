@@ -2,9 +2,9 @@ import { useState } from "react";
 import { LearnerProgressDetails } from "./ProgressTab";
 import type { Topic } from "../../types/learn";
 import { AIRecommendationBox } from "../../components/AIRecommendationBox";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface FamilyTabProps {
-  currentUser: any;
   loadingDash: boolean;
   parentDashData: any;
   topics: Topic[];
@@ -12,7 +12,8 @@ interface FamilyTabProps {
   onRefreshAI: () => Promise<void>;
 }
 
-export function FamilyTab({ currentUser, loadingDash, parentDashData, topics, loadingAI, onRefreshAI }: FamilyTabProps) {
+export function FamilyTab({ loadingDash, parentDashData, topics, loadingAI, onRefreshAI }: FamilyTabProps) {
+  const { currentUser } = useAuth();
   const [activeMemberId, setActiveMemberId] = useState<string>("parent");
 
   if (currentUser?.role !== "parent") {

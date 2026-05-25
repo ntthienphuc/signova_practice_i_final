@@ -1,4 +1,5 @@
 import type { Topic } from "../../types/learn";
+import { useAuth } from "../../contexts/AuthContext";
 
 const DEFAULT_BADGES = [
   { code: "first_attempt", name: "Khởi đầu mới", description: "Lượt luyện tập đầu tiên.", icon: "🚀" },
@@ -12,7 +13,6 @@ const DEFAULT_BADGES = [
 ];
 
 interface ProgressTabProps {
-  currentUser: any;
   topics: Topic[];
   parentDashData: any;
   loadingProgress: boolean;
@@ -186,7 +186,6 @@ export function LearnerProgressDetails({ data, topics }: { data: any; topics: To
 }
 
 export function ProgressTab({
-  currentUser,
   topics,
   parentDashData,
   loadingProgress,
@@ -201,6 +200,7 @@ export function ProgressTab({
   onApproveLink,
   onRejectLink,
 }: ProgressTabProps) {
+  const { currentUser } = useAuth();
   if (!currentUser) {
     return (
       <section className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-8 text-center py-16">

@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { searchLearners, requestParentLink, requestSchoolLink } from "../src/api";
+import { useAuth } from "../src/contexts/AuthContext";
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Đã có lỗi xảy ra.";
 }
 
-export function useConnectionManager(currentUser: any, onSuccess: () => void) {
+export function useConnectionManager(onSuccess: () => void) {
+  const { currentUser } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);

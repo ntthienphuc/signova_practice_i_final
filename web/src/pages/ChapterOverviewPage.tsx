@@ -5,6 +5,7 @@ import { ChapterHeader } from "../components/chapter-overview/ChapterHeader";
 import { LessonList } from "../components/chapter-overview/LessonList";
 import { AuthModal } from "../components/AuthModal";
 import type { Topic, DashboardPayload } from "../types/learn";
+import { useAuth } from "../contexts/AuthContext";
 
 const MOCK_EXTRA_TOPICS: Topic[] = [
   {
@@ -45,6 +46,7 @@ const TOPIC_ACCENTS = [
 export default function ChapterOverviewPage() {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
+  const { currentUser, login } = useAuth();
 
   const [curriculum, setCurriculum] = useState<DashboardPayload | null>(null);
   const [completedCount, setCompletedCount] = useState(0);
@@ -52,7 +54,7 @@ export default function ChapterOverviewPage() {
   const [error, setError] = useState("");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
-  const isGuest = !localStorage.getItem("signova_token");
+  const isGuest = !currentUser;
 
   useEffect(() => {
     setLoading(true);
@@ -149,7 +151,7 @@ export default function ChapterOverviewPage() {
         </button>
       </div>
 
-      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onSuccess={() => { setIsAuthOpen(false); window.location.reload(); }} />
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onSuccess={(token) => { login(token); setIsAuthOpen(false); }} />
     </div>
   );
 }

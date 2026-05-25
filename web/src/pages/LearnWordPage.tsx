@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { loadCurriculum, getMyProgress } from "../api";
+import { useAuth } from "../contexts/AuthContext";
 import { PracticeWorkspace } from "../components/PracticeWorkspace";
 import { StudyStage } from "../components/StudyStage";
 import type { DashboardPayload } from "../types/learn";
@@ -10,6 +11,7 @@ type PageStage = "learn" | "practice";
 export default function LearnWordPage() {
   const { topicId, wordOrder } = useParams<{ topicId: string; wordOrder: string }>();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   const [curriculum, setCurriculum] = useState<DashboardPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,7 +29,7 @@ export default function LearnWordPage() {
   }, []);
 
   useEffect(() => {
-    if (!topicId || !localStorage.getItem("signova_token")) return;
+    if (!topicId || !currentUser) return;
     let active = true;
     getMyProgress()
       .then((data: any) => {
@@ -41,8 +43,7 @@ export default function LearnWordPage() {
 
   useEffect(() => {
     if (!curriculum) return;
-    const token = localStorage.getItem("signova_token");
-    if (!token) {
+    if (!currentUser) {
       const firstTopicId = curriculum.topics[0]?.id;
       const order = Number(wordOrder ?? "0");
       if (topicId !== firstTopicId || order >= 3) {

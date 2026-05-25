@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useAuth } from "../../contexts/AuthContext";
 import { TopicGrid } from "../../components/learn/TopicGrid";
 import { TopicSummary } from "../../components/TopicSummary";
 import type { AnalyzeResponse } from "../../api";
@@ -54,7 +55,6 @@ interface LearnTabProps {
   session: PracticeSession | null;
   topics: Topic[];
   progressByTopic: ProgressByTopic;
-  currentUser?: any;
   onOpenAuth: () => void;
   onBackToTopics: () => void;
   onStartWordPractice: () => void;
@@ -71,7 +71,6 @@ export function LearnTab({
   session,
   topics,
   progressByTopic,
-  currentUser,
   onOpenAuth,
   onBackToTopics,
   onRestartTopic,
@@ -118,7 +117,7 @@ export function LearnTab({
   if (!session) {
     return (
       <section className="grid gap-6">
-        <TopicGrid topics={topics} progressByTopic={progressByTopic} currentUser={currentUser} onOpenAuth={onOpenAuth} />
+        <TopicGrid topics={topics} progressByTopic={progressByTopic} onOpenAuth={onOpenAuth} />
       </section>
     );
   }
