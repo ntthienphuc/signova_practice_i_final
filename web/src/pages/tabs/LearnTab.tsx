@@ -132,8 +132,28 @@ export function LearnTab({
 
   if (!session) {
     return (
-      <section className="grid gap-6">
-        <TopicGrid topics={topics} progressByTopic={progressByTopic} onOpenAuth={onOpenAuth} />
+      <section className="grid grid-cols-1 md:grid-cols-[1fr_250px] gap-8 max-w-4xl mx-auto items-start py-2">
+        <div className="w-full">
+          <TopicGrid topics={topics} progressByTopic={progressByTopic} onOpenAuth={onOpenAuth} />
+        </div>
+        
+        {/* Welcome Mascot Widget */}
+        <div className="hidden md:flex flex-col gap-4 sticky top-6 bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-5 text-center items-center shadow-sm select-none">
+          <div className="w-28 h-28 my-1">
+            <img 
+              src={mascots[2]} 
+              alt="Mascot Welcoming" 
+              className="w-full h-full object-contain animate-bounce-subtle"
+              style={{ animationDuration: '5s', filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.08))" }}
+            />
+          </div>
+          <div>
+            <h4 className="text-base font-black text-slate-800 m-0">Xin chào bé! 🦉</h4>
+            <p className="text-slate-500 font-bold text-xs mt-2 leading-relaxed">
+              Mascot rất vui được đồng hành cùng bé! Hãy chọn một chủ đề học ở bên cạnh để bắt đầu học ngôn ngữ ký hiệu nhé! ✨
+            </p>
+          </div>
+        </div>
       </section>
     );
   }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
 import type { ProgressByTopic, Topic } from "../../types/learn";
 import { useAuth } from "../../contexts/AuthContext";
+import { mascots } from "../../utils/mascot";
 
 const TOPIC_ACCENTS = [
   {
@@ -89,7 +90,17 @@ const activeTopicId = useMemo(() => {
                   className="w-full rounded-2xl px-6 py-6 flex items-center gap-5"
                   style={{ backgroundColor: "#dff3fd", border: "2px solid #1cb0f6" }}
                 >
-                  <div className="text-5xl select-none flex-shrink-0">🚀</div>
+                  <div className="w-16 h-16 select-none flex-shrink-0">
+                    <img 
+                      src={mascots[8]} 
+                      alt="Unlock Mascot" 
+                      className="w-full h-full object-contain animate-bounce-subtle"
+                      style={{ 
+                        animationDuration: '4s',
+                        filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08))"
+                      }}
+                    />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="m-0 font-extrabold text-slate-800 text-sm sm:text-base leading-snug">
                       Tiếp tục hành trình học VSL
