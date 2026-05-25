@@ -1,6 +1,7 @@
 import { PracticeWorkspace } from "../../components/PracticeWorkspace";
 import type { AppTab } from "../../types/learn";
 import { useAuth } from "../../contexts/AuthContext";
+import { mascots } from "../../utils/mascot";
 
 interface ReviewTabProps {
   activeReviewWord: any;
@@ -263,7 +264,7 @@ export function ReviewTab({
       {reviewWords.length === 0 ? (
         <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-10 text-center select-none flex flex-col items-center justify-center">
           <img 
-            src="/mascot/7.png" 
+            src={mascots[7]} 
             alt="No Review Words Mascot" 
             className="w-32 h-32 object-contain animate-bounce-subtle mb-4" 
             style={{ 

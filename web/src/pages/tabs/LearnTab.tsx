@@ -4,6 +4,7 @@ import { TopicGrid } from "../../components/learn/TopicGrid";
 import { TopicSummary } from "../../components/TopicSummary";
 import type { AnalyzeResponse } from "../../api";
 import type { DashboardPayload, PracticeSession, ProgressByTopic, Topic } from "../../types/learn";
+import { mascots } from "../../utils/mascot";
 
 interface QuizIntroProps {
   scope: 5 | 10;
@@ -50,7 +51,7 @@ function QuizIntro({ scope, topic, onStart, onBack }: QuizIntroProps) {
         {/* Mascot Column */}
         <div className="hidden md:flex flex-col items-center justify-center select-none">
           <img 
-            src="/mascot/8.png" 
+            src={mascots[8]} 
             alt="Checkpoint Mascot" 
             className="w-44 h-44 object-contain animate-bounce-subtle" 
             style={{ 

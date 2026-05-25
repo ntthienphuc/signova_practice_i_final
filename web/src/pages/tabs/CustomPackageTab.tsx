@@ -1,3 +1,5 @@
+import { mascots } from "../../utils/mascot";
+
 export function CustomPackageTab() {
   return (
     <section className="space-y-6">
@@ -10,7 +12,7 @@ export function CustomPackageTab() {
       <div className="bg-white border-2 border-b-5 border-slate-200 rounded-[32px] p-8 text-center max-w-xl mx-auto space-y-4">
         <div className="w-24 h-24 flex items-center justify-center mx-auto select-none">
           <img 
-            src="/mascot/8.png" 
+            src={mascots[8]} 
             alt="Custom Package Mascot" 
             className="w-full h-full object-contain animate-bounce-subtle" 
             style={{ 

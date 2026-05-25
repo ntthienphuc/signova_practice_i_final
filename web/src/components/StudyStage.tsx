@@ -4,6 +4,7 @@ import { Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { ExitDrawer } from "./ExitDrawer";
 import { apiClient } from "../api/client";
 import type { Topic, WordItem } from "../types/learn";
+import { mascots } from "../utils/mascot";
 
 function absoluteUrl(url?: string | null): string {
   if (!url) return "";
@@ -180,7 +181,7 @@ export function StudyStage({
         {/* Tip box with Mascot 6 */}
         <div className="flex bg-[#fff8ee] border-2 border-b-4 border-amber-300 rounded-[24px] p-4 items-center gap-4 mb-6">
           <img 
-            src="/mascot/6.png" 
+            src={mascots[6]} 
             alt="Teacher Mascot" 
             className="w-14 h-14 object-contain flex-shrink-0 animate-bounce-subtle select-none" 
             style={{ 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { createChild, createStudent, updateProfile } from "../../api";
 import { useAuth } from "../../contexts/AuthContext";
+import { mascots } from "../../utils/mascot";
 
 interface AccountTabProps {
   parentDashData: any;
@@ -182,7 +183,7 @@ export function AccountTab({
           <p className="text-slate-500 font-bold text-xs m-0">Quản lý hồ sơ và tự tạo, liên kết tài khoản cho con hoặc học sinh của bạn.</p>
         </div>
         <img 
-          src="/mascot/1.png" 
+          src={mascots[1]} 
           alt="Settings Mascot" 
           className="w-16 h-16 object-contain animate-bounce-subtle flex-shrink-0" 
           style={{ 

@@ -1,5 +1,6 @@
 import type { Topic } from "../../types/learn";
 import { useAuth } from "../../contexts/AuthContext";
+import { mascots } from "../../utils/mascot";
 
 const DEFAULT_BADGES = [
   { code: "first_attempt", name: "Khởi đầu mới", description: "Lượt luyện tập đầu tiên.", icon: "🚀" },
@@ -274,7 +275,7 @@ export function ProgressTab({
             <p className="text-slate-500 mt-1 font-bold text-sm">Học mỗi ngày để giữ chuỗi liên tục và mở khóa huy hiệu!</p>
           </div>
           <img 
-            src="/mascot/9.png" 
+            src={mascots[9]} 
             alt="Progress Mascot" 
             className="w-16 h-16 object-contain animate-bounce-subtle flex-shrink-0" 
             style={{ 

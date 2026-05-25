@@ -9,6 +9,7 @@ import {
 } from "../api";
 import { apiClient } from "../api/client";
 import { drawOverlay, normalizeAnalysis, type NormalizedAnalysis, type NormalizedSegment } from "../overlay";
+import { mascots } from "../utils/mascot";
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Đã có lỗi xảy ra.";
@@ -504,7 +505,7 @@ export function PracticeWorkspace({
               /* No file yet: two-button choice with cute Mascot 7 */
               <div className="flex flex-col items-center justify-center border-2 border-dashed border-sky-200 bg-sky-50/30 rounded-[24px] p-8 gap-5 select-none">
                 <img
-                  src="/mascot/7.png"
+                  src={mascots[7]}
                   alt="Review Mascot"
                   className="w-24 h-24 object-contain animate-bounce-subtle"
                   style={{
@@ -552,7 +553,7 @@ export function PracticeWorkspace({
                   {loading && (
                     <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-white p-6 gap-3 select-none">
                       <img
-                        src="/mascot/3.png"
+                        src={mascots[3]}
                         alt="Analyzing Mascot"
                         className="w-24 h-24 object-contain animate-bounce-subtle"
                         style={{
@@ -671,7 +672,7 @@ export function PracticeWorkspace({
                     {/* Mascot feedback illustration */}
                     <div className="w-24 h-24 my-1 select-none">
                       <img
-                        src={isGoodScore ? "/mascot/4.png" : "/mascot/5.png"}
+                        src={isGoodScore ? mascots[4] : mascots[5]}
                         alt="Feedback Mascot"
                         className="w-full h-full object-contain animate-bounce-subtle"
                         style={{

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import logo from '../assets/image/logo.jpeg'
+import { mascots } from "../utils/mascot";
 interface AIRecommendationBoxProps {
   aiRecommendation: {
     recommendation: string;
@@ -88,7 +89,7 @@ export function AIRecommendationBox({
         <div className="flex md:flex-col items-center gap-3 shrink-0 mx-auto md:mx-0 select-none">
           <div className="relative">
             <img
-              src="/mascot/10.png"
+              src={mascots[10]}
               alt="Signova Mascot"
               className="w-16 h-16 object-contain animate-bounce-subtle"
               style={{
