@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { LearnerProgressDetails } from "./ProgressTab";
 import type { Topic } from "../../types/learn";
+import { AIRecommendationBox } from "../../components/AIRecommendationBox";
 
 interface FamilyTabProps {
   currentUser: any;
   loadingDash: boolean;
   parentDashData: any;
   topics: Topic[];
+  loadingAI: boolean;
+  onRefreshAI: () => Promise<void>;
 }
 
-export function FamilyTab({ currentUser, loadingDash, parentDashData, topics }: FamilyTabProps) {
+export function FamilyTab({ currentUser, loadingDash, parentDashData, topics, loadingAI, onRefreshAI }: FamilyTabProps) {
   const [activeMemberId, setActiveMemberId] = useState<string>("parent");
 
   if (currentUser?.role !== "parent") {
@@ -44,6 +47,16 @@ export function FamilyTab({ currentUser, loadingDash, parentDashData, topics }: 
           Đồng hành cùng con trên con đường học ngôn ngữ ký hiệu. Ba mẹ có thể tự học và theo dõi sát sao từng bước tiến bộ của con!
         </p>
       </div>
+
+      {/* AI Mascot Recommendations */}
+      {!loadingDash && parentDashData?.ai_recommendation && (
+        <AIRecommendationBox
+          aiRecommendation={parentDashData.ai_recommendation}
+          onRefresh={onRefreshAI}
+          loading={loadingAI}
+          role="parent"
+        />
+      )}
 
       {loadingDash ? (
         <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-10 text-center text-slate-400 font-bold">

@@ -423,3 +423,12 @@ export async function createStudent(data: {
     handleAxiosError(error);
   }
 }
+
+export async function refreshAIRecommendation(): Promise<any> {
+  try {
+    const response = await apiClient.post("/dashboard/refresh-ai");
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}

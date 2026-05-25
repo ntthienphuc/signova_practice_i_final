@@ -43,7 +43,8 @@ export {
   getLearnerDashboard,
   getMyProgress,
   createChild,
-  createStudent
+  createStudent,
+  refreshAIRecommendation
 } from "./client";
 export { loadAppConfig, loadCurriculum } from "./endpoints/app";
 export { createRandomTask, analyzeAttempt } from "./endpoints/practice";

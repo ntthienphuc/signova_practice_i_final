@@ -1,12 +1,15 @@
 import { DashboardPlaceholder } from "../../components/DashboardPlaceholder";
+import { AIRecommendationBox } from "../../components/AIRecommendationBox";
 
 interface SchoolTabProps {
   currentUser: any;
   loadingDash: boolean;
   schoolDashData: any;
+  loadingAI: boolean;
+  onRefreshAI: () => Promise<void>;
 }
 
-export function SchoolTab({ currentUser, loadingDash, schoolDashData }: SchoolTabProps) {
+export function SchoolTab({ currentUser, loadingDash, schoolDashData, loadingAI, onRefreshAI }: SchoolTabProps) {
   if (currentUser?.role !== "school") {
     return (
       <DashboardPlaceholder
@@ -23,6 +26,16 @@ export function SchoolTab({ currentUser, loadingDash, schoolDashData }: SchoolTa
         <h2 className="m-0 mt-1 font-black text-slate-800 text-2xl">Quản lý lớp học & học sinh</h2>
         <p className="text-slate-500 mt-2 font-bold text-sm">Thống kê điểm số và quá trình hoàn thành bài học của toàn bộ học sinh được liên kết.</p>
       </div>
+
+      {/* AI Mascot Recommendations */}
+      {!loadingDash && schoolDashData?.ai_recommendation && (
+        <AIRecommendationBox
+          aiRecommendation={schoolDashData.ai_recommendation}
+          onRefresh={onRefreshAI}
+          loading={loadingAI}
+          role="school"
+        />
+      )}
 
       {loadingDash ? (
         <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[32px] p-6 text-center text-slate-400 font-bold">Đang tải danh sách học sinh...</div>

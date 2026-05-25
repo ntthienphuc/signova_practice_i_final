@@ -103,10 +103,20 @@ def get_parent_dashboard(current_user: User = Depends(get_current_user), db: Ses
     from app.routers.progress import get_or_create_learner_profile
     get_or_create_learner_profile(current_user, db)
     parent_self_data = get_learner_dashboard_data(db, current_user)
+    
+    # Get/Generate AI recommendation
+    from app.services.gemini import generate_recommendation
+    rec = generate_recommendation(db, current_user)
+    ai_recommendation = {
+        "recommendation": rec.recommendation_text,
+        "action_items": rec.action_items_json,
+        "updated_at": rec.updated_at
+    }
             
     return {
         "linked_learners": kids_data,
-        "self_progress": parent_self_data
+        "self_progress": parent_self_data,
+        "ai_recommendation": ai_recommendation
     }
 
 @router.get("/school")
@@ -136,7 +146,34 @@ def get_school_dashboard(class_name: Optional[str] = None, current_user: User = 
             })
             students_data.append(summary)
             
-    return {"linked_learners": students_data}
+    # Get/Generate AI recommendation
+    from app.services.gemini import generate_recommendation
+    rec = generate_recommendation(db, current_user)
+    ai_recommendation = {
+        "recommendation": rec.recommendation_text,
+        "action_items": rec.action_items_json,
+        "updated_at": rec.updated_at
+    }
+            
+    return {
+        "linked_learners": students_data,
+        "ai_recommendation": ai_recommendation
+    }
+
+@router.post("/refresh-ai")
+def refresh_ai_recommendation(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if current_user.role not in ["parent", "school"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only parent and school accounts can refresh recommendations"
+        )
+    from app.services.gemini import generate_recommendation
+    rec = generate_recommendation(db, current_user, force_refresh=True)
+    return {
+        "recommendation": rec.recommendation_text,
+        "action_items": rec.action_items_json,
+        "updated_at": rec.updated_at
+    }
 
 @router.get("/learner/{learner_id}")
 def get_linked_learner_detail(learner_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):

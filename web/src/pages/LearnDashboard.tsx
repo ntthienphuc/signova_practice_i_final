@@ -4,7 +4,7 @@ import {
   getVocabularyDetail, getParentDashboard, getSchoolDashboard,
   getPendingLinks, approveParentLink, rejectParentLink,
   approveSchoolLink, rejectSchoolLink, getLearnerDashboard,
-  getMyProgress
+  getMyProgress, refreshAIRecommendation
 } from "../api";
 import { Sidebar } from "../components/learn-dashboard/Sidebar";
 import { AuthModal } from "../components/AuthModal";
@@ -55,6 +55,27 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
   const [parentDashData, setParentDashData] = useState<any>(null);
   const [schoolDashData, setSchoolDashData] = useState<any>(null);
   const [loadingDash, setLoadingDash] = useState(false);
+  const [loadingAI, setLoadingAI] = useState(false);
+
+  const handleRefreshAI = async () => {
+    setLoadingAI(true);
+    try {
+      const data = await refreshAIRecommendation();
+      if (auth.currentUser?.role === "parent") {
+        setParentDashData((prev: any) => ({
+          ...prev,
+          ai_recommendation: data
+        }));
+      } else if (auth.currentUser?.role === "school") {
+        setSchoolDashData((prev: any) => ({
+          ...prev,
+          ai_recommendation: data
+        }));
+      }
+    } finally {
+      setLoadingAI(false);
+    }
+  };
 
   const [pendingLinks, setPendingLinks] = useState<any>({ parent_links: [], school_links: [] });
   const [learnerDashData, setLearnerDashData] = useState<any>(null);
@@ -291,9 +312,19 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
             loadingDash={loadingDash}
             parentDashData={parentDashData}
             topics={topics}
+            loadingAI={loadingAI}
+            onRefreshAI={handleRefreshAI}
           />
         )}
-        {activeTab === "school" && <SchoolTab currentUser={auth.currentUser} loadingDash={loadingDash} schoolDashData={schoolDashData} />}
+        {activeTab === "school" && (
+          <SchoolTab
+            currentUser={auth.currentUser}
+            loadingDash={loadingDash}
+            schoolDashData={schoolDashData}
+            loadingAI={loadingAI}
+            onRefreshAI={handleRefreshAI}
+          />
+        )}
       </main>
 
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onSuccess={(newToken) => setToken(newToken)} />
