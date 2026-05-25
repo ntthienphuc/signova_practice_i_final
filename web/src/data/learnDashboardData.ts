@@ -27,7 +27,7 @@ function createWord(
       gloss,
       video_id: videoId,
       score,
-      poster_url: `/poster/reference/${encodedGloss}`,
+      poster_url: `/learn-image/${encodedGloss}`,
       reference: {
         video_url: `/reference-video/${encodedGloss}`,
         playback_url: `/playback/reference/${encodedGloss}`,

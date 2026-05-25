@@ -25,7 +25,7 @@ def build_reference_study_payload(gloss: str) -> Dict[str, Any] | None:
         "gloss": gloss,
         "video_id": asset.get("video_id"),
         "score": asset.get("score"),
-        "poster_url": f"/poster/reference/{quote(gloss, safe='')}",
+        "poster_url": f"/learn-image/{quote(gloss, safe='')}",
         "reference": {
             "video_url": f"/reference-video/{quote(gloss, safe='')}",
             "playback_url": f"/playback/reference/{quote(gloss, safe='')}",
