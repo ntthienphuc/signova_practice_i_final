@@ -113,7 +113,7 @@ export function StudyStage({
       </div>
 
       {/* Main content */}
-      <div className="max-w-[900px] mx-auto px-4 pt-6 pb-[180px] sm:pb-[100px]">
+      <div className="max-w-[900px] mx-auto px-4 pt-6 pb-[120px] sm:pb-[100px]">
         {/* Word title — giant, Duolingo-style */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 bg-[#1cb0f6]/10 px-4 py-1.5 rounded-full mb-3">
@@ -199,7 +199,7 @@ export function StudyStage({
       </div>
 
       {/* Sticky bottom action bar — clears mobile bottom nav */}
-      <div className="fixed bottom-[72px] sm:bottom-0 left-0 right-0 z-40 bg-white border-t-2 border-slate-200">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-2 border-slate-200">
         <div className="max-w-[900px] mx-auto px-4 py-3 sm:py-4 flex items-center gap-2 sm:gap-3">
           <button
             type="button"
