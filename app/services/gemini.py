@@ -82,9 +82,9 @@ def _get_progress_summary_data(db: Session, user: User) -> dict:
             word_gloss = word.gloss
             
             # Struggling if failed attempts exceed correct attempts or score is low despite practicing
-            if wp.failed_attempt_count > wp.correct_attempt_count or (wp.best_practice1_score is not None and wp.best_practice1_score < 60):
+            if wp.failed_attempt_count > wp.correct_attempt_count or (wp.best_practice1_score is not None and wp.best_practice1_score < 90):
                 struggling_words.append(word_gloss)
-            elif wp.correct_attempt_count > 0 or (wp.best_practice1_score is not None and wp.best_practice1_score >= 60):
+            elif wp.correct_attempt_count > 0 or (wp.best_practice1_score is not None and wp.best_practice1_score >= 90):
                 completed_words.append(word_gloss)
 
         summary["learners"].append({

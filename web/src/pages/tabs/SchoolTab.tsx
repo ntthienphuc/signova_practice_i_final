@@ -25,9 +25,9 @@ function average(values: number[]): number {
 }
 
 function formatDateLabel(value?: string | null): string {
-  if (!value) return "Chưa có hoạt động";
+  if (!value) return "Chưa học";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Chưa có hoạt động";
+  if (Number.isNaN(date.getTime())) return "Chưa học";
   return date.toLocaleString("vi-VN", {
     day: "2-digit",
     month: "2-digit",
@@ -92,7 +92,7 @@ function getStudentStatus(student: any, totalTopicCount: number) {
     return {
       tone: "slate",
       label: "Cần theo dõi",
-      reason: "Ít hoạt động trong thời gian gần đây",
+      reason: "Ít hoạt động",
     };
   }
 
@@ -100,7 +100,7 @@ function getStudentStatus(student: any, totalTopicCount: number) {
     return {
       tone: "amber",
       label: "Cần hỗ trợ",
-      reason: "Kết quả luyện tập còn thấp",
+      reason: "Điểm còn thấp",
     };
   }
 
@@ -322,32 +322,32 @@ export function SchoolTab({
     return (
       <DashboardPlaceholder
         title="Dashboard giáo viên"
-        description="Khu vực này dành cho tài khoản giáo viên hoặc nhà trường. Vui lòng đăng nhập đúng loại tài khoản để xem dữ liệu lớp học."
+        description="Đăng nhập bằng tài khoản giáo viên để xem lớp học."
       />
     );
   }
 
   const statCards = [
     {
-      label: "Học sinh đang hiển thị",
+      label: "Học sinh",
       value: aggregateStats.totalStudents,
-      hint: `${aggregateStats.activeStudents} bạn có hoạt động trong 7 ngày gần đây`,
+      hint: `${aggregateStats.activeStudents} hoạt động gần đây`,
       accent: "from-sky-500 to-cyan-400",
       soft: "bg-sky-50 text-sky-700",
       icon: "👩‍🎓",
     },
     {
-      label: "Điểm luyện tập TB",
+      label: "Điểm TB",
       value: `${Math.round(aggregateStats.averageScore)}đ`,
-      hint: `${aggregateStats.totalAttempts} lượt luyện tập gần nhất`,
+      hint: `${aggregateStats.totalAttempts} lượt gần nhất`,
       accent: "from-emerald-500 to-lime-400",
       soft: "bg-emerald-50 text-emerald-700",
       icon: "📈",
     },
     {
-      label: "Tỷ lệ hoàn thành chủ đề",
+      label: "Hoàn thành",
       value: `${Math.round(aggregateStats.topicCompletionRate)}%`,
-      hint: `${aggregateStats.supportStudents} bạn đang cần được hỗ trợ thêm`,
+      hint: `${aggregateStats.supportStudents} cần hỗ trợ`,
       accent: "from-violet-500 to-indigo-400",
       soft: "bg-violet-50 text-violet-700",
       icon: "🧭",
@@ -355,7 +355,7 @@ export function SchoolTab({
     {
       label: "XP trung bình",
       value: `${Math.round(aggregateStats.averageXp)}`,
-      hint: `${aggregateStats.totalBadges} huy hiệu đã được mở khóa`,
+      hint: `${aggregateStats.totalBadges} huy hiệu`,
       accent: "from-amber-400 to-orange-400",
       soft: "bg-amber-50 text-amber-700",
       icon: "⭐",
@@ -370,16 +370,15 @@ export function SchoolTab({
         <div className="relative space-y-5">
           <div className="space-y-2">
             <p className="m-0 text-xs uppercase tracking-[0.22em] text-sky-100 font-black">
-              Trung tâm theo dõi lớp học
+              Lớp học
             </p>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div className="space-y-2">
                 <h2 className="m-0 text-3xl font-black leading-tight">
-                  Theo dõi tiến độ cả lớp và đi sâu vào từng học sinh
+                  Dashboard giáo viên
                 </h2>
                 <p className="m-0 max-w-3xl text-sm font-bold leading-relaxed text-sky-50/95">
-                  Xem nhanh tình hình chung của lớp, nhận ra những học sinh cần quan tâm,
-                  rồi mở chi tiết để theo dõi tiến độ học tập của từng em ngay tại một nơi.
+                  Xem tình hình lớp, điểm số và tiến độ của từng học sinh.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -411,7 +410,7 @@ export function SchoolTab({
                     : "bg-white/10 text-white hover:bg-white/20"
                 }`}
               >
-                Toàn cảnh lớp học
+                Tổng quan
               </button>
               <button
                 type="button"
@@ -422,7 +421,7 @@ export function SchoolTab({
                     : "bg-white/10 text-white hover:bg-white/20"
                 }`}
               >
-                Theo dõi từng học sinh
+                Học sinh
               </button>
             </div>
 
@@ -442,7 +441,7 @@ export function SchoolTab({
               <input
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Tìm theo tên, tên đăng nhập hoặc mã học sinh..."
+                placeholder="Tìm học sinh..."
                 className="rounded-2xl border border-white/15 bg-white/95 px-4 py-2 text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:outline-none"
               />
             </div>
@@ -465,7 +464,7 @@ export function SchoolTab({
         </div>
       ) : !learners.length ? (
         <div className="rounded-[32px] border-2 border-b-4 border-slate-200 bg-white p-8 text-center font-bold text-slate-500">
-          Hiện chưa có học sinh nào được liên kết với tài khoản này.
+          Chưa có học sinh được liên kết.
         </div>
       ) : activeView === "overview" ? (
         <div className="space-y-6">
@@ -474,10 +473,10 @@ export function SchoolTab({
               <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <p className="m-0 text-xs uppercase tracking-[0.18em] text-slate-400 font-black">
-                    Nhóm nổi bật
+                    Nổi bật
                   </p>
                   <h3 className="m-0 mt-1 text-2xl font-black text-slate-800">
-                    Những học sinh có kết quả tốt nhất hiện tại
+                    Học sinh có kết quả tốt
                   </h3>
                 </div>
                 <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-black text-sky-700">
@@ -508,7 +507,7 @@ export function SchoolTab({
                               {student.display_name || student.username}
                             </div>
                             <div className="text-xs font-bold text-slate-500">
-                              @{student.username} • {student.class_name || "Chưa phân lớp"}
+                              @{student.username} • {student.class_name || "Chưa có lớp"}
                             </div>
                           </div>
                         </div>
@@ -537,7 +536,7 @@ export function SchoolTab({
                         </div>
                         <div className="rounded-2xl bg-white px-3 py-2">
                           <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                            Topic xong
+                            Chủ đề
                           </div>
                           <div className="mt-1 text-lg font-black text-slate-800">
                             {getCompletedTopics(student)}/{topicCount}
@@ -563,10 +562,10 @@ export function SchoolTab({
                 <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <p className="m-0 text-xs uppercase tracking-[0.18em] text-slate-400 font-black">
-                    Nhóm cần lưu ý
+                    Cần lưu ý
                   </p>
                   <h3 className="m-0 mt-1 text-2xl font-black text-slate-800">
-                    Những học sinh nên được hỗ trợ thêm
+                    Học sinh cần hỗ trợ thêm
                   </h3>
                 </div>
                   <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700">
@@ -595,7 +594,7 @@ export function SchoolTab({
                                 {student.display_name || student.username}
                               </div>
                               <div className="text-xs font-bold text-slate-500">
-                                {student.class_name || "Chưa phân lớp"} • {status.reason}
+                                {student.class_name || "Chưa có lớp"} • {status.reason}
                               </div>
                             </div>
                             <span
@@ -623,10 +622,10 @@ export function SchoolTab({
                             </div>
                             <div className="rounded-2xl bg-white px-3 py-2">
                           <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                                Từ nên ôn lại
+                                Cần ôn
                           </div>
                           <div className="mt-1 text-sm font-black text-slate-700">
-                                {supportWords.length ? supportWords.join(", ") : "Chưa đủ dữ liệu để gợi ý"}
+                                {supportWords.length ? supportWords.join(", ") : "Chưa đủ dữ liệu"}
                           </div>
                         </div>
                       </div>
@@ -635,7 +634,7 @@ export function SchoolTab({
                     })
                   ) : (
                   <div className="rounded-[24px] border-2 border-slate-100 bg-slate-50 p-5 text-sm font-bold text-slate-500">
-                      Không có học sinh nào thuộc nhóm cần lưu ý theo bộ lọc hiện tại.
+                      Không có học sinh cần lưu ý theo bộ lọc này.
                   </div>
                 )}
               </div>
@@ -643,10 +642,10 @@ export function SchoolTab({
 
               <div className="rounded-[32px] border-2 border-b-4 border-slate-200 bg-white p-6">
               <p className="m-0 text-xs uppercase tracking-[0.18em] text-slate-400 font-black">
-                  Điểm cần ôn chung
+                  Cần ôn chung
               </p>
               <h3 className="m-0 mt-1 text-2xl font-black text-slate-800">
-                  Những từ nhiều học sinh còn gặp khó khăn
+                  Từ nhiều học sinh còn khó
               </h3>
                 <div className="mt-5 flex flex-wrap gap-2">
                   {hotspotWords.length ? (
@@ -663,7 +662,7 @@ export function SchoolTab({
                     ))
                   ) : (
                     <span className="text-sm font-bold text-slate-500">
-                      Chưa đủ dữ liệu để xác định các từ cần ôn chung.
+                      Chưa đủ dữ liệu.
                     </span>
                   )}
                 </div>
@@ -676,10 +675,10 @@ export function SchoolTab({
               <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <p className="m-0 text-xs uppercase tracking-[0.18em] text-slate-400 font-black">
-                    Danh sách học sinh
+                    Học sinh
                   </p>
                   <h3 className="m-0 mt-1 text-2xl font-black text-slate-800">
-                    Bảng theo dõi nhanh toàn bộ lớp
+                    Theo dõi nhanh
                   </h3>
                 </div>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
@@ -720,7 +719,7 @@ export function SchoolTab({
                             </div>
                           </td>
                           <td className="px-3 py-4 text-sm font-bold text-slate-600">
-                            <div>{student.class_name || "Chưa phân lớp"}</div>
+                            <div>{student.class_name || "Chưa có lớp"}</div>
                             <div className="font-mono text-xs text-slate-500">
                               {student.student_code || "--"}
                             </div>
@@ -756,7 +755,7 @@ export function SchoolTab({
                     Phân bố theo lớp
                   </p>
                   <h3 className="m-0 mt-1 text-2xl font-black text-slate-800">
-                    So sánh nhanh giữa các lớp
+                    Theo từng lớp
                   </h3>
                 </div>
                 <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-black text-violet-700">
@@ -779,7 +778,7 @@ export function SchoolTab({
                       <div className="mt-3 grid gap-3 sm:grid-cols-2">
                         <div className="rounded-2xl bg-white px-3 py-2">
                           <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                            Điểm luyện tập TB
+                            Điểm TB
                           </div>
                           <div className="mt-1 text-lg font-black text-slate-800">
                             {Math.round(item.averageScore)}đ
@@ -798,7 +797,7 @@ export function SchoolTab({
                   ))
                 ) : (
                   <div className="rounded-[24px] border-2 border-slate-100 bg-slate-50 p-5 text-sm font-bold text-slate-500">
-                    Chưa có đủ dữ liệu để hiển thị theo từng lớp.
+                    Chưa có dữ liệu theo lớp.
                   </div>
                 )}
               </div>
@@ -809,10 +808,10 @@ export function SchoolTab({
             <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
               <div>
                 <p className="m-0 text-xs uppercase tracking-[0.18em] text-slate-400 font-black">
-                  Hoạt động gần đây
+                  Gần đây
                 </p>
                 <h3 className="m-0 mt-1 text-2xl font-black text-slate-800">
-                  Những lượt luyện tập mới nhất của lớp
+                  Lượt luyện tập mới nhất
                 </h3>
               </div>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
@@ -867,7 +866,7 @@ export function SchoolTab({
                 Danh sách học sinh
               </p>
               <h3 className="m-0 mt-1 text-2xl font-black text-slate-800">
-                Chọn học sinh để xem chi tiết
+                Chọn học sinh
               </h3>
             </div>
             <div className="mt-4 grid gap-3">
@@ -908,7 +907,7 @@ export function SchoolTab({
                             Lớp
                           </div>
                           <div className="mt-1 text-sm font-black text-slate-800">
-                            {student.class_name || "Chưa phân lớp"}
+                            {student.class_name || "Chưa có lớp"}
                           </div>
                         </div>
                         <div className="rounded-2xl bg-white px-3 py-2">
@@ -941,7 +940,7 @@ export function SchoolTab({
                 })
               ) : (
                 <div className="rounded-[24px] border-2 border-slate-100 bg-slate-50 p-5 text-sm font-bold text-slate-500">
-                  Không tìm thấy học sinh phù hợp với bộ lọc hiện tại.
+                  Không tìm thấy học sinh phù hợp.
                 </div>
               )}
             </div>
@@ -950,7 +949,7 @@ export function SchoolTab({
           <div className="space-y-6">
             {loadingStudentProgress ? (
               <div className="rounded-[32px] border-2 border-b-4 border-slate-200 bg-white p-8 text-center font-bold text-slate-400">
-                Đang tải chi tiết tiến độ học sinh...
+                Đang tải tiến độ...
               </div>
             ) : selectedStudentData ? (
               <>
@@ -958,13 +957,13 @@ export function SchoolTab({
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="space-y-2">
                       <p className="m-0 text-xs uppercase tracking-[0.18em] text-slate-400 font-black">
-                        Hồ sơ học sinh
+                        Học sinh
                       </p>
                       <h3 className="m-0 text-3xl font-black text-slate-800">
                         {selectedStudentData.display_name || selectedStudentData.username}
                       </h3>
                       <p className="m-0 text-sm font-bold text-slate-500">
-                        @{selectedStudentData.username} • {selectedStudentSummary?.class_name || "Chưa phân lớp"} •{" "}
+                        @{selectedStudentData.username} • {selectedStudentSummary?.class_name || "Chưa có lớp"} •{" "}
                         {selectedStudentSummary?.student_code || "Chưa có mã học sinh"}
                       </p>
                     </div>
@@ -996,7 +995,7 @@ export function SchoolTab({
                     </div>
                     <div className="rounded-[24px] bg-slate-50 p-4">
                       <div className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
-                        Điểm luyện tập TB
+                        Điểm TB
                       </div>
                       <div className="mt-2 text-3xl font-black text-slate-800">
                         {Math.round(selectedAttemptStats?.averageScore || 0)}đ
@@ -1004,7 +1003,7 @@ export function SchoolTab({
                     </div>
                     <div className="rounded-[24px] bg-slate-50 p-4">
                       <div className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
-                        Topic hoàn thành
+                        Chủ đề đã xong
                       </div>
                       <div className="mt-2 text-3xl font-black text-slate-800">
                         {getCompletedTopics(selectedStudentData)}/{topicCount}
@@ -1020,25 +1019,25 @@ export function SchoolTab({
                         Góc nhìn giáo viên
                       </p>
                       <h4 className="m-0 mt-1 text-2xl font-black text-slate-800">
-                        Gợi ý theo dõi nhanh
+                        Theo dõi nhanh
                       </h4>
                     </div>
                     <div className="mt-5 grid gap-4">
                       <div className="rounded-[24px] bg-slate-50 p-4">
                         <div className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
-                          Hoạt động gần nhất
+                          Lần học gần nhất
                         </div>
                         <div className="mt-2 text-base font-black text-slate-800">
                           {formatDateLabel(selectedAttemptStats?.lastAttemptAt ?? undefined)}
                         </div>
                         <div className="mt-1 text-sm font-bold text-slate-500">
-                          Tỷ lệ hoàn thành đạt: {Math.round(selectedAttemptStats?.acceptedRate || 0)}%
+                          Tỷ lệ đạt: {Math.round(selectedAttemptStats?.acceptedRate || 0)}%
                         </div>
                       </div>
 
                       <div className="rounded-[24px] bg-slate-50 p-4">
                         <div className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
-                          Những từ cần quan tâm
+                          Cần ôn
                         </div>
                         <div className="mt-3 flex flex-wrap gap-2">
                           {selectedSupportWords.length ? (
@@ -1052,7 +1051,7 @@ export function SchoolTab({
                             ))
                           ) : (
                             <span className="text-sm font-bold text-slate-500">
-                              Chưa thấy từ nào nổi bật cần hỗ trợ thêm trong các lượt gần đây.
+                              Chưa có từ nào cần chú ý.
                             </span>
                           )}
                         </div>
@@ -1063,10 +1062,10 @@ export function SchoolTab({
                           Tiến độ từ vựng
                         </div>
                         <div className="mt-2 text-base font-black text-slate-800">
-                          Đã ghi nhận {getStudiedWords(selectedStudentData)} từ đã học
+                          {getStudiedWords(selectedStudentData)} từ đã học
                         </div>
                         <div className="mt-1 text-sm font-bold text-slate-500">
-                          Đã mở khóa {selectedStudentData.badges?.length || 0} huy hiệu
+                          {selectedStudentData.badges?.length || 0} huy hiệu
                         </div>
                       </div>
                     </div>
@@ -1078,7 +1077,7 @@ export function SchoolTab({
                         Lịch sử gần đây
                       </p>
                       <h4 className="m-0 mt-1 text-2xl font-black text-slate-800">
-                        Những lượt luyện tập gần đây của học sinh này
+                        Lượt luyện tập gần đây
                       </h4>
                     </div>
                     <div className="mt-5 grid gap-3">
@@ -1115,7 +1114,7 @@ export function SchoolTab({
                         ))
                       ) : (
                         <div className="rounded-[24px] border-2 border-slate-100 bg-slate-50 p-5 text-sm font-bold text-slate-500">
-                          Chưa có lịch sử luyện tập để hiển thị.
+                          Chưa có lịch sử luyện tập.
                         </div>
                       )}
                     </div>
@@ -1126,7 +1125,7 @@ export function SchoolTab({
               </>
             ) : (
               <div className="rounded-[32px] border-2 border-b-4 border-slate-200 bg-white p-8 text-center font-bold text-slate-400">
-                Hãy chọn một học sinh để xem chi tiết tiến độ học tập.
+                Chọn một học sinh để xem tiến độ.
               </div>
             )}
           </div>

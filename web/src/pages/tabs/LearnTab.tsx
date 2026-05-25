@@ -1,7 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { TopicGrid } from "../../components/learn/TopicGrid";
 import { TopicSummary } from "../../components/TopicSummary";
+import { getAssignedPackages } from "../../api";
 import type { AnalyzeResponse } from "../../api";
 import type { DashboardPayload, PracticeSession, ProgressByTopic, Topic } from "../../types/learn";
 import { mascots } from "../../utils/mascot";
@@ -91,6 +93,28 @@ export function LearnTab({
   onBackToTopics,
   onRestartTopic,
 }: LearnTabProps) {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const [assignedPackages, setAssignedPackages] = useState<any[]>([]);
+  const [loadingAssigned, setLoadingAssigned] = useState(false);
+
+  useEffect(() => {
+    const loadAssigned = async () => {
+      setLoadingAssigned(true);
+      try {
+        const res = await getAssignedPackages();
+        setAssignedPackages(res.packages || []);
+      } catch (err) {
+        console.error("Lỗi khi tải bài tập được giao:", err);
+      } finally {
+        setLoadingAssigned(false);
+      }
+    };
+    if (currentUser?.role === "learner") {
+      loadAssigned();
+    }
+  }, [currentUser]);
+
   const currentWord = useMemo(() => {
     if (!session) return null;
     return session.topic.words[session.wordIndex] ?? null;
@@ -133,7 +157,49 @@ export function LearnTab({
   if (!session) {
     return (
       <section className="grid grid-cols-1 md:grid-cols-[1fr_250px] gap-8 max-w-4xl mx-auto items-start py-2">
-        <div className="w-full">
+        <div className="w-full flex flex-col gap-6">
+          {currentUser?.role === "learner" && assignedPackages.length > 0 && (
+            <div className="bg-gradient-to-br from-indigo-50/50 to-sky-50/30 border-2 border-indigo-150 border-b-4 rounded-[32px] p-6 shadow-sm">
+              <h3 className="m-0 text-lg font-black text-slate-800 flex items-center gap-2">
+                🎒 Bài tập được giao từ giáo viên
+              </h3>
+              <p className="m-0 mt-1 text-xs font-bold text-slate-500">
+                Hãy hoàn thành các gói từ vựng do giáo viên giao cho bé dưới đây nhé!
+              </p>
+              
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {assignedPackages.map((pkg) => (
+                  <div key={pkg.id} className="bg-white border-2 border-slate-200 border-b-4 rounded-[24px] p-5 flex flex-col justify-between hover:border-indigo-400 transition-all">
+                    <div>
+                      <span className="inline-block bg-indigo-50 text-indigo-700 font-extrabold text-[10px] rounded-lg px-2.5 py-0.5 mb-2">
+                        👤 Giao bởi: {pkg.teacher_name}
+                      </span>
+                      <h4 className="text-base font-black text-slate-800 m-0">{pkg.title}</h4>
+                      {pkg.description && (
+                        <p className="text-xs text-slate-500 font-bold mt-1 mb-0 leading-relaxed truncate">{pkg.description}</p>
+                      )}
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {pkg.glosses.slice(0, 4).map((g: string) => (
+                          <span key={g} className="text-[10px] font-black bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">{g}</span>
+                        ))}
+                        {pkg.glosses.length > 4 && (
+                          <span className="text-[10px] font-black bg-slate-200 text-slate-500 px-2 py-0.5 rounded-md">+{pkg.glosses.length - 4}</span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/learn/custom-pkg-${pkg.id}/0`)}
+                      className="mt-4 w-full py-2.5 bg-[#1cb0f6] border-b-2 border-[#1899d6] text-white font-black rounded-xl text-xs cursor-pointer hover:bg-[#24c4ff] active:border-b-0 active:translate-y-[1px] transition-all text-center"
+                    >
+                      Luyện tập ({pkg.word_count} từ) 🚀
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <TopicGrid topics={topics} progressByTopic={progressByTopic} onOpenAuth={onOpenAuth} />
         </div>
         

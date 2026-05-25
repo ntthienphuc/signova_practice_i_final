@@ -49,6 +49,8 @@ export {
   getCustomPackages,
   createCustomPackage,
   deleteCustomPackage,
+  assignCustomPackage,
+  getAssignedPackages,
 } from "./client";
 export type { BankWordItem, CustomPackage as CustomPackageData } from "./client";
 export { loadAppConfig, loadCurriculum } from "./endpoints/app";

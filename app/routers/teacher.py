@@ -49,11 +49,18 @@ class CreatePackageRequest(BaseModel):
     glosses: List[str] = Field(..., min_length=1)
 
 
+class AssignPackageRequest(BaseModel):
+    assigned_class_name: Optional[str] = Field(None, max_length=50)
+    assigned_student_ids: Optional[List[str]] = Field(default_factory=list)
+
+
 class PackageResponse(BaseModel):
     id: str
     title: str
     description: Optional[str]
     glosses: List[str]
+    assigned_class_name: Optional[str]
+    assigned_student_ids: Optional[List[str]]
     created_at: str
 
     class Config:
@@ -96,6 +103,8 @@ def list_packages(current_user: User = Depends(require_school), db: Session = De
                 "description": pkg.description,
                 "glosses": pkg.glosses or [],
                 "word_count": len(pkg.glosses or []),
+                "assigned_class_name": pkg.assigned_class_name,
+                "assigned_student_ids": pkg.assigned_student_ids or [],
                 "created_at": pkg.created_at.isoformat() if pkg.created_at else None,
             }
             for pkg in packages
@@ -140,6 +149,56 @@ def create_package(
         "description": pkg.description,
         "glosses": pkg.glosses or [],
         "word_count": len(pkg.glosses or []),
+        "assigned_class_name": pkg.assigned_class_name,
+        "assigned_student_ids": pkg.assigned_student_ids or [],
+        "created_at": pkg.created_at.isoformat() if pkg.created_at else None,
+    }
+
+
+@router.post("/packages/{package_id}/assign", summary="Assign custom package to a class or specific students")
+def assign_package(
+    package_id: str,
+    body: AssignPackageRequest,
+    current_user: User = Depends(require_school),
+    db: Session = Depends(get_db)
+):
+    try:
+        pkg_uuid = uuid.UUID(package_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid package ID")
+
+    pkg = db.query(CustomPackage).filter(
+        CustomPackage.id == pkg_uuid,
+        CustomPackage.created_by == current_user.id
+    ).first()
+
+    if not pkg:
+        raise HTTPException(status_code=404, detail="Package not found")
+
+    pkg.assigned_class_name = body.assigned_class_name or None
+    
+    # Validate and store student UUIDs
+    valid_student_ids = []
+    if body.assigned_student_ids:
+        for sid in body.assigned_student_ids:
+            try:
+                valid_student_ids.append(str(uuid.UUID(sid)))
+            except ValueError:
+                raise HTTPException(status_code=400, detail=f"Invalid student ID format: {sid}")
+                
+    pkg.assigned_student_ids = valid_student_ids
+    
+    db.commit()
+    db.refresh(pkg)
+    
+    return {
+        "id": str(pkg.id),
+        "title": pkg.title,
+        "description": pkg.description,
+        "glosses": pkg.glosses or [],
+        "word_count": len(pkg.glosses or []),
+        "assigned_class_name": pkg.assigned_class_name,
+        "assigned_student_ids": pkg.assigned_student_ids or [],
         "created_at": pkg.created_at.isoformat() if pkg.created_at else None,
     }
 
@@ -166,3 +225,49 @@ def delete_package(
     db.delete(pkg)
     db.commit()
     return {"message": "Package deleted successfully"}
+
+
+@router.get("/assigned-packages", summary="Get custom packages assigned to the current student")
+def get_assigned_packages(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from app.models.link import SchoolLearnerLink
+    # Find school learner links where learner is the current user
+    links = db.query(SchoolLearnerLink).filter(
+        SchoolLearnerLink.learner_user_id == current_user.id,
+        SchoolLearnerLink.status == "approved"
+    ).all()
+    
+    if not links:
+        return {"packages": []}
+        
+    # Get all packages assigned to this student or their class(es)
+    school_ids = [link.school_user_id for link in links]
+    class_names = [link.class_name for link in links if link.class_name]
+    
+    from sqlalchemy import or_
+    packages = db.query(CustomPackage).filter(
+        CustomPackage.created_by.in_(school_ids)
+    ).all()
+    
+    assigned = []
+    for pkg in packages:
+        is_assigned = False
+        if pkg.assigned_class_name and pkg.assigned_class_name in class_names:
+            is_assigned = True
+        elif pkg.assigned_student_ids and str(current_user.id) in pkg.assigned_student_ids:
+            is_assigned = True
+            
+        if is_assigned:
+            teacher_user = db.query(User).filter(User.id == pkg.created_by).first()
+            teacher_name = teacher_user.username if teacher_user else "Giáo viên"
+            
+            assigned.append({
+                "id": str(pkg.id),
+                "title": pkg.title,
+                "description": pkg.description,
+                "glosses": pkg.glosses or [],
+                "word_count": len(pkg.glosses or []),
+                "teacher_name": teacher_name,
+                "created_at": pkg.created_at.isoformat() if pkg.created_at else None,
+            })
+            
+    return {"packages": assigned}

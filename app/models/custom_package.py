@@ -13,5 +13,7 @@ class CustomPackage(Base):
     description = Column(Text, nullable=True)
     glosses = Column(JSON, nullable=False, default=list)  # ["HELLO", "THANK_YOU", ...]
     created_by = Column(Uuid, nullable=False, index=True)  # school user_id
+    assigned_class_name = Column(String(50), nullable=True)
+    assigned_student_ids = Column(JSON, nullable=True, default=list)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

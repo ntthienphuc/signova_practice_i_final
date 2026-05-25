@@ -446,6 +446,8 @@ export interface CustomPackage {
   description: string | null;
   glosses: string[];
   word_count: number;
+  assigned_class_name?: string | null;
+  assigned_student_ids?: string[];
   created_at: string;
 }
 
@@ -483,6 +485,27 @@ export async function createCustomPackage(data: {
 export async function deleteCustomPackage(packageId: string): Promise<void> {
   try {
     await apiClient.delete(`/teacher/packages/${packageId}`);
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function assignCustomPackage(
+  packageId: string,
+  data: { assigned_class_name: string | null; assigned_student_ids: string[] }
+): Promise<CustomPackage> {
+  try {
+    const response = await apiClient.post(`/teacher/packages/${packageId}/assign`, data);
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+}
+
+export async function getAssignedPackages(): Promise<{ packages: CustomPackage[] }> {
+  try {
+    const response = await apiClient.get("/teacher/assigned-packages");
+    return response.data;
   } catch (error) {
     handleAxiosError(error);
   }

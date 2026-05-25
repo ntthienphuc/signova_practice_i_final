@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { loadCurriculum, getMyProgress } from "../api";
+import { loadCurriculum, getMyProgress, getAssignedPackages, getVocabularyDetail } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 import { PracticeWorkspace } from "../components/PracticeWorkspace";
 import { StudyStage } from "../components/StudyStage";
@@ -20,26 +20,84 @@ export default function LearnWordPage() {
   const [completedWordsForTopic, setCompletedWordsForTopic] = useState(0);
 
   useEffect(() => {
-    setLoading(true);
-    setError("");
-    loadCurriculum()
-      .then(setCurriculum)
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : "Lỗi tải dữ liệu"))
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    if (!topicId || !currentUser) return;
     let active = true;
-    getMyProgress()
-      .then((data: any) => {
-        if (!active || !data?.topic_progress) return;
-        const tp = data.topic_progress.find((t: any) => t.topic_id === topicId);
-        if (tp) setCompletedWordsForTopic(tp.completed_words);
-      })
-      .catch(() => {});
-    return () => { active = false; };
-  }, [topicId]);
+    const loadData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        if (topicId && topicId.startsWith("custom-pkg-")) {
+          // It's a custom package!
+          const packageId = topicId.replace("custom-pkg-", "");
+          const [assignedData, progressData] = await Promise.all([
+            getAssignedPackages(),
+            getMyProgress()
+          ]);
+          
+          if (!active) return;
+          
+          const pkg = assignedData.packages.find((p) => p.id === packageId);
+          if (!pkg) {
+            setError("Không tìm thấy bài tập được giao này.");
+            return;
+          }
+          
+          // Fetch detail for each gloss concurrently
+          const wordsWithStudy = await Promise.all(
+            pkg.glosses.map(async (gloss, index) => {
+              const detail = await getVocabularyDetail(gloss);
+              return {
+                order: index,
+                gloss,
+                checkpoint_group: 1,
+                study: detail,
+              };
+            })
+          );
+          
+          if (!active) return;
+          
+          const customTopic = {
+            id: topicId,
+            title: pkg.title,
+            subtitle: pkg.description || "Gói bài tập giáo viên giao",
+            word_count: pkg.word_count,
+            checkpoint_sizes: [pkg.word_count],
+            glosses: pkg.glosses,
+            words: wordsWithStudy,
+          };
+          
+          setCurriculum({ topics: [customTopic as any] });
+          
+          const tp = progressData.topic_progress?.find((t: any) => t.topic_id === topicId);
+          if (tp) setCompletedWordsForTopic(tp.completed_words);
+          
+        } else {
+          // Standard curriculum
+          const curriculumData = await loadCurriculum();
+          if (!active) return;
+          setCurriculum(curriculumData);
+
+          if (topicId && currentUser) {
+            const progressData = await getMyProgress();
+            if (!active) return;
+            const tp = progressData.topic_progress?.find((t: any) => t.topic_id === topicId);
+            if (tp) setCompletedWordsForTopic(tp.completed_words);
+          }
+        }
+      } catch (e: any) {
+        if (!active) return;
+        setError(e?.message || "Lỗi tải dữ liệu.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    
+    loadData();
+    
+    return () => {
+      active = false;
+    };
+  }, [topicId, currentUser]);
 
   useEffect(() => {
     if (!curriculum) return;

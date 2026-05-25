@@ -369,22 +369,22 @@ export function PracticeWorkspace({
     if (isLowTracking) {
       return "Camera không nhìn rõ tay. Hãy chỉnh lại góc máy và thử lại nha! 📸";
     }
-    if (score >= 85) {
+    if (score >= 95) {
       return `Xuất sắc! Đạt ${score} điểm! Bạn làm rất giỏi! 🎉`;
     }
-    if (score >= 70) {
-      return `Làm tốt lắm! Được ${score} điểm rồi nè! 🌟`;
+    if (score >= 90) {
+      return `Tuyệt vời! Đạt ${score} điểm rồi nè! 🌟`;
     }
-    if (score >= 50) {
+    if (score >= 80) {
       return `Cố lên! Bạn đạt ${score} điểm. Tập trung hơn một tí nhé! 💪`;
     }
     return `Đạt ${score} điểm. Hãy làm theo mẫu thêm một lần nữa nhé! 💖`;
   }, [analysis, score, isWrongWord, isLowTracking, predictedWrongGloss]);
 
-  const isGoodScore = score >= 70;
+  const isGoodScore = score >= 90;
   const feedbackBg = isGoodScore ? "bg-[#f0fdf4] border-emerald-250 text-emerald-700" : "bg-[#fffbeb] border-amber-200 text-amber-700";
   const feedbackTextColor = isGoodScore ? "text-emerald-600" : "text-amber-600";
-  const feedbackTitle = score >= 85 ? "🎉 TUYỆT VỜI!" : score >= 70 ? "🌟 RẤT TỐT!" : score >= 50 ? "💪 CỐ LÊN NÀO!" : "❤️ HÃY THỬ LẠI NHÉ!";
+  const feedbackTitle = score >= 95 ? "🎉 TUYỆT VỜI!" : score >= 90 ? "🌟 XUẤT SẮC!" : score >= 80 ? "💪 CỐ LÊN NÀO!" : "❤️ HÃY THỬ LẠI NHÉ!";
   const nextButtonBg = isGoodScore
     ? "bg-[#58cc02] border-b-2 border-[#58a700] hover:bg-[#61e002] text-white active:border-b-0 active:translate-y-[2px]"
     : "bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white active:border-b-0 active:translate-y-[2px]";
@@ -665,7 +665,7 @@ export function PracticeWorkspace({
                   <div className={`border-2 border-b-2 rounded-[24px] p-5 flex flex-col items-center text-center gap-3 ${feedbackBg}`}>
                     {/* Stars */}
                     <div className="text-2xl tracking-widest select-none">
-                      {score >= 85 ? "⭐ ⭐ ⭐ ⭐ ⭐" : score >= 70 ? "⭐ ⭐ ⭐ ⭐" : score >= 50 ? "⭐ ⭐ ⭐" : "⭐ ⭐"}
+                      {score >= 95 ? "⭐ ⭐ ⭐ ⭐ ⭐" : score >= 90 ? "⭐ ⭐ ⭐ ⭐" : score >= 80 ? "⭐ ⭐ ⭐" : "⭐ ⭐"}
                     </div>
 
                     {/* Mascot feedback illustration */}

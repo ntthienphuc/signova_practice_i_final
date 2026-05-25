@@ -5,6 +5,8 @@ import {
   getCustomPackages,
   createCustomPackage,
   deleteCustomPackage,
+  assignCustomPackage,
+  getSchoolDashboard,
 } from "../../api";
 import type { BankWordItem, CustomPackageData } from "../../api";
 
@@ -24,7 +26,15 @@ function formatDate(iso: string): string {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function PackageCard({ pkg, onDelete }: { pkg: CustomPackageData; onDelete: (id: string) => void }) {
+function PackageCard({
+  pkg,
+  onDelete,
+  onAssign,
+}: {
+  pkg: CustomPackageData;
+  onDelete: (id: string) => void;
+  onAssign: (pkg: CustomPackageData) => void;
+}) {
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -52,6 +62,21 @@ function PackageCard({ pkg, onDelete }: { pkg: CustomPackageData; onDelete: (id:
           {pkg.description && (
             <p className="custom-pkg-card-desc">{pkg.description}</p>
           )}
+          <div className="custom-pkg-card-assignment">
+            {pkg.assigned_class_name ? (
+              <span className="custom-pkg-assignment-badge class">
+                🏫 Lớp: <strong>{pkg.assigned_class_name}</strong>
+              </span>
+            ) : pkg.assigned_student_ids && pkg.assigned_student_ids.length > 0 ? (
+              <span className="custom-pkg-assignment-badge students">
+                👤 Học sinh: <strong>{pkg.assigned_student_ids.length}</strong> bạn
+              </span>
+            ) : (
+              <span className="custom-pkg-assignment-badge none">
+                ⚪ Chưa giao bài
+              </span>
+            )}
+          </div>
         </div>
         <div className="custom-pkg-card-date">
           {formatDate(pkg.created_at)}
@@ -70,6 +95,13 @@ function PackageCard({ pkg, onDelete }: { pkg: CustomPackageData; onDelete: (id:
       </div>
 
       <div className="custom-pkg-card-actions">
+        <button
+          type="button"
+          className="custom-pkg-btn-assign"
+          onClick={() => onAssign(pkg)}
+        >
+          📅 Giao bài
+        </button>
         {confirming ? (
           <>
             <span className="custom-pkg-confirm-text">Xóa gói này?</span>
@@ -286,18 +318,155 @@ function CreatePackageForm({
   );
 }
 
+// ─── Assign Modal ────────────────────────────────────────────────────────────
+
+interface AssignModalProps {
+  pkg: CustomPackageData;
+  students: any[];
+  onClose: () => void;
+  onAssigned: (updatedPkg: CustomPackageData) => void;
+}
+
+function AssignModal({ pkg, students, onClose, onAssigned }: AssignModalProps) {
+  const [mode, setMode] = useState<"class" | "students">(pkg.assigned_class_name ? "class" : "students");
+  const [selectedClass, setSelectedClass] = useState<string>(pkg.assigned_class_name || "");
+  const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(
+    new Set(pkg.assigned_student_ids || [])
+  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const classes = useMemo(() => {
+    const list = students.map((s) => s.class_name).filter(Boolean);
+    return Array.from(new Set(list)).sort();
+  }, [students]);
+
+  const toggleStudent = (id: string) => {
+    setSelectedStudentIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleConfirm = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const className = mode === "class" ? (selectedClass || null) : null;
+      const studentIds = mode === "students" ? Array.from(selectedStudentIds) : [];
+      
+      const updated = await assignCustomPackage(pkg.id, {
+        assigned_class_name: className,
+        assigned_student_ids: studentIds,
+      });
+      onAssigned(updated);
+    } catch (err: any) {
+      setError(err?.message || "Giao bài thất bại. Vui lòng thử lại.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="custom-pkg-modal-overlay">
+      <div className="custom-pkg-modal">
+        <div className="custom-pkg-modal-header">
+          <h3>📅 Giao bài tập: {pkg.title}</h3>
+          <button type="button" className="custom-pkg-modal-close" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="custom-pkg-modal-body">
+          <div className="custom-pkg-modal-tabs">
+            <button
+              type="button"
+              className={`custom-pkg-modal-tab ${mode === "class" ? "active" : ""}`}
+              onClick={() => setMode("class")}
+            >
+              🏫 Giao theo lớp
+            </button>
+            <button
+              type="button"
+              className={`custom-pkg-modal-tab ${mode === "students" ? "active" : ""}`}
+              onClick={() => setMode("students")}
+            >
+              👤 Giao theo học sinh
+            </button>
+          </div>
+
+          {mode === "class" ? (
+            <div className="custom-pkg-modal-field">
+              <label>Chọn lớp học nhận bài tập:</label>
+              <select
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="custom-pkg-modal-select"
+              >
+                <option value="">-- Không giao / Hủy giao bài --</option>
+                {classes.map((cls) => (
+                  <option key={cls} value={cls}>Lớp {cls}</option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div className="custom-pkg-modal-field">
+              <label>Chọn các học sinh nhận bài tập:</label>
+              {students.length === 0 ? (
+                <p className="custom-pkg-modal-hint">Không có học sinh nào được liên kết.</p>
+              ) : (
+                <div className="custom-pkg-modal-students-list">
+                  {students.map((student) => {
+                    const isChecked = selectedStudentIds.has(student.learner_id);
+                    return (
+                      <label key={student.learner_id} className="custom-pkg-modal-student-item">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleStudent(student.learner_id)}
+                        />
+                        <span>
+                          <strong>{student.display_name || student.username}</strong>
+                          {student.class_name && ` (Lớp ${student.class_name})`}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {error && <div className="custom-pkg-error">⚠️ {error}</div>}
+        </div>
+
+        <div className="custom-pkg-modal-footer">
+          <button type="button" className="custom-pkg-btn-secondary" onClick={onClose} disabled={saving}>Hủy</button>
+          <button type="button" className="custom-pkg-btn-primary" onClick={handleConfirm} disabled={saving}>
+            {saving ? "Đang giao..." : "Xác nhận giao"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function CustomPackageTab() {
   const [view, setView] = useState<ViewMode>("list");
   const [packages, setPackages] = useState<CustomPackageData[]>([]);
   const [words, setWords] = useState<BankWordItem[]>([]);
+  const [students, setStudents] = useState<any[]>([]);
+  const [assigningPackage, setAssigningPackage] = useState<CustomPackageData | null>(null);
+  
   const [loading, setLoading] = useState(true);
   const [loadingWords, setLoadingWords] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     loadPackages();
+    loadStudents();
   }, []);
 
   const loadPackages = async () => {
@@ -310,6 +479,15 @@ export function CustomPackageTab() {
       setError("Không thể tải danh sách gói bài tập.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadStudents = async () => {
+    try {
+      const data = await getSchoolDashboard();
+      setStudents(data?.linked_learners ?? []);
+    } catch (err) {
+      console.error("Lỗi khi tải danh sách học sinh:", err);
     }
   };
 
@@ -336,6 +514,11 @@ export function CustomPackageTab() {
 
   const handleDeleted = (id: string) => {
     setPackages((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const handleAssigned = (updatedPkg: CustomPackageData) => {
+    setPackages((prev) => prev.map((p) => (p.id === updatedPkg.id ? updatedPkg : p)));
+    setAssigningPackage(null);
   };
 
   // ── List view ────────────────────────────────────────────────────────────
@@ -411,9 +594,24 @@ export function CustomPackageTab() {
         ) : (
           <div className="custom-pkg-grid">
             {packages.map((pkg) => (
-              <PackageCard key={pkg.id} pkg={pkg} onDelete={handleDeleted} />
+              <PackageCard
+                key={pkg.id}
+                pkg={pkg}
+                onDelete={handleDeleted}
+                onAssign={setAssigningPackage}
+              />
             ))}
           </div>
+        )}
+
+        {/* Assign Modal */}
+        {assigningPackage && (
+          <AssignModal
+            pkg={assigningPackage}
+            students={students}
+            onClose={() => setAssigningPackage(null)}
+            onAssigned={handleAssigned}
+          />
         )}
       </section>
     );

@@ -392,6 +392,92 @@ def activity_segments(
     }
 
 
+def detect_hands_down(seq: PoseSequence, threshold: float = 0.25) -> np.ndarray:
+    names = seq.names
+    xy = seq.xy.astype(np.float32)
+    conf = seq.confidence.astype(np.float32)
+    required = ["left_shoulder", "right_shoulder", "left_wrist", "right_wrist"]
+    if not all(name in names for name in required):
+        return np.zeros(len(seq.xy), dtype=bool)
+
+    li = names.index("left_shoulder")
+    ri = names.index("right_shoulder")
+    lw = names.index("left_wrist")
+    rw = names.index("right_wrist")
+    center = (xy[:, li] + xy[:, ri]) / 2.0
+    shoulder_width = np.linalg.norm(xy[:, li] - xy[:, ri], axis=1)
+    scale = np.nanmedian(shoulder_width[shoulder_width > 1e-3])
+    if not np.isfinite(scale) or scale < 1e-3:
+        scale = 1.0
+
+    left_rel_y = (xy[:, lw, 1] - center[:, 1]) / scale
+    right_rel_y = (xy[:, rw, 1] - center[:, 1]) / scale
+    
+    left_conf = conf[:, lw]
+    right_conf = conf[:, rw]
+    
+    hands_down = np.zeros(len(seq.xy), dtype=bool)
+    for t in range(len(seq.xy)):
+        has_left = left_conf[t] > 0.25 and np.isfinite(left_rel_y[t])
+        has_right = right_conf[t] > 0.25 and np.isfinite(right_rel_y[t])
+        
+        if has_left and has_right:
+            hands_down[t] = (left_rel_y[t] > threshold) and (right_rel_y[t] > threshold)
+        elif has_left:
+            hands_down[t] = left_rel_y[t] > threshold
+        elif has_right:
+            hands_down[t] = right_rel_y[t] > threshold
+            
+    return hands_down
+
+
+def find_hands_down_cutoff(
+    seq: PoseSequence,
+    start_frame: int,
+    end_frame: int,
+    fps: float | None = None,
+    frame_stride: int = 1,
+    min_frames: int = 12,
+) -> int:
+    if end_frame - start_frame <= min_frames:
+        return end_frame
+
+    hands_down = detect_hands_down(seq)
+    
+    # 1. Find the first frame where hands are UP (not down).
+    # To be robust against transient tracking glitches, we look for a small window
+    # of frames where the hands are mostly UP (i.e. mean hands_down <= 0.20).
+    window_size = min(5, max(1, (end_frame - start_frame) // 4))
+    t_up = None
+    for t in range(start_frame, end_frame - window_size + 1):
+        if np.mean(hands_down[t : t + window_size]) <= 0.20:
+            t_up = t
+            break
+
+    if t_up is None:
+        # Hands were never raised in this segment. No cut.
+        return end_frame
+
+    # 2. Search for the point after the hands-up phase where the hands go down
+    # and stay down until the end.
+    search_start = t_up + window_size
+    best_t = None
+    for t in range(search_start, end_frame):
+        if hands_down[t]:
+            remaining = hands_down[t:end_frame]
+            if len(remaining) > 0 and np.mean(remaining) >= 0.80:
+                best_t = t
+                break
+                
+    if best_t is not None:
+        effective_fps = (fps or 30.0) / frame_stride
+        cut_offset = int(round(0.5 * effective_fps))
+        new_end = best_t + cut_offset
+        return max(start_frame + min_frames, min(end_frame, new_end))
+        
+    return end_frame
+
+
 def select_best_segment(
     seq: PoseSequence,
     target_bank: ReferenceBank | None = None,
@@ -429,6 +515,24 @@ def select_best_segment(
             min_frames=max(8, min_frames),
             pad_frames=pad_frames,
         )
+        
+        # Apply hands-down cutoff 0.5s after hands go down
+        new_end = find_hands_down_cutoff(
+            seq,
+            refined.start_frame,
+            refined.end_frame,
+            fps=fps,
+            frame_stride=frame_stride,
+            min_frames=max(8, min_frames),
+        )
+        if new_end < refined.end_frame:
+            refined = Segment(
+                start_frame=refined.start_frame,
+                end_frame=new_end,
+                score=float(np.mean(activity[refined.start_frame:new_end])),
+                reason=refined.reason + "_hands_down_cut",
+            )
+
         candidate = slice_sequence(seq, refined.start_frame, refined.end_frame)
         if target_bank is None:
             arm_bonus = 0.22 if "arm_cycle" in seg.reason else 0.0
