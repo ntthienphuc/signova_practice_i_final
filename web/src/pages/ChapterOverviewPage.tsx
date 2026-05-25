@@ -108,6 +108,15 @@ export default function ChapterOverviewPage() {
 
   const accent = TOPIC_ACCENTS[topicIndex % TOPIC_ACCENTS.length];
   const resumeIndex = Math.min(completedCount, topic.words.length - 1);
+  const startReviewPractice = (startIndex: number, scope: 5 | 10) => {
+    if (isGuest) {
+      setIsAuthOpen(true);
+      return;
+    }
+    navigate(
+      `/learn-dashboard?practice_review_topic=${encodeURIComponent(topic.id)}&practice_review_start=${startIndex}&practice_review_scope=${scope}`
+    );
+  };
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#faf9f6" }}>
@@ -130,6 +139,7 @@ export default function ChapterOverviewPage() {
           accentBorder={accent.border}
           accentBg={accent.bg}
           onAuthRequired={() => setIsAuthOpen(true)}
+          onReviewPractice={startReviewPractice}
         />
       </main>
 

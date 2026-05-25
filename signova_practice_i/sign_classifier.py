@@ -308,7 +308,7 @@ class SPOTERONNXInferer:
         self,
         onnx_path: str | Path,
         id2label: Dict[str, str],
-        num_frames: int = 70,
+        num_frames: int = 100,
         top_k: int = 3,
         device: str = "auto",
         num_cpu_threads: int = 4,
@@ -465,6 +465,7 @@ class TensorToDict:
 class SingleBodyDictNormalize:
     def __call__(self, row):
         sequence_size = len(row["leftEar"])
+        valid = True
         last_start = None
         last_end = None
         for t in range(sequence_size):
@@ -475,6 +476,7 @@ class SingleBodyDictNormalize:
 
             if (left_shoulder[0] == 0 or right_shoulder[0] == 0) and (neck[0] == 0 or nose[0] == 0):
                 if last_start is None:
+                    valid = False
                     continue
                 start = last_start
                 end = last_end
@@ -498,43 +500,46 @@ class SingleBodyDictNormalize:
                     continue
                 denom_x = end[0] - start[0]
                 denom_y = start[1] - end[1]
-                if abs(denom_x) < 1e-6 or abs(denom_y) < 1e-6:
-                    continue
-                row[landmark][t][0] = np.clip((row[landmark][t][0] - start[0]) / denom_x, 0, 1)
-                row[landmark][t][1] = np.clip((row[landmark][t][1] - end[1]) / denom_y, 0, 1)
+                if denom_x == 0 or denom_y == 0:
+                    valid = False
+                    break
+                row[landmark][t][0] = (row[landmark][t][0] - start[0]) / denom_x
+                row[landmark][t][1] = (row[landmark][t][1] - end[1]) / denom_y
         return row
 
 
 class SingleHandDictNormalize:
-    def __init__(self):
-        self.left_hand_landmarks = [f"{landmark}_0" for landmark in HAND_LANDMARKS]
-        self.right_hand_landmarks = [f"{landmark}_1" for landmark in HAND_LANDMARKS]
-
-    def normalize_hand(self, row, landmarks, wrist_index):
-        for t in range(len(row["leftEar"])):
-            wrist = row[wrist_index][t]
-            if wrist[0] == 0:
-                continue
-
-            xs = [row[landmark][t][0] for landmark in landmarks if row[landmark][t][0] != 0]
-            ys = [row[landmark][t][1] for landmark in landmarks if row[landmark][t][1] != 0]
-            if not xs or not ys:
-                continue
-
-            x_min, x_max = min(xs), max(xs)
-            y_min, y_max = min(ys), max(ys)
-            size = max(x_max - x_min, y_max - y_min, 1e-3)
-
-            for landmark in landmarks:
-                if row[landmark][t][0] == 0:
-                    continue
-                row[landmark][t][0] = np.clip((row[landmark][t][0] - x_min) / size, 0, 1)
-                row[landmark][t][1] = np.clip((row[landmark][t][1] - y_min) / size, 0, 1)
-        return row
-
     def __call__(self, row):
-        row = self.normalize_hand(row, self.left_hand_landmarks, "leftWrist")
-        row = self.normalize_hand(row, self.right_hand_landmarks, "rightWrist")
+        range_size = 2 if "wrist_1" in row else 1
+        hand_map = {hand_idx: [f"{landmark}_{hand_idx}" for landmark in HAND_LANDMARKS] for hand_idx in range(range_size)}
+
+        for hand_idx in range(range_size):
+            sequence_size = len(row[f"wrist_{hand_idx}"])
+            for t in range(sequence_size):
+                xs = [row[key][t][0] for key in hand_map[hand_idx] if row[key][t][0] != 0]
+                ys = [row[key][t][1] for key in hand_map[hand_idx] if row[key][t][1] != 0]
+                if not xs or not ys:
+                    continue
+                width = max(xs) - min(xs)
+                height = max(ys) - min(ys)
+                if width > height:
+                    dx = 0.1 * width
+                    dy = dx + (width - height) / 2
+                else:
+                    dy = 0.1 * height
+                    dx = dy + (height - width) / 2
+                start = (min(xs) - dx, min(ys) - dy)
+                end = (max(xs) + dx, max(ys) + dy)
+                denom_x = end[0] - start[0]
+                denom_y = end[1] - start[1]
+                if denom_x == 0 or denom_y == 0:
+                    continue
+                for key in hand_map[hand_idx]:
+                    px, py = row[key][t]
+                    if px == 0:
+                        continue
+                    row[key][t][0] = (px - start[0]) / denom_x
+                    row[key][t][1] = (py - start[1]) / denom_y
         return row
 
 
@@ -548,12 +553,4 @@ class DictToTensor:
 
 class Shift:
     def __call__(self, data):
-        import torch
-
-        data = data.to(dtype=torch.float32)
-        shoulder_avg = (data[:, 6] + data[:, 7]) / 2.0
-        for i in range(data.shape[1]):
-            zero_mask = data[:, i] != 0
-            shifted = data[:, i] - shoulder_avg
-            data[:, i] = torch.where(zero_mask, shifted, data[:, i])
-        return data
+        return data - 0.5

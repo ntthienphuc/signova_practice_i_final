@@ -111,6 +111,7 @@ interface PracticeWorkspaceProps {
   subtitle: string;
   actionLabel: string;
   completionLabel: string;
+  practiceIIResults?: Array<{ score?: number; decision?: Decision }>;
   onBackToLearn?: () => void;
   onComplete?: (rawAttempt: any) => void;
 }
@@ -123,6 +124,7 @@ export function PracticeWorkspace({
   wordIndex,
   wordCount,
   completionLabel,
+  practiceIIResults = [],
   onBackToLearn,
   onComplete,
 }: PracticeWorkspaceProps) {
@@ -161,6 +163,45 @@ export function PracticeWorkspace({
   const referenceSegment = analysis?.referenceSegment ?? referenceFallbackSegment;
   const decision = analysis?.raw?.decision;
   const progressRatio = wordCount > 0 ? ((wordIndex + 1) / wordCount) * 100 : 0;
+  const isPracticeII = mode === "practice_ii";
+  const shouldRevealReference = !isPracticeII || !!analysis;
+  const practiceIIStatusItems = useMemo(() => {
+    const items = [...practiceIIResults];
+    if (analysis?.raw) {
+      items[wordIndex] = analysis.raw;
+    }
+    return Array.from({ length: wordCount }, (_, index) => {
+      const result = items[index];
+      if (!result) {
+        return {
+          state: index === wordIndex ? "current" : "pending",
+          label: String(index + 1),
+          detail: index === wordIndex ? "Đang làm" : "Chưa làm",
+        };
+      }
+      const resultScore = Number(result.score ?? 0);
+      const wrongWord = !!result.decision?.wrong_word_detected;
+      if (wrongWord || resultScore < 60) {
+        return {
+          state: "bad",
+          label: String(index + 1),
+          detail: wrongWord ? "Nhầm từ" : `${Math.round(resultScore)} điểm`,
+        };
+      }
+      if (resultScore < 90) {
+        return {
+          state: "warn",
+          label: String(index + 1),
+          detail: `${Math.round(resultScore)} điểm`,
+        };
+      }
+      return {
+        state: "good",
+        label: String(index + 1),
+        detail: `${Math.round(resultScore)} điểm`,
+      };
+    });
+  }, [analysis, practiceIIResults, wordCount, wordIndex]);
 
   useEffect(() => {
     setFile(null);
@@ -353,7 +394,10 @@ export function PracticeWorkspace({
   }
 
   function handleSkip(): void {
-    onComplete?.(analysis?.raw as any);
+    if (!analysis) {
+      return;
+    }
+    onComplete?.(analysis.raw);
   }
 
   const score = analysis ? Math.round(Number(analysis.raw.score ?? 0)) : 0;
@@ -381,13 +425,41 @@ export function PracticeWorkspace({
     return `Đạt ${score} điểm. Hãy làm theo mẫu thêm một lần nữa nhé! 💖`;
   }, [analysis, score, isWrongWord, isLowTracking, predictedWrongGloss]);
 
-  const isGoodScore = score >= 90;
-  const feedbackBg = isGoodScore ? "bg-[#f0fdf4] border-emerald-250 text-emerald-700" : "bg-[#fffbeb] border-amber-200 text-amber-700";
-  const feedbackTextColor = isGoodScore ? "text-emerald-600" : "text-amber-600";
-  const feedbackTitle = score >= 95 ? "🎉 TUYỆT VỜI!" : score >= 90 ? "🌟 XUẤT SẮC!" : score >= 80 ? "💪 CỐ LÊN NÀO!" : "❤️ HÃY THỬ LẠI NHÉ!";
+  const isAccepted = !!decision?.accept_as_target && !isWrongWord && !isLowTracking;
+  const isGoodScore = isAccepted && score >= 90;
+  const practiceIIResult = isPracticeII ? practiceIIFeedback(decision, targetGloss) : null;
+  const practiceIIResultClasses =
+    practiceIIResult?.tone === "warning"
+      ? "bg-rose-50 border-rose-200 text-rose-700"
+      : practiceIIResult?.tone === "info"
+        ? "bg-sky-50 border-sky-200 text-sky-700"
+        : practiceIIResult?.tone === "success"
+          ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+          : "bg-slate-50 border-slate-200 text-slate-600";
+  const feedbackBg = isWrongWord
+    ? "bg-rose-50 border-rose-200 text-rose-700"
+    : isGoodScore
+      ? "bg-[#f0fdf4] border-emerald-250 text-emerald-700"
+      : "bg-[#fffbeb] border-amber-200 text-amber-700";
+  const feedbackTextColor = isWrongWord
+    ? "text-rose-600"
+    : isGoodScore
+      ? "text-emerald-600"
+      : "text-amber-600";
+  const feedbackTitle = isWrongWord
+    ? "⚠️ CHƯA ĐÚNG TỪ"
+    : score >= 95
+      ? "🎉 TUYỆT VỜI!"
+      : score >= 90
+        ? "🌟 XUẤT SẮC!"
+        : score >= 80
+          ? "💪 CỐ LÊN NÀO!"
+          : "❤️ HÃY THỬ LẠI NHÉ!";
   const nextButtonBg = isGoodScore
     ? "bg-[#58cc02] border-b-2 border-[#58a700] hover:bg-[#61e002] text-white active:border-b-0 active:translate-y-[2px]"
-    : "bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white active:border-b-0 active:translate-y-[2px]";
+    : isWrongWord
+      ? "bg-rose-500 border-b-2 border-rose-700 hover:bg-rose-400 text-white active:border-b-0 active:translate-y-[2px]"
+      : "bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white active:border-b-0 active:translate-y-[2px]";
 
   return (
     <section className="relative min-h-screen bg-[#f0f6ff] text-[#233157] font-sans pb-[160px] sm:pb-16">
@@ -415,7 +487,8 @@ export function PracticeWorkspace({
           <button
             type="button"
             onClick={handleSkip}
-            className="py-2 px-3 sm:px-4 bg-white border-2 border-b-2 border-slate-200 text-[#1cb0f6] font-black rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1 active:translate-y-[1px] active:border-b-0"
+            disabled={!analysis}
+            className="py-2 px-3 sm:px-4 bg-white border-2 border-b-2 border-slate-200 text-[#1cb0f6] font-black rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1 active:translate-y-[1px] active:border-b-0 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             ⏭️ <span className="hidden sm:inline">Bỏ qua</span>
           </button>
@@ -433,6 +506,64 @@ export function PracticeWorkspace({
       </div>
 
       <div className="relative max-w-[1200px] mx-auto px-4 pt-3 grid gap-4 sm:gap-6">
+        {isPracticeII && (
+          <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[26px] px-4 py-4 shadow-sm">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <p className="m-0 text-[11px] font-black uppercase tracking-[0.16em] text-[#1cb0f6]">
+                  Thanh trạng thái Practice II
+                </p>
+                <p className="m-0 mt-1 text-xs font-bold text-slate-500">
+                  Đỏ: sai hoặc dưới 60% • Vàng: dưới 90% • Xanh: đạt tốt
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full bg-sky-50 px-3 py-1 text-xs font-black text-[#1cb0f6]">
+                {wordIndex + 1}/{wordCount}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 sm:gap-3">
+              {practiceIIStatusItems.map((item, index) => {
+                const isLast = index === practiceIIStatusItems.length - 1;
+                const colorClass =
+                  item.state === "bad"
+                    ? "bg-rose-500 border-rose-700 text-white"
+                    : item.state === "warn"
+                      ? "bg-amber-300 border-amber-500 text-amber-950"
+                      : item.state === "good"
+                        ? "bg-emerald-500 border-emerald-700 text-white"
+                        : item.state === "current"
+                          ? "bg-sky-500 border-sky-700 text-white"
+                          : "bg-slate-100 border-slate-300 text-slate-500";
+                const lineClass =
+                  item.state === "bad"
+                    ? "bg-rose-200"
+                    : item.state === "warn"
+                      ? "bg-amber-200"
+                      : item.state === "good"
+                        ? "bg-emerald-200"
+                        : "bg-slate-200";
+                return (
+                  <div key={`practice-ii-status-${index}`} className="flex flex-1 items-center min-w-0">
+                    <div className="relative group shrink-0">
+                      <div
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full grid place-items-center text-sm font-black border-2 border-b-4 transition-all ${colorClass}`}
+                        title={`Vòng ${index + 1}: ${item.detail}`}
+                      >
+                        {item.label}
+                      </div>
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:block whitespace-nowrap rounded-xl bg-slate-900 text-white text-[11px] font-bold px-2.5 py-1 z-20">
+                        {item.detail}
+                      </div>
+                    </div>
+                    {!isLast && <div className={`h-1 flex-1 rounded-full mx-1.5 ${lineClass}`} />}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Word title — responsive size */}
         <div className="text-center py-2 sm:py-4 flex flex-col items-center gap-1">
           <h1 className="font-black text-[#1cb0f6] leading-none select-none m-0" style={{ fontSize: 'clamp(2.5rem, 10vw, 4.5rem)' }}>
@@ -441,7 +572,7 @@ export function PracticeWorkspace({
           <p className="text-slate-500 text-sm sm:text-base font-bold max-w-lg m-0 mt-1">
             {mode === "practice_i"
               ? "Xem video mẫu rồi tập làm theo nhé!"
-              : "Thực hiện bài làm xem đúng không nhé!"}
+              : "Không xem mẫu trước. Hãy tự ký target rồi để AI kiểm tra nhé!"}
           </p>
         </div>
 
@@ -451,11 +582,29 @@ export function PracticeWorkspace({
           {/* LEFT COLUMN: Reference Video (Mẫu) */}
           <article className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-5 flex flex-col gap-4 relative overflow-hidden">
             <h3 className="text-xl font-black text-slate-800 flex items-center gap-2 m-0 select-none">
-              📺 Video mẫu chuẩn
+              {isPracticeII && !analysis ? "🎯 Thử thách ghi nhớ" : "📺 Video mẫu chuẩn"}
             </h3>
             
             <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-inner group">
-              {referenceVideoUrl ? (
+              {!shouldRevealReference ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-sky-50 to-indigo-50">
+                  <img
+                    src={mascots[8]}
+                    alt="Practice II Mascot"
+                    className="w-28 h-28 object-contain animate-bounce-subtle mb-3"
+                    style={{ animationDuration: "4s", filter: "drop-shadow(0 5px 8px rgba(0,0,0,0.08))" }}
+                  />
+                  <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[#1cb0f6] mb-2">
+                    Practice II
+                  </span>
+                  <strong className="text-2xl font-black text-slate-800 leading-tight">
+                    {targetGloss}
+                  </strong>
+                  <p className="mt-3 mb-0 text-xs font-bold text-slate-500 leading-relaxed max-w-[260px]">
+                    Video mẫu sẽ được mở sau khi bé nộp bài, để phần kiểm tra giống bài nhớ từ thật hơn.
+                  </p>
+                </div>
+              ) : referenceVideoUrl ? (
                 <>
                   <video
                     ref={referenceVideoRef}
@@ -485,7 +634,9 @@ export function PracticeWorkspace({
             </div>
             
             <div className="text-xs font-bold text-slate-500 bg-slate-50 py-2 px-3 rounded-xl border border-slate-200">
-              💡 Hãy quan sát hướng tay và cử động cơ thể của mẫu thật kỹ nhé!
+              {isPracticeII && !analysis
+                ? "💡 Hãy ký theo trí nhớ. Sau khi chấm, app sẽ mở mẫu để bé so lại."
+                : "💡 Hãy quan sát hướng tay và cử động cơ thể của mẫu thật kỹ nhé!"}
             </div>
           </article>
 
@@ -593,7 +744,7 @@ export function PracticeWorkspace({
                       </>
                     ) : (
                       <>
-                        <span>✨ Chấm điểm bài làm ✨</span>
+                        <span>✨ {mode === "practice_ii" ? "Chấm thử thách" : "Chấm điểm bài làm"} ✨</span>
                       </>
                     )}
                   </button>
@@ -636,6 +787,27 @@ export function PracticeWorkspace({
                 </div>
 
                 {/* Friendly Score & Feedback Card */}
+                {practiceIIResult && (
+                  <div className={`border-2 border-b-2 rounded-[24px] p-4 flex items-start gap-3 ${practiceIIResultClasses}`}>
+                    <div className="w-10 h-10 rounded-2xl bg-white/80 grid place-items-center text-xl shrink-0">
+                      {practiceIIResult.tone === "warning" ? "⚠️" : practiceIIResult.tone === "success" ? "✅" : "🔎"}
+                    </div>
+                    <div className="min-w-0">
+                      <strong className="block text-base font-black leading-tight">
+                        {practiceIIResult.title}
+                      </strong>
+                      <span className="block mt-1 text-sm font-bold leading-relaxed">
+                        {practiceIIResult.message}
+                      </span>
+                      {predictedWrongGloss && (
+                        <span className="inline-flex mt-2 rounded-full bg-white/80 px-3 py-1 text-xs font-black">
+                          AI dự đoán: {predictedWrongGloss}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {isLowTracking ? (
                   /* Hands not visible — skip score, show re-record prompt only */
                   <div className="border-2 border-b-2 border-amber-300 rounded-[24px] p-6 flex flex-col items-center text-center gap-4 bg-amber-50">
@@ -665,7 +837,7 @@ export function PracticeWorkspace({
                   <div className={`border-2 border-b-2 rounded-[24px] p-5 flex flex-col items-center text-center gap-3 ${feedbackBg}`}>
                     {/* Stars */}
                     <div className="text-2xl tracking-widest select-none">
-                      {score >= 95 ? "⭐ ⭐ ⭐ ⭐ ⭐" : score >= 90 ? "⭐ ⭐ ⭐ ⭐" : score >= 80 ? "⭐ ⭐ ⭐" : "⭐ ⭐"}
+                      {isWrongWord ? "⭐" : score >= 95 ? "⭐ ⭐ ⭐ ⭐ ⭐" : score >= 90 ? "⭐ ⭐ ⭐ ⭐" : score >= 80 ? "⭐ ⭐ ⭐" : "⭐ ⭐"}
                     </div>
 
                     {/* Mascot feedback illustration */}

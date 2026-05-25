@@ -69,10 +69,9 @@ const activeTopicId = useMemo(() => {
     <div className="flex flex-col items-center w-full max-w-xl mx-auto py-4 px-4">
       {normalizedTopics.map(({ topic, progress, completedWords, ratio, accent, isLockedForGuest }, index) => {
         const isActive = topic.id === activeTopicId;
-        const targetIndex = progress.completed ? 0 : Math.min(completedWords, topic.words.length - 1);
         const continueLabel = progress.completed ? "HỌC LẠI" : completedWords > 0 ? "TIẾP TỤC" : "BẮT ĐẦU";
 
-        const handleClick = () => {
+        const handleOpenOverview = () => {
           if (isLockedForGuest) {
             onOpenAuth();
             return;
@@ -138,7 +137,7 @@ const activeTopicId = useMemo(() => {
 
               <button
                 type="button"
-                onClick={handleClick}
+                onClick={handleOpenOverview}
                 className={`w-full text-left rounded-2xl p-5 flex items-center gap-4 transition-all duration-150 cursor-pointer ${
                   isLockedForGuest ? "opacity-60" : "hover:brightness-[0.97] active:translate-y-[1px]"
                 }`}
@@ -178,6 +177,7 @@ const activeTopicId = useMemo(() => {
                       }}
                     />
                   </div>
+
                 </div>
 
                 <div className="flex-shrink-0 ml-2">

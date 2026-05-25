@@ -330,6 +330,30 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
   const immersiveStage = activeTab === "learn" && practice.session !== null && ["learn", "practice_i", "practice_ii"].includes(practice.session.stage);
   const topics = [...(curriculum?.topics ?? []), ...MOCK_EXTRA_TOPICS];
 
+  useEffect(() => {
+    if (!curriculum) return;
+    const params = new URLSearchParams(window.location.search);
+    const reviewTopicId = params.get("practice_review_topic");
+    if (!reviewTopicId) return;
+
+    const topic = topics.find((item) => item.id === reviewTopicId);
+    if (!topic) return;
+    const reviewStart = Math.max(0, Number(params.get("practice_review_start") ?? "0") || 0);
+    const reviewScope = params.get("practice_review_scope") === "5" ? 5 : 10;
+
+    setActiveTab("learn");
+    practice.handleOpenTopicReview(topic, reviewStart, reviewScope);
+    params.delete("practice_review_topic");
+    params.delete("practice_review_start");
+    params.delete("practice_review_scope");
+    const nextSearch = params.toString();
+    window.history.replaceState(
+      {},
+      document.title,
+      `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}`
+    );
+  }, [curriculum]);
+
   return (
     <div className={immersiveStage ? "app-shell app-shell-learn-immersive" : "app-shell flow-shell"}>
       {!immersiveStage && (

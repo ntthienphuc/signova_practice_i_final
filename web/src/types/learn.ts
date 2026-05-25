@@ -65,6 +65,9 @@ export interface PracticeSession {
   wordIndex: number;
   stage: SessionStage;
   quizScope: 5 | 10 | null;
+  quizStartIndex: number;
+  quizReturnWordIndex: number | null;
+  quizStandalone: boolean;
   quizQueue: string[];
   quizRoundIndex: number;
   currentQuizResults: AnalysisSummary[];

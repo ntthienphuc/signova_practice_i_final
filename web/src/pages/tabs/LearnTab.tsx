@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { TopicGrid } from "../../components/learn/TopicGrid";
 import { TopicSummary } from "../../components/TopicSummary";
+import { PracticeWorkspace } from "../../components/PracticeWorkspace";
+import { StudyStage } from "../../components/StudyStage";
 import { getAssignedPackages } from "../../api";
 import type { AnalyzeResponse } from "../../api";
 import type { DashboardPayload, PracticeSession, ProgressByTopic, Topic } from "../../types/learn";
@@ -10,13 +12,26 @@ import { mascots } from "../../utils/mascot";
 
 interface QuizIntroProps {
   scope: 5 | 10;
+  startIndex?: number;
   topic: Topic;
   onStart: () => void;
   onBack: () => void;
 }
 
-function QuizIntro({ scope, topic, onStart, onBack }: QuizIntroProps) {
-  const lessonGlosses = topic.words.slice(0, scope).map((word) => word.gloss);
+function QuizIntro({ scope, startIndex = 0, topic, onStart, onBack }: QuizIntroProps) {
+  const lessonGlosses = topic.words.slice(startIndex, startIndex + scope).map((word) => word.gloss);
+  const title =
+    scope === 10
+      ? "Bài tổng kết 10 từ"
+      : startIndex >= 5
+        ? "Checkpoint 5 từ sau"
+        : "Checkpoint sau 5 từ đầu";
+  const description =
+    scope === 10
+      ? "Bé đã học xong toàn bộ 10 từ trong chủ đề rồi. Giờ là lúc làm bài tổng kết để Mascot đánh giá nhé!"
+      : startIndex >= 5
+        ? "Bé đã đi qua 5 từ tiếp theo rồi. Mình ôn riêng nhóm từ thứ hai trước khi tổng kết cả chủ đề nhé!"
+        : "Bé đã đi qua 5 từ đầu tiên rồi. Giờ mình làm một bài kiểm tra nhỏ với Mascot để xem đã nhớ được bao nhiêu nhé!";
   return (
     <section className="grid place-items-center min-h-[calc(100vh-80px)] px-4">
       <div className="max-w-[860px] w-full grid grid-cols-1 md:grid-cols-[1fr_220px] gap-6 p-[34px] rounded-[30px] bg-white border-2 border-slate-200 shadow-sm items-center">
@@ -24,11 +39,9 @@ function QuizIntro({ scope, topic, onStart, onBack }: QuizIntroProps) {
           <div className="grid gap-[10px]">
             <p className="m-0 text-[0.86rem] uppercase tracking-[0.18em] text-[#1cb0f6] font-extrabold">Practice II</p>
             <div className="inline-flex items-center rounded-full py-1.5 px-3 font-bold text-xs bg-emerald-100 text-emerald-800 w-fit">🏁 Bài kiểm tra nhỏ</div>
-            <h2 className="m-0 text-[clamp(1.8rem,3.5vw,2.6rem)] leading-[1.1] font-black text-slate-800">{scope === 5 ? "Checkpoint sau 5 từ đầu" : "Bài tổng kết 10 từ"}</h2>
+            <h2 className="m-0 text-[clamp(1.8rem,3.5vw,2.6rem)] leading-[1.1] font-black text-slate-800">{title}</h2>
             <p className="text-slate-500 font-bold text-sm leading-relaxed m-0">
-              {scope === 5
-                ? "Bé đã đi qua 5 từ đầu tiên rồi. Giờ mình làm một bài kiểm tra nhỏ với Mascot để xem đã nhớ được bao nhiêu nhé!"
-                : "Bé đã học xong toàn bộ 10 từ trong chủ đề rồi. Giờ là lúc làm bài tổng kết để Mascot đánh giá nhé!"}
+              {description}
             </p>
           </div>
 
@@ -91,6 +104,11 @@ export function LearnTab({
   progressByTopic,
   onOpenAuth,
   onBackToTopics,
+  onStartWordPractice,
+  onGoToLearnWord,
+  onPracticeIComplete,
+  onStartQuiz,
+  onPracticeIIComplete,
   onRestartTopic,
 }: LearnTabProps) {
   const { currentUser } = useAuth();
@@ -119,10 +137,12 @@ export function LearnTab({
     if (!session) return null;
     return session.topic.words[session.wordIndex] ?? null;
   }, [session]);
-  console.log("Learn Tab:", session)
   const quizLessonGlosses = useMemo(() => {
     if (!session || !session.quizScope) return [];
-    return session.topic.words.slice(0, session.quizScope).map((word) => word.gloss);
+    const startIndex = session.quizStartIndex ?? 0;
+    return session.topic.words
+      .slice(startIndex, startIndex + session.quizScope)
+      .map((word) => word.gloss);
   }, [session]);
 
   const currentQuizGloss = useMemo(() => {
@@ -200,7 +220,11 @@ export function LearnTab({
             </div>
           )}
 
-          <TopicGrid topics={topics} progressByTopic={progressByTopic} onOpenAuth={onOpenAuth} />
+          <TopicGrid
+            topics={topics}
+            progressByTopic={progressByTopic}
+            onOpenAuth={onOpenAuth}
+          />
         </div>
         
         {/* Welcome Mascot Widget */}
@@ -231,6 +255,86 @@ export function LearnTab({
         session={session}
         onRestartTopic={onRestartTopic}
         onBackToTopics={onBackToTopics}
+      />
+    );
+  }
+
+  if (session.stage === "learn" && currentWord) {
+    return (
+      <StudyStage
+        topic={session.topic}
+        word={currentWord}
+        wordIndex={session.wordIndex}
+        onStartPractice={onStartWordPractice}
+        onBackToTopics={onBackToTopics}
+        onPreviousWord={onGoToLearnWord}
+        isAlreadyLearned={false}
+      />
+    );
+  }
+
+  if (session.stage === "practice_i" && currentWord) {
+    return (
+      <PracticeWorkspace
+        mode="practice_i"
+        targetGloss={currentWord.gloss}
+        lessonGlosses={[currentWord.gloss]}
+        referenceStudy={currentWord.study}
+        wordIndex={session.wordIndex}
+        wordCount={session.topic.word_count}
+        title={`Practice I • ${currentWord.gloss}`}
+        subtitle="Luyện ngay từ vừa học xong trước khi chuyển sang từ tiếp theo."
+        actionLabel="Phân tích"
+        completionLabel={
+          session.wordIndex === 4 && session.quiz5Results.length === 0
+            ? "Sang checkpoint 5 từ →"
+            : session.wordIndex >= session.topic.words.length - 1
+              ? "Sang bài tổng kết topic →"
+              : "Sang từ tiếp theo →"
+        }
+        onBackToLearn={() => onGoToLearnWord(session.wordIndex)}
+        onComplete={onPracticeIComplete}
+      />
+    );
+  }
+
+  if (session.stage === "quiz_intro" && session.quizScope) {
+    return (
+      <QuizIntro
+        scope={session.quizScope}
+        startIndex={session.quizStartIndex}
+        topic={session.topic}
+        onStart={onStartQuiz}
+        onBack={onBackToTopics}
+      />
+    );
+  }
+
+  if (session.stage === "practice_ii" && currentQuizGloss && currentQuizWord) {
+    const isFinalQuiz = session.quizScope === 10;
+    const isSecondCheckpoint = session.quizScope === 5 && (session.quizStartIndex ?? 0) >= 5;
+    return (
+      <PracticeWorkspace
+        mode="practice_ii"
+        targetGloss={currentQuizGloss}
+        lessonGlosses={quizLessonGlosses}
+        referenceStudy={currentQuizWord.study}
+        wordIndex={session.quizRoundIndex}
+        wordCount={session.quizQueue.length}
+        title={`Practice II • Vòng ${session.quizRoundIndex + 1}/${session.quizQueue.length}`}
+        subtitle="Không xem mẫu trước. Bé tự ký target hiện tại, AI sẽ kiểm tra có nhầm sang từ khác không."
+        actionLabel="Chấm vòng này"
+        practiceIIResults={session.currentQuizResults}
+        completionLabel={
+          session.quizRoundIndex === session.quizQueue.length - 1
+            ? isFinalQuiz
+              ? "Kết thúc Practice II"
+              : isSecondCheckpoint
+                ? "Sang ôn tổng kết chủ đề"
+                : "Học tiếp 5 từ sau"
+            : "Sang vòng tiếp theo"
+        }
+        onComplete={onPracticeIIComplete}
       />
     );
   }

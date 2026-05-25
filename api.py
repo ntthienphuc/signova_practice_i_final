@@ -146,7 +146,7 @@ def create_app() -> FastAPI:
         sign_classifier = SPOTERONNXInferer(
             sign_model_path,
             load_id2label(sign_gloss_csv),
-            num_frames=70,
+            num_frames=100,
             top_k=3,
         )
         return sign_classifier
