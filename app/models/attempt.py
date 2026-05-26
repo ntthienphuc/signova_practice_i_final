@@ -10,6 +10,7 @@ class PracticeAttempt(Base):
     learner_user_id = Column(Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     topic_id = Column(String(50), ForeignKey("topics.id", ondelete="SET NULL"), nullable=True)
     word_id = Column(Uuid, ForeignKey("words.id", ondelete="SET NULL"), nullable=True)
+    custom_package_id = Column(Uuid, ForeignKey("custom_packages.id", ondelete="SET NULL"), nullable=True, index=True)
     practice_mode = Column(String(20), nullable=False) # practice_i, practice_ii
     target_gloss = Column(String(100), nullable=False)
     lesson_glosses_json = Column(JSON, nullable=False)

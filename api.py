@@ -34,7 +34,7 @@ from signova_practice_i.scoring import (
     with_lesson_scores,
 )
 from signova_practice_i.segmentation import select_best_segment
-from signova_practice_i.sign_classifier import SPOTERONNXInferer, load_id2label
+from signova_practice_i.sign_classifier import SPOTERONNXInferer, load_id2label, select_classifier_segment
 from signova_practice_i.video_engine import extract_video_pose_and_results
 
 
@@ -447,6 +447,13 @@ def create_app() -> FastAPI:
                 segment = None
                 scoring_pose = user_pose
                 scoring_results = user_results
+                classifier_results = user_results
+                classifier_segment_info = {
+                    "reason": "full_video",
+                    "start_frame": 0,
+                    "end_frame": len(user_results),
+                    "frame_count": len(user_results),
+                }
                 if auto_segment:
                     scoring_pose, segment, segment_info = select_best_segment(
                         user_pose,
@@ -459,6 +466,13 @@ def create_app() -> FastAPI:
                         pad_frames=segment_pad_frames,
                     )
                     scoring_results = user_results[segment.start_frame:segment.end_frame]
+                    classifier_results, classifier_segment_info = select_classifier_segment(
+                        user_results,
+                        fps=float(video_meta["fps"]),
+                        frame_stride=frame_stride,
+                    )
+                    if not classifier_results:
+                        classifier_results = scoring_results
 
                 relevant_banks = store.all_banks(lesson_glosses)
                 target_result = compare_to_reference_bank(scoring_pose, target_bank)
@@ -539,6 +553,8 @@ def create_app() -> FastAPI:
             "target_rank": target_rank,
             "bank_ranking": ranking,
             "scoring_results": scoring_results,
+            "classifier_results": classifier_results,
+            "classifier_segment_debug": classifier_segment_info,
             "reference": {
                 "matched_reference_id": target_result["matched_reference_id"],
                 "matched_template_index": target_result["matched_template_index"],
@@ -609,8 +625,9 @@ def create_app() -> FastAPI:
         wrong_word_min_margin: float,
     ) -> dict[str, Any]:
         classifier = get_sign_classifier()
+        classifier_results = analysis.get("classifier_results") or analysis["scoring_results"]
         ranked_predictions = classifier.infer_ranked(
-            analysis["scoring_results"],
+            classifier_results,
             allowed_glosses=None,
             top_k=max(20, len(analysis["lesson_glosses"]), classifier_top_k),
         )
@@ -650,6 +667,7 @@ def create_app() -> FastAPI:
                 "predicted_gloss": normalized_predictions[0]["gloss"] if normalized_predictions else None,
                 "predicted_lesson_score": normalized_predictions[0]["lesson_score"] if normalized_predictions else None,
                 "predicted_raw_score": normalized_predictions[0]["raw_score"] if normalized_predictions else None,
+                "segment": analysis.get("classifier_segment_debug"),
                 "top_k": normalized_predictions[: max(1, classifier_top_k)],
             },
             "followup": {
@@ -869,6 +887,7 @@ def create_app() -> FastAPI:
         classifier_top_k: int = Form(3),
         wrong_word_min_lesson_score: float = Form(0.45),
         wrong_word_min_margin: float = Form(0.10),
+        assignment_package_id: str | None = Form(None),
         return_visualization: bool = Form(False),
         db: Session = Depends(get_db),
         current_user: Any = Depends(get_current_user_optional),
@@ -897,9 +916,20 @@ def create_app() -> FastAPI:
                 response.pop("visualization", None)
                 
             if current_user is not None:
-                save_practice_attempt(db, current_user.id, response, "practice_ii")
+                try:
+                    save_practice_attempt(
+                        db,
+                        current_user.id,
+                        response,
+                        "practice_ii",
+                        custom_package_id=assignment_package_id,
+                    )
+                except ValueError as exc:
+                    raise HTTPException(status_code=400, detail=str(exc)) from exc
                 
             return response
+        except HTTPException:
+            raise
         except Exception as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
 
@@ -952,6 +982,7 @@ def create_app() -> FastAPI:
         classifier_top_k: int = Form(3),
         wrong_word_min_lesson_score: float = Form(0.45),
         wrong_word_min_margin: float = Form(0.10),
+        assignment_package_id: str | None = Form(None),
         db: Session = Depends(get_db),
         current_user: Any = Depends(get_current_user_optional),
     ) -> dict[str, object]:
@@ -976,8 +1007,19 @@ def create_app() -> FastAPI:
                 wrong_word_min_margin=wrong_word_min_margin,
             )
             if current_user is not None:
-                save_practice_attempt(db, current_user.id, response, "practice_ii")
+                try:
+                    save_practice_attempt(
+                        db,
+                        current_user.id,
+                        response,
+                        "practice_ii",
+                        custom_package_id=assignment_package_id,
+                    )
+                except ValueError as exc:
+                    raise HTTPException(status_code=400, detail=str(exc)) from exc
             return response
+        except HTTPException:
+            raise
         except Exception as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
 
