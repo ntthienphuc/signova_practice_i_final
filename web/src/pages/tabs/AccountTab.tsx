@@ -226,20 +226,20 @@ export function AccountTab({
         />
       </div>
 
-      {role === "learner" && (
-        <div className="bg-gradient-to-r from-[#f0f8ff] to-[#f0fff4] border-2 border-b-4 border-[#1cb0f6]/30 rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 flex items-center gap-4">
-          <img
-            src={headerMascotUrl ?? mascots[1]}
-            alt="Mascot"
-            className="w-14 h-14 object-contain flex-shrink-0"
-            style={{ filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.10))" }}
-          />
-          <p className="font-black text-slate-700 text-sm sm:text-base m-0 leading-relaxed">{motivationalMsg}</p>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-        {/* Profile Form */}
+        {/* Profile Form + Mascot Message */}
+        <div className="flex flex-col gap-4 sm:gap-5 min-w-0">
+          {role === "learner" && (
+            <div className="bg-gradient-to-r from-[#f0f8ff] to-[#f0fff4] border-2 border-b-4 border-[#1cb0f6]/30 rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 flex items-center gap-4">
+              <img
+                src={headerMascotUrl ?? mascots[1]}
+                alt="Mascot"
+                className="w-32 h-32 object-contain flex-shrink-0"
+                style={{ filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.10))" }}
+              />
+              <p className="font-black text-slate-700 text-sm sm:text-base m-0 leading-relaxed">{motivationalMsg}</p>
+            </div>
+          )}
         <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 space-y-4 min-w-0">
           <h3 className="text-lg font-black text-slate-800 border-b border-slate-100 pb-2.5 flex items-center gap-2 m-0 select-none">
             👤 Thông tin hồ sơ
@@ -352,6 +352,7 @@ export function AccountTab({
               {profileLoading ? "Đang cập nhật..." : "Cập nhật hồ sơ"}
             </button>
           </form>
+        </div>
         </div>
 
         {/* Account Creation & Linking Section */}
