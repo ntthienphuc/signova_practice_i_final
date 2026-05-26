@@ -8,6 +8,7 @@ from app.models.attempt import PracticeAttempt, PracticeAttemptFeedback, Practic
 from app.models.gamification import Badge, LearnerBadge, StreakLog
 from app.models.ai_recommendation import AIRecommendation
 from app.models.custom_package import CustomPackage
+from app.models.mascot import MascotItem, LearnerMascotItem, LearnerMascotConfig
 
 __all__ = [
     "Base",
@@ -29,4 +30,7 @@ __all__ = [
     "StreakLog",
     "AIRecommendation",
     "CustomPackage",
+    "MascotItem",
+    "LearnerMascotItem",
+    "LearnerMascotConfig",
 ]
