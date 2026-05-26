@@ -21,7 +21,8 @@ export async function analyzeAttempt({
   mode,
   targetGloss,
   lessonGlosses,
-  file
+  file,
+  assignmentPackageId,
 }: AnalyzeAttemptParams): Promise<AnalyzeResponse> {
   try {
     const endpoint =
@@ -37,6 +38,9 @@ export async function analyzeAttempt({
     form.append("return_visualization", "false");
     if (mode === "practice_ii") {
       form.append("lesson_glosses", lessonGlosses.join(","));
+      if (assignmentPackageId) {
+        form.append("assignment_package_id", assignmentPackageId);
+      }
     }
     const { data } = await apiClient.post<AnalyzeResponse>(endpoint, form, {
       headers: { "Content-Type": "multipart/form-data" },

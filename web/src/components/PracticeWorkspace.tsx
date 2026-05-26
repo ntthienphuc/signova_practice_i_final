@@ -111,6 +111,7 @@ interface PracticeWorkspaceProps {
   subtitle: string;
   actionLabel: string;
   completionLabel: string;
+  assignmentPackageId?: string | null;
   practiceIIResults?: Array<{ score?: number; decision?: Decision }>;
   onBackToLearn?: () => void;
   onComplete?: (rawAttempt: any) => void;
@@ -124,6 +125,7 @@ export function PracticeWorkspace({
   wordIndex,
   wordCount,
   completionLabel,
+  assignmentPackageId = null,
   practiceIIResults = [],
   onBackToLearn,
   onComplete,
@@ -319,6 +321,7 @@ export function PracticeWorkspace({
         targetGloss,
         lessonGlosses,
         file,
+        assignmentPackageId,
       });
       setAnalysis(normalizeAnalysis(payload));
     } catch (nextError) {

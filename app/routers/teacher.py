@@ -14,6 +14,8 @@ from app.db import get_db
 from app.auth import get_current_user
 from app.models.user import User
 from app.models.custom_package import CustomPackage
+from app.models.attempt import PracticeAttempt
+from app.models.link import SchoolLearnerLink
 from signova_practice_i.bank_store import BankStore
 
 router = APIRouter(prefix="/teacher", tags=["teacher"])
@@ -46,7 +48,7 @@ class BankWordItem(BaseModel):
 class CreatePackageRequest(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=1000)
-    glosses: List[str] = Field(..., min_length=1)
+    glosses: List[str] = Field(..., min_length=2)
 
 
 class AssignPackageRequest(BaseModel):
@@ -65,6 +67,125 @@ class PackageResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+def _assigned_learners_for_package(db: Session, pkg: CustomPackage) -> list[dict]:
+    learners: dict[str, dict] = {}
+
+    if pkg.assigned_class_name:
+        links = db.query(SchoolLearnerLink).filter(
+            SchoolLearnerLink.school_user_id == pkg.created_by,
+            SchoolLearnerLink.class_name == pkg.assigned_class_name,
+            SchoolLearnerLink.status == "approved",
+        ).all()
+        for link in links:
+            learner = db.query(User).filter(User.id == link.learner_user_id).first()
+            if learner:
+                learners[str(learner.id)] = {
+                    "learner_id": str(learner.id),
+                    "username": learner.username,
+                    "display_name": getattr(learner.learner_profile, "display_name", None),
+                    "class_name": link.class_name,
+                    "student_code": link.student_code,
+                }
+
+    for raw_id in pkg.assigned_student_ids or []:
+        try:
+            learner_id = uuid.UUID(str(raw_id))
+        except ValueError:
+            continue
+        link = db.query(SchoolLearnerLink).filter(
+            SchoolLearnerLink.school_user_id == pkg.created_by,
+            SchoolLearnerLink.learner_user_id == learner_id,
+            SchoolLearnerLink.status == "approved",
+        ).first()
+        learner = db.query(User).filter(User.id == learner_id).first()
+        if learner:
+            learners[str(learner.id)] = {
+                "learner_id": str(learner.id),
+                "username": learner.username,
+                "display_name": getattr(learner.learner_profile, "display_name", None),
+                "class_name": link.class_name if link else None,
+                "student_code": link.student_code if link else None,
+            }
+
+    return list(learners.values())
+
+
+def _package_progress(db: Session, pkg: CustomPackage) -> dict:
+    assigned_learners = _assigned_learners_for_package(db, pkg)
+    glosses = list(pkg.glosses or [])
+    word_count = max(1, len(glosses))
+    student_progress = []
+    completed_count = 0
+    total_scores: list[float] = []
+
+    for learner in assigned_learners:
+        learner_uuid = uuid.UUID(learner["learner_id"])
+        attempts = db.query(PracticeAttempt).filter(
+            PracticeAttempt.custom_package_id == pkg.id,
+            PracticeAttempt.learner_user_id == learner_uuid,
+            PracticeAttempt.practice_mode == "practice_ii",
+        ).order_by(PracticeAttempt.created_at.desc()).all()
+
+        best_by_gloss: dict[str, PracticeAttempt] = {}
+        for attempt in attempts:
+            if attempt.target_gloss not in glosses:
+                continue
+            current = best_by_gloss.get(attempt.target_gloss)
+            if current is None or attempt.score > current.score:
+                best_by_gloss[attempt.target_gloss] = attempt
+
+        completed_glosses = [
+            gloss
+            for gloss, attempt in best_by_gloss.items()
+            if attempt.accepted or float(attempt.score) >= 60.0
+        ]
+        scores = [float(attempt.score) for attempt in best_by_gloss.values()]
+        total_scores.extend(scores)
+        is_completed = len(set(completed_glosses)) >= len(glosses) if glosses else False
+        if is_completed:
+            completed_count += 1
+
+        latest = attempts[0] if attempts else None
+        student_progress.append({
+            **learner,
+            "attempt_count": len(attempts),
+            "completed_words": len(set(completed_glosses)),
+            "total_words": len(glosses),
+            "completion_rate": round(len(set(completed_glosses)) / word_count, 3),
+            "completed": is_completed,
+            "average_score": round(sum(scores) / len(scores), 1) if scores else None,
+            "best_score": round(max(scores), 1) if scores else None,
+            "last_score": round(float(latest.score), 1) if latest else None,
+            "last_attempt_at": latest.created_at.isoformat() if latest and latest.created_at else None,
+            "wrong_word_count": sum(1 for attempt in attempts if attempt.wrong_word_detected),
+        })
+
+    student_progress.sort(key=lambda item: (item["completed"], item["completion_rate"], item["last_attempt_at"] or ""), reverse=True)
+    return {
+        "assigned_count": len(assigned_learners),
+        "completed_count": completed_count,
+        "completion_rate": round(completed_count / max(1, len(assigned_learners)), 3),
+        "average_score": round(sum(total_scores) / len(total_scores), 1) if total_scores else None,
+        "student_progress": student_progress,
+    }
+
+
+def _package_response(pkg: CustomPackage, db: Session, *, include_progress: bool = False) -> dict:
+    payload = {
+        "id": str(pkg.id),
+        "title": pkg.title,
+        "description": pkg.description,
+        "glosses": pkg.glosses or [],
+        "word_count": len(pkg.glosses or []),
+        "assigned_class_name": pkg.assigned_class_name,
+        "assigned_student_ids": pkg.assigned_student_ids or [],
+        "created_at": pkg.created_at.isoformat() if pkg.created_at else None,
+    }
+    if include_progress:
+        payload["assignment_progress"] = _package_progress(db, pkg)
+    return payload
 
 
 # ─── Endpoints ───────────────────────────────────────────────────────────────
@@ -96,19 +217,7 @@ def list_packages(current_user: User = Depends(require_school), db: Session = De
     ).order_by(CustomPackage.created_at.desc()).all()
 
     return {
-        "packages": [
-            {
-                "id": str(pkg.id),
-                "title": pkg.title,
-                "description": pkg.description,
-                "glosses": pkg.glosses or [],
-                "word_count": len(pkg.glosses or []),
-                "assigned_class_name": pkg.assigned_class_name,
-                "assigned_student_ids": pkg.assigned_student_ids or [],
-                "created_at": pkg.created_at.isoformat() if pkg.created_at else None,
-            }
-            for pkg in packages
-        ]
+        "packages": [_package_response(pkg, db, include_progress=True) for pkg in packages]
     }
 
 
@@ -143,16 +252,7 @@ def create_package(
     db.commit()
     db.refresh(pkg)
 
-    return {
-        "id": str(pkg.id),
-        "title": pkg.title,
-        "description": pkg.description,
-        "glosses": pkg.glosses or [],
-        "word_count": len(pkg.glosses or []),
-        "assigned_class_name": pkg.assigned_class_name,
-        "assigned_student_ids": pkg.assigned_student_ids or [],
-        "created_at": pkg.created_at.isoformat() if pkg.created_at else None,
-    }
+    return _package_response(pkg, db, include_progress=True)
 
 
 @router.post("/packages/{package_id}/assign", summary="Assign custom package to a class or specific students")
@@ -191,16 +291,7 @@ def assign_package(
     db.commit()
     db.refresh(pkg)
     
-    return {
-        "id": str(pkg.id),
-        "title": pkg.title,
-        "description": pkg.description,
-        "glosses": pkg.glosses or [],
-        "word_count": len(pkg.glosses or []),
-        "assigned_class_name": pkg.assigned_class_name,
-        "assigned_student_ids": pkg.assigned_student_ids or [],
-        "created_at": pkg.created_at.isoformat() if pkg.created_at else None,
-    }
+    return _package_response(pkg, db, include_progress=True)
 
 
 @router.delete("/packages/{package_id}", summary="Delete a custom package")

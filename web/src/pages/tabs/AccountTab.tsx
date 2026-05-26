@@ -175,12 +175,12 @@ export function AccountTab({
   };
 
   return (
-    <section className="space-y-6">
-      <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
-        <div className="space-y-1 text-center sm:text-left">
+    <section className="space-y-5 sm:space-y-6 max-w-full overflow-hidden">
+      <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[24px] sm:rounded-[28px] p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
+        <div className="space-y-1 text-center sm:text-left min-w-0">
           <p className="m-0 text-xs uppercase tracking-[0.18em] text-[#1cb0f6] font-black">Cài đặt tài khoản ⚙️</p>
-          <h2 className="m-0 mt-1 font-black text-slate-800 text-xl">Thông tin cá nhân & Quản lý</h2>
-          <p className="text-slate-500 font-bold text-xs m-0">Quản lý hồ sơ và tự tạo, liên kết tài khoản cho con hoặc học sinh của bạn.</p>
+          <h2 className="m-0 mt-1 font-black text-slate-800 text-lg sm:text-xl leading-tight">Thông tin cá nhân & Quản lý</h2>
+          <p className="text-slate-500 font-bold text-xs sm:text-sm m-0 leading-relaxed">Quản lý hồ sơ và tự tạo, liên kết tài khoản cho con hoặc học sinh của bạn.</p>
         </div>
         <img 
           src={mascots[1]} 
@@ -193,9 +193,9 @@ export function AccountTab({
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Profile Form */}
-        <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-5 space-y-4">
+        <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 space-y-4 min-w-0">
           <h3 className="text-lg font-black text-slate-800 border-b border-slate-100 pb-2.5 flex items-center gap-2 m-0 select-none">
             👤 Thông tin hồ sơ
           </h3>
@@ -310,7 +310,7 @@ export function AccountTab({
         </div>
 
         {/* Account Creation & Linking Section */}
-        <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[28px] p-5 space-y-4">
+        <div className="bg-white border-2 border-b-2 border-slate-200 rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 space-y-4 min-w-0">
           {role === "learner" ? (
             <div className="space-y-4">
               <h3 className="text-lg font-black text-slate-800 border-b border-slate-100 pb-2.5 m-0 select-none">
@@ -468,7 +468,7 @@ export function AccountTab({
                   />
                 </label>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label className="grid gap-1.5">
                     <span className="text-[11px] uppercase font-black text-slate-450 tracking-wider">Lớp học</span>
                     <input
@@ -519,17 +519,17 @@ export function AccountTab({
                 <div className="space-y-2">
                   {schoolDashData?.linked_learners && schoolDashData.linked_learners.length > 0 ? (
                     schoolDashData.linked_learners.map((student: any) => (
-                      <div key={student.learner_id} className="bg-slate-50 p-2.5 rounded-2xl flex items-center justify-between border-2 border-slate-200 text-xs">
-                        <div className="flex items-center gap-2.5">
+                      <div key={student.learner_id} className="bg-slate-50 p-2.5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-2 border-slate-200 text-xs min-w-0">
+                        <div className="flex items-center gap-2.5 min-w-0">
                           <div className="w-8 h-8 rounded-full bg-sky-50 border border-[#1cb0f6] text-[#1cb0f6] flex items-center justify-center font-black font-mono">
                             {student.username[0].toUpperCase()}
                           </div>
-                          <div>
-                            <strong className="font-black text-slate-700">{student.display_name || student.username}</strong>
-                            <span className="block text-[10px] text-slate-400 font-bold">@{student.username} • Lớp {student.class_name || "--"}</span>
+                          <div className="min-w-0">
+                            <strong className="font-black text-slate-700 block truncate">{student.display_name || student.username}</strong>
+                            <span className="block text-[10px] text-slate-400 font-bold truncate">@{student.username} • Lớp {student.class_name || "--"}</span>
                           </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-left sm:text-right pl-10 sm:pl-0">
                           <span className="block font-black text-slate-700">Mã: {student.student_code}</span>
                           <span className="block text-[10px] text-[#1cb0f6] font-black">{student.xp} XP</span>
                         </div>

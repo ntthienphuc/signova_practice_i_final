@@ -175,13 +175,32 @@ def decision_for_practice_ii(
             or predicted_raw_score < min_classifier_raw_score
         )
     )
+    bank_strong_wrong_candidate = bool(
+        bank_top1_gloss is not None
+        and bank_top1_gloss != target_gloss
+        and target_rank >= bank_fallback_min_target_rank
+        and top1_score is not None
+        and float(top1_score) >= max(bank_fallback_min_score, 98.0)
+        and (float(top1_score) - float(target_result["score"])) >= max(bank_fallback_min_gap, 12.0)
+    )
     wrong_word_detected = classifier_wrong_word or bank_wrong_word_fallback
     possible_wrong_word = wrong_word_detected or (base["possible_wrong_word"] and not classifier_supports_target)
     predicted_wrong_gloss = None
+    predicted_wrong_source = None
     if classifier_wrong_word:
-        predicted_wrong_gloss = predicted_gloss
+        if (
+            bank_strong_wrong_candidate
+            and predicted_lesson_score == 0.0
+            and predicted_gloss != bank_top1_gloss
+        ):
+            predicted_wrong_gloss = bank_top1_gloss
+            predicted_wrong_source = "pose_bank_strong_override"
+        else:
+            predicted_wrong_gloss = predicted_gloss
+            predicted_wrong_source = "global_onnx"
     elif bank_wrong_word_fallback:
         predicted_wrong_gloss = bank_top1_gloss
+        predicted_wrong_source = "pose_bank_fallback"
 
     return {
         "accept_as_target": (not wrong_word_detected) and (base["accept_as_target"] or classifier_supports_target or bank_supports_target),
@@ -190,6 +209,7 @@ def decision_for_practice_ii(
         "low_tracking_quality": base["low_tracking_quality"],
         "wrong_word_detected": wrong_word_detected,
         "predicted_wrong_gloss": predicted_wrong_gloss,
+        "predicted_wrong_source": predicted_wrong_source,
         "predicted_lesson_score": predicted_lesson_score if top1 is not None else None,
         "predicted_raw_score": predicted_raw_score if top1 is not None else None,
         "predicted_margin": predicted_margin if top1 is not None else None,

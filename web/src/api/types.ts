@@ -131,4 +131,5 @@ export interface AnalyzeAttemptParams {
   targetGloss: string;
   lessonGlosses: string[];
   file: File;
+  assignmentPackageId?: string | null;
 }

@@ -449,6 +449,29 @@ export interface CustomPackage {
   assigned_class_name?: string | null;
   assigned_student_ids?: string[];
   created_at: string;
+  assignment_progress?: {
+    assigned_count: number;
+    completed_count: number;
+    completion_rate: number;
+    average_score: number | null;
+    student_progress: Array<{
+      learner_id: string;
+      username: string;
+      display_name?: string | null;
+      class_name?: string | null;
+      student_code?: string | null;
+      attempt_count: number;
+      completed_words: number;
+      total_words: number;
+      completion_rate: number;
+      completed: boolean;
+      average_score: number | null;
+      best_score: number | null;
+      last_score: number | null;
+      last_attempt_at: string | null;
+      wrong_word_count: number;
+    }>;
+  };
 }
 
 export async function getWordBank(): Promise<{ words: BankWordItem[]; total: number }> {

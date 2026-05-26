@@ -24,6 +24,10 @@ function formatDate(iso: string): string {
   }
 }
 
+function percent(value: number | undefined): number {
+  return Math.round(Math.max(0, Math.min(1, value ?? 0)) * 100);
+}
+
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function PackageCard({
@@ -82,6 +86,47 @@ function PackageCard({
           {formatDate(pkg.created_at)}
         </div>
       </div>
+
+      {pkg.assignment_progress && (
+        <div className="custom-pkg-progress">
+          <div className="custom-pkg-progress-head">
+            <span>Theo dõi bài Practice II</span>
+            <strong>
+              {pkg.assignment_progress.completed_count}/{pkg.assignment_progress.assigned_count} hoàn thành
+            </strong>
+          </div>
+          <div className="custom-pkg-progress-bar">
+            <span style={{ width: `${percent(pkg.assignment_progress.completion_rate)}%` }} />
+          </div>
+          <div className="custom-pkg-progress-meta">
+            <span>Điểm TB: {pkg.assignment_progress.average_score ?? "--"}</span>
+            <span>{percent(pkg.assignment_progress.completion_rate)}%</span>
+          </div>
+          {pkg.assignment_progress.student_progress.length > 0 && (
+            <div className="custom-pkg-student-progress">
+              {pkg.assignment_progress.student_progress.slice(0, 4).map((student) => (
+                <div key={student.learner_id} className="custom-pkg-student-row">
+                  <div className="custom-pkg-student-name">
+                    <strong>{student.display_name || student.username}</strong>
+                    <span>
+                      {student.completed_words}/{student.total_words} từ
+                      {student.wrong_word_count > 0 ? ` • ${student.wrong_word_count} nhầm từ` : ""}
+                    </span>
+                  </div>
+                  <span className={student.completed ? "done" : "pending"}>
+                    {student.completed ? "Xong" : `${percent(student.completion_rate)}%`}
+                  </span>
+                </div>
+              ))}
+              {pkg.assignment_progress.student_progress.length > 4 && (
+                <div className="custom-pkg-student-more">
+                  +{pkg.assignment_progress.student_progress.length - 4} học sinh khác
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="custom-pkg-card-glosses">
         {pkg.glosses.slice(0, 12).map((g) => (
@@ -241,7 +286,7 @@ function CreatePackageForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) { setError("Vui lòng nhập tên gói bài tập."); return; }
-    if (selected.size === 0) { setError("Vui lòng chọn ít nhất 1 từ."); return; }
+    if (selected.size < 2) { setError("Practice II cần ít nhất 2 từ để kiểm tra nhầm ký hiệu."); return; }
 
     setSaving(true);
     setError("");
@@ -531,7 +576,7 @@ export function CustomPackageTab() {
             <p className="custom-pkg-hero-label">Công cụ giảng dạy 🎒</p>
             <h2 className="custom-pkg-hero-title">Gói bài tập tùy chỉnh</h2>
             <p className="custom-pkg-hero-sub">
-              Tự thiết kế bộ từ vựng theo chủ đề, lớp học hoặc nhu cầu của từng học sinh.
+              Tự thiết kế bộ từ vựng theo chủ đề, giao cho học sinh làm dưới dạng Practice II và theo dõi kết quả từng bạn.
             </p>
           </div>
           <div className="custom-pkg-hero-mascot">

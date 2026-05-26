@@ -4,7 +4,8 @@ import { loadCurriculum, getMyProgress, getAssignedPackages, getVocabularyDetail
 import { useAuth } from "../contexts/AuthContext";
 import { PracticeWorkspace } from "../components/PracticeWorkspace";
 import { StudyStage } from "../components/StudyStage";
-import type { DashboardPayload } from "../types/learn";
+import type { AnalysisSummary, DashboardPayload } from "../types/learn";
+import { summarizeAnalysis } from "../utils/helpers";
 
 type PageStage = "learn" | "practice";
 
@@ -18,6 +19,7 @@ export default function LearnWordPage() {
   const [error, setError] = useState("");
   const [stage, setStage] = useState<PageStage>("learn");
   const [completedWordsForTopic, setCompletedWordsForTopic] = useState(0);
+  const [assignmentResults, setAssignmentResults] = useState<AnalysisSummary[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -114,9 +116,15 @@ export default function LearnWordPage() {
     setStage("learn");
   }, [topicId, wordOrder]);
 
+  useEffect(() => {
+    setAssignmentResults([]);
+  }, [topicId]);
+
   const wordIndex = Math.max(0, Number(wordOrder ?? "0"));
   const topic = curriculum?.topics.find((t) => t.id === topicId) ?? null;
   const word = topic?.words[wordIndex] ?? null;
+  const isCustomPackage = Boolean(topicId?.startsWith("custom-pkg-"));
+  const customPackageId = isCustomPackage ? topicId!.replace("custom-pkg-", "") : null;
 
   const goToWord = (index: number) => {
     if (!topic) return;
@@ -152,6 +160,40 @@ export default function LearnWordPage() {
               Quay lại
             </button>
           </section>
+        </main>
+      </div>
+    );
+  }
+
+  if (isCustomPackage && word) {
+    return (
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(78,255,158,0.1),transparent_22%),radial-gradient(circle_at_top_right,rgba(85,206,255,0.15),transparent_24%),linear-gradient(180deg,#f8fafc_0%,#e0f2fe_100%)]">
+        <main className="min-h-screen">
+          <PracticeWorkspace
+            mode="practice_ii"
+            targetGloss={word.gloss}
+            lessonGlosses={topic.glosses}
+            referenceStudy={word.study}
+            wordIndex={wordIndex}
+            wordCount={topic.word_count}
+            title={`Bài giáo viên giao • ${word.gloss}`}
+            subtitle="Đây là Practice II: bé tự ký hiệu, không xem mẫu trước. Sau khi chấm mới hiện video mẫu và phản hồi."
+            actionLabel="Chấm bài"
+            completionLabel={
+              wordIndex >= topic.words.length - 1 ? "Hoàn thành bài được giao →" : "Sang từ tiếp theo →"
+            }
+            assignmentPackageId={customPackageId}
+            practiceIIResults={assignmentResults}
+            onBackToLearn={() => navigate("/learn-dashboard")}
+            onComplete={(raw) => {
+              setAssignmentResults((prev) => [...prev, summarizeAnalysis(raw)]);
+              if (wordIndex >= topic.words.length - 1) {
+                navigate("/learn-dashboard");
+              } else {
+                navigate(`/learn/${topic.id}/${wordIndex + 1}`);
+              }
+            }}
+          />
         </main>
       </div>
     );

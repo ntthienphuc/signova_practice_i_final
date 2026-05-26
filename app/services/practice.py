@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 from app.models.curriculum import Word, Topic
 from app.models.progress import LearnerWordProgress, LearnerTopicProgress
 from app.models.attempt import PracticeAttempt, PracticeAttemptFeedback, PracticeAttemptMetrics
+from app.models.custom_package import CustomPackage
+from app.models.link import SchoolLearnerLink
 from app.models.profile import LearnerProfile
 from app.models.gamification import StreakLog
 from datetime import datetime, date, timezone
@@ -13,6 +15,7 @@ def save_practice_attempt(
     learner_id: uuid.UUID,
     analysis_result: Dict[str, Any],
     practice_mode: str, # practice_i, practice_ii
+    custom_package_id: str | uuid.UUID | None = None,
 ) -> PracticeAttempt:
     target_gloss = analysis_result["target_gloss"]
     lesson_glosses = analysis_result["lesson_glosses"]
@@ -34,12 +37,33 @@ def save_practice_attempt(
     word = db.query(Word).filter(Word.gloss == target_gloss).first()
     topic_id = word.topic_id if word else None
     word_id = word.id if word else None
+    package_uuid: uuid.UUID | None = None
+    if custom_package_id:
+        package_uuid = custom_package_id if isinstance(custom_package_id, uuid.UUID) else uuid.UUID(str(custom_package_id))
+        pkg = db.query(CustomPackage).filter(CustomPackage.id == package_uuid).first()
+        if not pkg:
+            raise ValueError("Custom package not found")
+        if target_gloss not in (pkg.glosses or []):
+            raise ValueError("target_gloss is not included in the assigned custom package")
+
+        direct_ids = set(str(item) for item in (pkg.assigned_student_ids or []))
+        class_names = db.query(SchoolLearnerLink.class_name).filter(
+            SchoolLearnerLink.school_user_id == pkg.created_by,
+            SchoolLearnerLink.learner_user_id == learner_id,
+            SchoolLearnerLink.status == "approved",
+        ).all()
+        linked_classes = {row[0] for row in class_names if row[0]}
+        assigned_by_class = bool(pkg.assigned_class_name and pkg.assigned_class_name in linked_classes)
+        assigned_directly = str(learner_id) in direct_ids
+        if not (assigned_by_class or assigned_directly):
+            raise ValueError("This custom package is not assigned to the learner")
     
     # 1. Create PracticeAttempt record
     attempt = PracticeAttempt(
         learner_user_id=learner_id,
         topic_id=topic_id,
         word_id=word_id,
+        custom_package_id=package_uuid,
         practice_mode=practice_mode,
         target_gloss=target_gloss,
         lesson_glosses_json=lesson_glosses,

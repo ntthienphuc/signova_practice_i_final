@@ -195,6 +195,9 @@ export function LearnTab({
                         👤 Giao bởi: {pkg.teacher_name}
                       </span>
                       <h4 className="text-base font-black text-slate-800 m-0">{pkg.title}</h4>
+                      <p className="text-[11px] text-indigo-600 font-black mt-1 mb-0">
+                        Practice II • {pkg.word_count} vòng kiểm tra
+                      </p>
                       {pkg.description && (
                         <p className="text-xs text-slate-500 font-bold mt-1 mb-0 leading-relaxed truncate">{pkg.description}</p>
                       )}
@@ -212,7 +215,7 @@ export function LearnTab({
                       onClick={() => navigate(`/learn/custom-pkg-${pkg.id}/0`)}
                       className="mt-4 w-full py-2.5 bg-[#1cb0f6] border-b-2 border-[#1899d6] text-white font-black rounded-xl text-xs cursor-pointer hover:bg-[#24c4ff] active:border-b-0 active:translate-y-[1px] transition-all text-center"
                     >
-                      Luyện tập ({pkg.word_count} từ) 🚀
+                      Làm bài ôn tập Practice II 🚀
                     </button>
                   </div>
                 ))}
