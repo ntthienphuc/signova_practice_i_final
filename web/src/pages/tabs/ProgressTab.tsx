@@ -1,6 +1,10 @@
+import { useState, useEffect } from "react";
 import type { Topic } from "../../types/learn";
 import { useAuth } from "../../contexts/AuthContext";
 import { mascots } from "../../utils/mascot";
+import { getMascotShop, getMascotConfig } from "../../api";
+import type { MascotItem, MascotConfig } from "../../api";
+import { getMascotAssetUrl } from "../../utils/mascotAssets";
 
 const DEFAULT_BADGES = [
   { code: "first_attempt", name: "Khởi đầu mới", description: "Lượt luyện tập đầu tiên.", icon: "🚀" },
@@ -62,7 +66,7 @@ export function LearnerProgressDetails({ data, topics }: { data: any; topics: To
         <div className="bg-[#f0f8ff] border-2 border-b-4 border-[#1cb0f6]/40 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 text-center">
           <div className="text-3xl sm:text-5xl select-none mb-1 sm:mb-2">⭐</div>
           <strong className="block text-3xl sm:text-5xl font-black text-[#1cb0f6] leading-none">{currentXp}</strong>
-          <span className="block text-[11px] sm:text-sm font-black text-[#1899d6] mt-1">Kiến thưức XP</span>
+          <span className="block text-[11px] sm:text-sm font-black text-[#1899d6] mt-1">Kiến thức XP</span>
         </div>
         <div className="bg-[#f0fff4] border-2 border-b-4 border-[#58cc02]/40 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 text-center">
           <div className="text-3xl sm:text-5xl select-none mb-1 sm:mb-2">📖</div>
@@ -202,6 +206,18 @@ export function ProgressTab({
   onRejectLink,
 }: ProgressTabProps) {
   const { currentUser } = useAuth();
+
+  const [shopItems, setShopItems] = useState<MascotItem[]>([]);
+  const [mascotConfig, setMascotConfig] = useState<MascotConfig | null>(null);
+
+  useEffect(() => {
+    if (currentUser?.role !== "learner") return;
+    Promise.all([getMascotShop(), getMascotConfig()]).then(([shop, cfg]) => {
+      setShopItems(shop.items);
+      setMascotConfig(cfg);
+    }).catch(() => {});
+  }, [currentUser?.role]);
+
   if (!currentUser) {
     return (
       <section className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-8 text-center py-16">
@@ -266,6 +282,9 @@ export function ProgressTab({
   }
 
   if (role === "learner") {
+    const activeItem = shopItems.find(i => i.item_key === mascotConfig?.active_item_key);
+    const mascotImageUrl = activeItem ? getMascotAssetUrl(activeItem.mascot_filename) : undefined;
+
     return (
       <section className="space-y-6">
         <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
@@ -274,14 +293,13 @@ export function ProgressTab({
             <h2 className="m-0 mt-1 font-black text-slate-800 text-2xl">Thành tích học tập 🏆</h2>
             <p className="text-slate-500 mt-1 font-bold text-sm">Học mỗi ngày để giữ chuỗi liên tục và mở khóa huy hiệu!</p>
           </div>
-          <img 
-            src={mascots[9]} 
-            alt="Progress Mascot" 
-            className="w-16 h-16 object-contain animate-bounce-subtle flex-shrink-0" 
-            style={{ 
+          <img
+            src={mascotImageUrl ?? mascots[9]}
+            alt="Progress Mascot"
+            className="w-16 h-16 object-contain animate-bounce-subtle flex-shrink-0"
+            style={{
               animationDuration: '5s',
-              filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08))"
-            }} 
+            }}
           />
         </div>
 

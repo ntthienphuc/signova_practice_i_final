@@ -55,3 +55,5 @@ export {
 export type { BankWordItem, CustomPackage as CustomPackageData } from "./client";
 export { loadAppConfig, loadCurriculum } from "./endpoints/app";
 export { createRandomTask, analyzeAttempt } from "./endpoints/practice";
+export { getMascotShop, purchaseMascotItem, equipMascotItem, getMascotConfig } from "./endpoints/mascot";
+export type { MascotItem, MascotShopResponse, MascotPurchaseResponse, MascotConfig } from "./types";

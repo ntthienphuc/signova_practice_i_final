@@ -133,3 +133,28 @@ export interface AnalyzeAttemptParams {
   file: File;
   assignmentPackageId?: string | null;
 }
+
+export interface MascotItem {
+  item_key: string;
+  name: string;
+  description: string | null;
+  preview_filename: string;
+  mascot_filename: string;
+  xp_cost: number;
+  is_available: boolean;
+  owned: boolean;
+}
+
+export interface MascotShopResponse {
+  items: MascotItem[];
+}
+
+export interface MascotPurchaseResponse {
+  xp_remaining: number;
+  item_key: string;
+}
+
+export interface MascotConfig {
+  active_item_key: string | null;
+  owned_items: string[];
+}

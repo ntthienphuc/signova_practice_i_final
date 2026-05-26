@@ -8,6 +8,7 @@ import {
 } from "../api";
 import { Sidebar } from "../components/learn-dashboard/Sidebar";
 import { AuthModal } from "../components/AuthModal";
+import { WelcomeMascotModal } from "../components/WelcomeMascotModal";
 import type { AppTab, Topic } from "../types/learn";
 
 const MOCK_EXTRA_TOPICS: Topic[] = [
@@ -54,6 +55,7 @@ import { LearnTab } from "./tabs/LearnTab";
 import { ProgressTab } from "./tabs/ProgressTab";
 import { ReviewTab } from "./tabs/ReviewTab";
 import { SchoolTab } from "./tabs/SchoolTab";
+import { MascotTab } from "./tabs/MascotTab";
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Đã có lỗi xảy ra.";
@@ -75,6 +77,7 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
 
   // Độc lập review & dashboard states chưa tách hết
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [reviewWords, setReviewWords] = useState<any[]>([]);
   const [loadingReview, setLoadingReview] = useState(false);
@@ -411,6 +414,9 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
             onRefreshAI={handleRefreshAI}
           />
         )}
+        {activeTab === "mascot" && (
+          <MascotTab onOpenAuth={() => setIsAuthOpen(true)} />
+        )}
         {activeTab === "school" && (
           <SchoolTab
             topics={topics}
@@ -426,7 +432,8 @@ export default function LearnDashboard({ initialTab = "learn" }: LearnDashboardP
         )}
       </main>
 
-      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onSuccess={(newToken) => login(newToken)} />
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onSuccess={(newToken) => { login(newToken); setShowWelcome(true); }} />
+      <WelcomeMascotModal isOpen={showWelcome} onClose={() => setShowWelcome(false)} />
     </div>
   );
 }

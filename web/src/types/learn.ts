@@ -5,7 +5,7 @@ import type {
   SegmentTiming,
 } from "../api";
 
-export type AppTab = "learn" | "review" | "progress" | "family" | "school" | "account" | "custom_package";
+export type AppTab = "learn" | "review" | "progress" | "mascot" | "family" | "school" | "account" | "custom_package";
 export type SessionStage = "learn" | "practice_i" | "quiz_intro" | "practice_ii" | "summary";
 
 export interface VideoReference {
