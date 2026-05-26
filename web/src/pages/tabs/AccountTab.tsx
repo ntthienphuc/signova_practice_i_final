@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { createChild, createStudent, updateProfile } from "../../api";
+import { createChild, createStudent, updateProfile, getMascotShop, getMascotConfig } from "../../api";
+import type { MascotItem, MascotConfig } from "../../api";
 import { useAuth } from "../../contexts/AuthContext";
 import { mascots } from "../../utils/mascot";
+import { getMascotAssetUrl } from "../../utils/mascotAssets";
 
 interface AccountTabProps {
   parentDashData: any;
@@ -87,6 +89,32 @@ export function AccountTab({
   const [createLoading, setCreateLoading] = useState(false);
   const [createSuccessMsg, setCreateSuccessMsg] = useState("");
   const [createErrorMsg, setCreateErrorMsg] = useState("");
+
+  const [shopItems, setShopItems] = useState<MascotItem[]>([]);
+  const [mascotConfig, setMascotConfig] = useState<MascotConfig | null>(null);
+  const [motivationalMsg] = useState(() => {
+    const msgs = [
+      "Kiên trì mỗi ngày, thành công sẽ đến! Bạn đang làm rất tốt rồi 💪",
+      "Học ngôn ngữ ký hiệu là món quà tuyệt vời bạn trao cho chính mình! 🤟",
+      "Mỗi từ bạn học hôm nay là cầu nối yêu thương với người khiếm thính 💙",
+      "Đừng bỏ cuộc! Mỗi bước nhỏ đều đang tạo nên sự thay đổi lớn 🌱",
+      "Hôm nay bạn học được gì rồi? Hãy giữ ngọn lửa đam mê đó nhé! 🔥",
+      "Chuỗi ngày học liên tục của bạn thật ấn tượng — tiếp tục phát huy! 🏆",
+      "Ngôn ngữ ký hiệu mở ra thế giới mới. Bạn đang làm điều phi thường! ✨",
+      "Mỗi buổi luyện tập là một khoảnh khắc bạn trở nên tốt hơn ngày hôm qua 🌟",
+      "Hành trình nghìn dặm bắt đầu từ một bước chân. Bạn đã đi được bao xa rồi! 🚀",
+      "Học vì đam mê, luyện vì trái tim — bạn sẽ thành công thôi! 💫",
+    ];
+    return msgs[Math.floor(Math.random() * msgs.length)];
+  });
+
+  useEffect(() => {
+    if (currentUser?.role !== "learner") return;
+    Promise.all([getMascotShop(), getMascotConfig()]).then(([shop, cfg]) => {
+      setShopItems(shop.items);
+      setMascotConfig(cfg);
+    }).catch(() => {});
+  }, [currentUser?.role]);
 
   if (!currentUser) {
     return (
@@ -174,6 +202,11 @@ export function AccountTab({
     }
   };
 
+  const activeItem = shopItems.find(i => i.item_key === mascotConfig?.active_item_key);
+  const headerMascotUrl = role === "learner" && activeItem
+    ? getMascotAssetUrl(activeItem.mascot_filename)
+    : undefined;
+
   return (
     <section className="space-y-5 sm:space-y-6 max-w-full overflow-hidden">
       <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[24px] sm:rounded-[28px] p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
@@ -182,16 +215,28 @@ export function AccountTab({
           <h2 className="m-0 mt-1 font-black text-slate-800 text-lg sm:text-xl leading-tight">Thông tin cá nhân & Quản lý</h2>
           <p className="text-slate-500 font-bold text-xs sm:text-sm m-0 leading-relaxed">Quản lý hồ sơ và tự tạo, liên kết tài khoản cho con hoặc học sinh của bạn.</p>
         </div>
-        <img 
-          src={mascots[1]} 
-          alt="Settings Mascot" 
-          className="w-16 h-16 object-contain animate-bounce-subtle flex-shrink-0" 
-          style={{ 
+        <img
+          src={headerMascotUrl ?? mascots[1]}
+          alt="Settings Mascot"
+          className="w-16 h-16 object-contain animate-bounce-subtle flex-shrink-0"
+          style={{
             animationDuration: '5s',
             filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08))"
-          }} 
+          }}
         />
       </div>
+
+      {role === "learner" && (
+        <div className="bg-gradient-to-r from-[#f0f8ff] to-[#f0fff4] border-2 border-b-4 border-[#1cb0f6]/30 rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 flex items-center gap-4">
+          <img
+            src={headerMascotUrl ?? mascots[1]}
+            alt="Mascot"
+            className="w-14 h-14 object-contain flex-shrink-0"
+            style={{ filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.10))" }}
+          />
+          <p className="font-black text-slate-700 text-sm sm:text-base m-0 leading-relaxed">{motivationalMsg}</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Profile Form */}
