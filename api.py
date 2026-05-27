@@ -829,6 +829,15 @@ def create_app() -> FastAPI:
         path = Path(poster["poster_path"])
         return FileResponse(path, media_type="image/jpeg", filename=path.name)
 
+    @app.get("/mascot/image/{filename}")
+    def mascot_image(filename: str) -> FileResponse:
+        from urllib.parse import unquote
+        safe_name = Path(unquote(filename)).name  # strip any path traversal
+        img_path = APP_DIR / "outputs" / "mascot" / "gamification" / safe_name
+        if not img_path.exists():
+            raise HTTPException(status_code=404, detail=f"Mascot image not found: {safe_name}")
+        return FileResponse(img_path, media_type="image/png", filename=safe_name)
+
     @app.get("/playback/attempt/{attempt_id}")
     def attempt_playback(attempt_id: str) -> FileResponse:
         path = playback_cache_dir / "attempts" / f"{attempt_id}_playable.mp4"

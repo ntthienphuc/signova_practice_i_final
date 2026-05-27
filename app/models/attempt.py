@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, DateTime, Float, Text, Uuid, JSON, func
+from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, DateTime, Float, Text, Uuid, JSON, Index, func
 from sqlalchemy.orm import relationship
 import uuid
 from app.models.base import Base
@@ -24,6 +24,10 @@ class PracticeAttempt(Base):
     segment_end_ms = Column(Integer, nullable=True)
     frame_stride = Column(Integer, nullable=False, default=2)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    __table_args__ = (
+        Index("ix_practice_attempts_learner_created", "learner_user_id", "created_at"),
+    )
 
     # Relationships
     feedback = relationship("PracticeAttemptFeedback", back_populates="attempt", uselist=False, cascade="all, delete-orphan")
