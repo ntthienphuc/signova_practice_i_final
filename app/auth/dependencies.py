@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.db import get_db
 from app.auth.jwt import decode_access_token
 from app.models.user import User
@@ -36,10 +36,19 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     except ValueError:
         raise credentials_exception
         
-    user = db.query(User).filter(User.id == user_uuid).first()
+    user = (
+        db.query(User)
+        .options(
+            joinedload(User.learner_profile),
+            joinedload(User.parent_profile),
+            joinedload(User.school_profile),
+        )
+        .filter(User.id == user_uuid)
+        .first()
+    )
     if user is None:
         raise credentials_exception
-        
+
     return user
 
 def get_current_user_optional(token: str | None = Depends(oauth2_scheme_optional), db: Session = Depends(get_db)) -> User | None:
@@ -59,7 +68,16 @@ def get_current_user_optional(token: str | None = Depends(oauth2_scheme_optional
         except ValueError:
             return None
             
-        return db.query(User).filter(User.id == user_uuid).first()
+        return (
+            db.query(User)
+            .options(
+                joinedload(User.learner_profile),
+                joinedload(User.parent_profile),
+                joinedload(User.school_profile),
+            )
+            .filter(User.id == user_uuid)
+            .first()
+        )
     except Exception:
         return None
 

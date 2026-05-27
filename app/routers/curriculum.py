@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from app.db import get_db
 from app.models.curriculum import Topic, Word
 from app.schemas.curriculum import CurriculumSchema
@@ -10,6 +10,8 @@ from urllib.parse import quote
 from typing import Any, Dict
 
 router = APIRouter(tags=["curriculum"])
+
+_curriculum_cache: dict | None = None
 
 APP_DIR = Path(__file__).resolve().parent.parent.parent
 DEFAULT_BANK_ROOT = APP_DIR / "outputs" / "reference_bank_20_best_allcam1_fe"
@@ -36,14 +38,23 @@ def build_reference_study_payload(gloss: str) -> Dict[str, Any] | None:
 
 @router.get("/curriculum", response_model=CurriculumSchema)
 def get_curriculum(db: Session = Depends(get_db)):
-    topics = db.query(Topic).order_by(Topic.order_index).all()
+    global _curriculum_cache
+    if _curriculum_cache is not None:
+        return _curriculum_cache
+
+    topics = (
+        db.query(Topic)
+        .options(selectinload(Topic.words))
+        .order_by(Topic.order_index)
+        .all()
+    )
     result_topics = []
-    
+
     for t in topics:
-        words = db.query(Word).filter(Word.topic_id == t.id).order_by(Word.order_index).all()
+        words = sorted(t.words, key=lambda w: w.order_index)
         words_schema = []
         glosses = []
-        
+
         for w in words:
             glosses.append(w.gloss)
             study_payload = build_reference_study_payload(w.gloss)
@@ -53,7 +64,7 @@ def get_curriculum(db: Session = Depends(get_db)):
                 "checkpoint_group": w.checkpoint_group,
                 "study": study_payload
             })
-            
+
         result_topics.append({
             "id": t.id,
             "slug": t.slug,
@@ -65,8 +76,9 @@ def get_curriculum(db: Session = Depends(get_db)):
             "glosses": glosses,
             "words": words_schema
         })
-        
-    return {"topics": result_topics}
+
+    _curriculum_cache = {"topics": result_topics}
+    return _curriculum_cache
 
 @router.get("/topics")
 def get_topics(db: Session = Depends(get_db)):

@@ -5,10 +5,11 @@ import { TopicGrid } from "../../components/learn/TopicGrid";
 import { TopicSummary } from "../../components/TopicSummary";
 import { PracticeWorkspace } from "../../components/PracticeWorkspace";
 import { StudyStage } from "../../components/StudyStage";
-import { getAssignedPackages } from "../../api";
-import type { AnalyzeResponse } from "../../api";
+import { getAssignedPackages, getMascotShop, getMascotConfig } from "../../api";
+import type { AnalyzeResponse, MascotItem, MascotConfig } from "../../api";
 import type { DashboardPayload, PracticeSession, ProgressByTopic, Topic } from "../../types/learn";
 import { mascots } from "../../utils/mascot";
+import { getMascotAssetUrl } from "../../utils/mascotAssets";
 
 interface QuizIntroProps {
   scope: 5 | 10;
@@ -115,6 +116,8 @@ export function LearnTab({
   const navigate = useNavigate();
   const [assignedPackages, setAssignedPackages] = useState<any[]>([]);
   const [loadingAssigned, setLoadingAssigned] = useState(false);
+  const [shopItems, setShopItems] = useState<MascotItem[]>([]);
+  const [mascotConfig, setMascotConfig] = useState<MascotConfig | null>(null);
 
   useEffect(() => {
     const loadAssigned = async () => {
@@ -132,6 +135,19 @@ export function LearnTab({
       loadAssigned();
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser?.role !== "learner") return;
+    Promise.all([getMascotShop(), getMascotConfig()]).then(([shop, cfg]) => {
+      setShopItems(shop.items);
+      setMascotConfig(cfg);
+    }).catch(() => {});
+  }, [currentUser?.role]);
+
+  const activeItem = shopItems.find(i => i.item_key === mascotConfig?.active_item_key);
+  const welcomeMascotUrl = currentUser?.role === "learner" && activeItem
+    ? getMascotAssetUrl(activeItem.mascot_filename)
+    : undefined;
 
   const currentWord = useMemo(() => {
     if (!session) return null;
@@ -233,9 +249,9 @@ export function LearnTab({
         {/* Welcome Mascot Widget */}
         <div className="hidden md:flex flex-col gap-4 sticky top-6 bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-5 text-center items-center shadow-sm select-none">
           <div className="w-28 h-28 my-1">
-            <img 
-              src={mascots[2]} 
-              alt="Mascot Welcoming" 
+            <img
+              src={welcomeMascotUrl ?? mascots[2]}
+              alt="Mascot Welcoming"
               className="w-full h-full object-contain animate-bounce-subtle"
               style={{ animationDuration: '5s', filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.08))" }}
             />

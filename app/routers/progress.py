@@ -38,14 +38,9 @@ def get_my_progress(current_user: User = Depends(get_current_user), db: Session 
 
     result = []
     for tp in topic_progress_list:
-        studied_count = db.query(LearnerWordProgress).join(Word).filter(
-            LearnerWordProgress.learner_user_id == current_user.id,
-            Word.topic_id == tp.topic_id,
-            LearnerWordProgress.studied == True
-        ).count()
         result.append({
             "topic_id": tp.topic_id,
-            "completed_words": studied_count,
+            "completed_words": tp.completed_words,
             "checkpoint5_passed": tp.checkpoint5_passed,
             "practice2_final_passed": tp.practice2_final_passed,
             "completed": tp.completed,
@@ -88,14 +83,20 @@ def get_topic_progress(topic_id: str, current_user: User = Depends(get_current_u
         db.refresh(tp)
         
     words = db.query(Word).filter(Word.topic_id == topic_id).order_by(Word.order_index).all()
-    words_progress = []
-    
-    for w in words:
-        wp = db.query(LearnerWordProgress).filter(
+    word_ids = [w.id for w in words]
+
+    existing_progress = {
+        wp.word_id: wp
+        for wp in db.query(LearnerWordProgress).filter(
             LearnerWordProgress.learner_user_id == current_user.id,
-            LearnerWordProgress.word_id == w.id
-        ).first()
-        
+            LearnerWordProgress.word_id.in_(word_ids)
+        ).all()
+    }
+
+    words_progress = []
+    has_new = False
+    for w in words:
+        wp = existing_progress.get(w.id)
         if not wp:
             wp = LearnerWordProgress(
                 learner_user_id=current_user.id,
@@ -105,8 +106,8 @@ def get_topic_progress(topic_id: str, current_user: User = Depends(get_current_u
                 accepted_once=False
             )
             db.add(wp)
-            db.flush()
-            
+            has_new = True
+
         words_progress.append({
             "word_id": w.id,
             "gloss": w.gloss,
@@ -115,9 +116,11 @@ def get_topic_progress(topic_id: str, current_user: User = Depends(get_current_u
             "best_practice1_score": wp.best_practice1_score,
             "last_practice1_score": wp.last_practice1_score,
             "accepted_once": wp.accepted_once,
-            "updated_at": wp.updated_at
+            "updated_at": wp.updated_at,
         })
-        
+
+    if has_new:
+        db.flush()
     db.commit()
     
     return {
@@ -211,19 +214,19 @@ def update_resume_state(req: ResumeStateRequest, current_user: User = Depends(ge
 def get_review_words(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if current_user.role not in ["learner", "parent"]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only learners and parents can review words")
-        
-    progress_list = db.query(LearnerWordProgress).filter(
-        LearnerWordProgress.learner_user_id == current_user.id,
-        LearnerWordProgress.studied == True
-    ).all()
-    
-    words_data = []
-    for p in progress_list:
-        w = db.query(Word).filter(Word.id == p.word_id).first()
-        if not w:
-            continue
-            
-        words_data.append({
+
+    rows = (
+        db.query(LearnerWordProgress, Word)
+        .join(Word, LearnerWordProgress.word_id == Word.id)
+        .filter(
+            LearnerWordProgress.learner_user_id == current_user.id,
+            LearnerWordProgress.studied == True
+        )
+        .all()
+    )
+
+    words_data = [
+        {
             "word_id": p.word_id,
             "gloss": w.gloss,
             "topic_id": w.topic_id,
@@ -233,14 +236,16 @@ def get_review_words(current_user: User = Depends(get_current_user), db: Session
             "best_practice1_score": p.best_practice1_score,
             "last_practice1_score": p.last_practice1_score,
             "accepted_once": p.accepted_once,
-            "updated_at": p.updated_at
-        })
-        
+            "updated_at": p.updated_at,
+        }
+        for p, w in rows
+    ]
+
     words_data.sort(
         key=lambda x: (
             -x["failed_attempt_count"],
-            x["last_practice1_score"] if x["last_practice1_score"] is not None else 100.0
+            x["last_practice1_score"] if x["last_practice1_score"] is not None else 100.0,
         )
     )
-    
+
     return {"words": words_data}
