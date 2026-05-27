@@ -40,8 +40,8 @@ COPY entrypoint.sh .
 # Create models directory and download ONNX model (if available)
 RUN mkdir -p models && python scripts/download_models.py || echo "Note: ONNX model not available, Practice II will be disabled"
 
-# Set execution permission for entrypoint script
-RUN chmod +x entrypoint.sh
+# Normalize line endings and set execution permission for entrypoint script
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 
 # Expose port 7860 as expected by Hugging Face Spaces
 EXPOSE 7860
