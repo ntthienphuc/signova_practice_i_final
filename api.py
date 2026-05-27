@@ -40,7 +40,10 @@ from signova_practice_i.video_engine import extract_video_pose_and_results
 
 APP_DIR = Path(__file__).resolve().parent
 DEFAULT_BANK_ROOT = APP_DIR / "outputs" / "reference_bank_20_best_allcam1_fe"
-LOCAL_SIGN_MODEL_PATH = APP_DIR / "models" / "spoter_v3.0.onnx"
+LOCAL_SIGN_MODEL_PATH = next(
+    (p for p in [APP_DIR / "models" / "spoter_v3.0.onnx", APP_DIR / "app" / "models" / "spoter_v3.0.onnx"] if p.exists()),
+    APP_DIR / "models" / "spoter_v3.0.onnx"
+)
 LOCAL_SIGN_GLOSS_CSV = APP_DIR / "gloss.csv"
 DEFAULT_SIGN_MODEL_PATH = LOCAL_SIGN_MODEL_PATH if LOCAL_SIGN_MODEL_PATH.exists() else Path(r"D:\Project\MultiModel\App\models\spoter_v3.0.onnx")
 DEFAULT_SIGN_GLOSS_CSV = LOCAL_SIGN_GLOSS_CSV if LOCAL_SIGN_GLOSS_CSV.exists() else Path(r"D:\Project\MultiModel\App\gloss.csv")
