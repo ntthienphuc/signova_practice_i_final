@@ -1,6 +1,2 @@
-*.onnx filter=lfs diff=lfs merge=lfs -text
-*.npz filter=lfs diff=lfs merge=lfs -text
-*.mp4 filter=lfs diff=lfs merge=lfs -text
-*.png filter=lfs diff=lfs merge=lfs -text
-web/**/*.png !filter !diff !merge
-
+*.sh text eol=lf
+Dockerfile text eol=lf
