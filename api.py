@@ -149,6 +149,7 @@ def create_app() -> FastAPI:
             load_id2label(sign_gloss_csv),
             num_frames=100,
             top_k=3,
+            num_cpu_threads=1,
         )
         return sign_classifier
 
@@ -193,7 +194,7 @@ def create_app() -> FastAPI:
             "-c:v",
             "libx264",
             "-preset",
-            "veryfast",
+            "ultrafast",
             "-pix_fmt",
             "yuv420p",
             "-movflags",
@@ -410,10 +411,11 @@ def create_app() -> FastAPI:
             "reason": segment.reason if segment is not None else "full_video",
         }
 
-    async def analyze_target_attempt(
+    def analyze_target_attempt_sync(
         *,
         target_gloss: str,
-        video: UploadFile,
+        video_bytes: bytes,
+        video_filename: str,
         lesson_glosses: list[str],
         overlay_frame_count: int,
         max_frames: int | None,
@@ -430,12 +432,11 @@ def create_app() -> FastAPI:
         if frame_stride < 1:
             raise HTTPException(status_code=400, detail="frame_stride must be >= 1")
 
-        suffix = Path(video.filename or "upload.mp4").suffix or ".mp4"
+        suffix = Path(video_filename or "upload.mp4").suffix or ".mp4"
         request_id = uuid.uuid4().hex[:12]
-        content = await video.read()
         with tempfile.TemporaryDirectory() as tmpdir:
             input_path = Path(tmpdir) / f"upload{suffix}"
-            input_path.write_bytes(content)
+            input_path.write_bytes(video_bytes)
             attempt_playback = ensure_attempt_playback(input_path, request_id)
             try:
                 user_pose, user_results, video_meta = extract_video_pose_and_results(
@@ -852,9 +853,13 @@ def create_app() -> FastAPI:
         current_user: Any = Depends(get_current_user_optional),
     ) -> dict[str, object]:
         lesson = resolve_lesson_glosses(lesson_glosses, require_multi=False)
-        analysis = await analyze_target_attempt(
+        video_bytes = await video.read()
+        import asyncio
+        analysis = await asyncio.to_thread(
+            analyze_target_attempt_sync,
             target_gloss=target_gloss,
-            video=video,
+            video_bytes=video_bytes,
+            video_filename=video.filename or "upload.mp4",
             lesson_glosses=lesson,
             overlay_frame_count=overlay_frame_count,
             max_frames=max_frames,
@@ -894,9 +899,13 @@ def create_app() -> FastAPI:
         current_user: Any = Depends(get_current_user_optional),
     ) -> dict[str, object]:
         lesson = resolve_lesson_glosses(lesson_glosses, require_multi=True)
-        analysis = await analyze_target_attempt(
+        video_bytes = await video.read()
+        import asyncio
+        analysis = await asyncio.to_thread(
+            analyze_target_attempt_sync,
             target_gloss=target_gloss,
-            video=video,
+            video_bytes=video_bytes,
+            video_filename=video.filename or "upload.mp4",
             lesson_glosses=lesson,
             overlay_frame_count=overlay_frame_count,
             max_frames=max_frames,
@@ -951,9 +960,13 @@ def create_app() -> FastAPI:
         current_user: Any = Depends(get_current_user_optional),
     ) -> dict[str, object]:
         lesson = resolve_lesson_glosses(lesson_glosses, require_multi=False)
-        analysis = await analyze_target_attempt(
+        video_bytes = await video.read()
+        import asyncio
+        analysis = await asyncio.to_thread(
+            analyze_target_attempt_sync,
             target_gloss=target_gloss,
-            video=video,
+            video_bytes=video_bytes,
+            video_filename=video.filename or "upload.mp4",
             lesson_glosses=lesson,
             overlay_frame_count=overlay_frame_count,
             max_frames=max_frames,
@@ -988,9 +1001,13 @@ def create_app() -> FastAPI:
         current_user: Any = Depends(get_current_user_optional),
     ) -> dict[str, object]:
         lesson = resolve_lesson_glosses(lesson_glosses, require_multi=True)
-        analysis = await analyze_target_attempt(
+        video_bytes = await video.read()
+        import asyncio
+        analysis = await asyncio.to_thread(
+            analyze_target_attempt_sync,
             target_gloss=target_gloss,
-            video=video,
+            video_bytes=video_bytes,
+            video_filename=video.filename or "upload.mp4",
             lesson_glosses=lesson,
             overlay_frame_count=overlay_frame_count,
             max_frames=max_frames,

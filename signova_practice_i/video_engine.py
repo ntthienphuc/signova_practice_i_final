@@ -91,12 +91,14 @@ def extract_video_pose_and_results(
             min_tracking_confidence=0.5,
         )
         while True:
+            if frame_idx % frame_stride != 0:
+                if not cap.grab():
+                    break
+                frame_idx += 1
+                continue
             ok, frame = cap.read()
             if not ok:
                 break
-            if frame_idx % frame_stride != 0:
-                frame_idx += 1
-                continue
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             rgb.flags.writeable = False
             results = holistic.process(rgb)
