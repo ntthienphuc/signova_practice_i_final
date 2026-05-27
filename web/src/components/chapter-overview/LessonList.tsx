@@ -138,7 +138,7 @@ export function LessonList({
         };
 
         const entries: ReactNode[] = [(
-          <div key={`${topicId}-${wordIndex}`} className="flex items-start gap-3">
+          <div key={`${topicId}-${wordIndex}`} {...(wordIndex === 0 ? { "data-tour": "chapter-first-word" } : {})} className="flex items-start gap-3">
             {/* Left: icon column with connector */}
             <div className="flex flex-col items-center flex-shrink-0" style={{ width: 48 }}>
               <div

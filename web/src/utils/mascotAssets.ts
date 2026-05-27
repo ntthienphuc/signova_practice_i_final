@@ -1,9 +1,5 @@
-const gamificationAssets = import.meta.glob(
-  "../assets/mascot/gamification/*.png",
-  { eager: true }
-) as Record<string, { default: string }>;
+import { apiClient } from "../api/client";
 
-export function getMascotAssetUrl(filename: string): string | undefined {
-  const key = `../assets/mascot/gamification/${filename}`;
-  return gamificationAssets[key]?.default;
+export function getMascotAssetUrl(filename: string): string {
+  return `${apiClient.defaults.baseURL}mascot/image/${encodeURIComponent(filename)}`;
 }

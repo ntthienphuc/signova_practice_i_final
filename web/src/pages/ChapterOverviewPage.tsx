@@ -4,6 +4,7 @@ import { loadCurriculum, getMyProgress } from "../api";
 import { ChapterHeader } from "../components/chapter-overview/ChapterHeader";
 import { LessonList } from "../components/chapter-overview/LessonList";
 import { AuthModal } from "../components/AuthModal";
+import { SpotlightTour } from "../components/SpotlightTour";
 import type { Topic, DashboardPayload } from "../types/learn";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -53,8 +54,33 @@ export default function ChapterOverviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
 
   const isGuest = !currentUser;
+
+  useEffect(() => {
+    if (!localStorage.getItem("tour_chapter_overview_v1")) setTourOpen(true);
+  }, []);
+
+  const handleCloseTour = () => {
+    localStorage.setItem("tour_chapter_overview_v1", "1");
+    setTourOpen(false);
+  };
+
+  const CHAPTER_TOUR_STEPS = [
+    {
+      selector: '[data-tour="chapter-first-word"]',
+      title: "Nhấn vào thẻ từ để học",
+      body: "Học từng từ vựng theo thứ tự. Hoàn thành từng từ để mở khóa từ tiếp theo.",
+      padding: 12,
+    },
+    {
+      selector: '[data-tour="chapter-continue-btn"]',
+      title: "Tiếp tục từ nơi dừng lại",
+      body: "Nút này đưa bạn thẳng đến từ đang học dang dở, không cần tìm lại.",
+      padding: 8,
+    },
+  ];
 
   useEffect(() => {
     setLoading(true);
@@ -120,6 +146,7 @@ export default function ChapterOverviewPage() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#faf9f6" }}>
+      <SpotlightTour steps={CHAPTER_TOUR_STEPS} isOpen={tourOpen} onClose={handleCloseTour} />
       <ChapterHeader
         topicIndex={topicIndex + 1}
         title={topic.title}
@@ -130,6 +157,16 @@ export default function ChapterOverviewPage() {
       />
 
       <main className="flex-1 w-full max-w-xl mx-auto px-4 pt-8 pb-28">
+        <div className="flex justify-end mb-4">
+          <button
+            type="button"
+            onClick={() => setTourOpen(true)}
+            className="flex items-center gap-1.5 text-xs font-black text-slate-400 hover:text-[#1cb0f6] transition-colors cursor-pointer select-none group"
+          >
+            <span className="w-5 h-5 rounded-full border-2 border-slate-300 group-hover:border-[#1cb0f6] flex items-center justify-center text-[10px] font-black transition-colors">?</span>
+            Hướng dẫn
+          </button>
+        </div>
         <LessonList
           words={topic.words}
           completedCount={completedCount}
@@ -150,6 +187,7 @@ export default function ChapterOverviewPage() {
         <button
           type="button"
           onClick={() => navigate(`/learn/${topic.id}/${resumeIndex}`)}
+          data-tour="chapter-continue-btn"
           className="w-full max-w-xl mx-auto flex items-center justify-center font-black text-white text-sm sm:text-base rounded-2xl py-4 cursor-pointer transition-all active:translate-y-[1px] block"
           style={{
             backgroundColor: accent.accent,

@@ -5,6 +5,7 @@ import { mascots } from "../../utils/mascot";
 import { getMascotShop, getMascotConfig } from "../../api";
 import type { MascotItem, MascotConfig } from "../../api";
 import { getMascotAssetUrl } from "../../utils/mascotAssets";
+import { SpotlightTour } from "../../components/SpotlightTour";
 
 const DEFAULT_BADGES = [
   { code: "first_attempt", name: "Khởi đầu mới", description: "Lượt luyện tập đầu tiên.", icon: "🚀" },
@@ -57,7 +58,7 @@ export function LearnerProgressDetails({ data, topics }: { data: any; topics: To
   return (
     <div className="space-y-5">
       {/* Big stat cards */}
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+      <div data-tour="progress-stats" className="grid grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-[#fff8ee] border-2 border-b-4 border-[#ff9600]/40 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 text-center">
           <div className="text-3xl sm:text-5xl select-none mb-1 sm:mb-2">🔥</div>
           <strong className="block text-3xl sm:text-5xl font-black text-[#ff9600] leading-none">{activeStreak}</strong>
@@ -76,7 +77,7 @@ export function LearnerProgressDetails({ data, topics }: { data: any; topics: To
       </div>
 
       {/* Badges */}
-      <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-5 space-y-4">
+      <div data-tour="progress-badges" className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-5 space-y-4">
         <h3 className="text-xl font-black text-slate-800 border-b-2 border-slate-100 pb-3 flex items-center gap-2 m-0 select-none">
           🏅 Huy hiệu
         </h3>
@@ -209,6 +210,31 @@ export function ProgressTab({
 
   const [shopItems, setShopItems] = useState<MascotItem[]>([]);
   const [mascotConfig, setMascotConfig] = useState<MascotConfig | null>(null);
+  const [tourOpen, setTourOpen] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem("tour_progress_tab_v1")) setTourOpen(true);
+  }, []);
+
+  const handleCloseTour = () => {
+    localStorage.setItem("tour_progress_tab_v1", "1");
+    setTourOpen(false);
+  };
+
+  const PROGRESS_TOUR_STEPS = [
+    {
+      selector: '[data-tour="progress-stats"]',
+      title: "Streak, XP và từ đã học",
+      body: "Học mỗi ngày để duy trì streak và tích lũy XP sau mỗi lần luyện tập.",
+      padding: 12,
+    },
+    {
+      selector: '[data-tour="progress-badges"]',
+      title: "Huy hiệu thành tích",
+      body: "Hoàn thành các mục tiêu học tập để mở khóa huy hiệu. Huy hiệu mờ nghĩa là chưa đạt.",
+      padding: 12,
+    },
+  ];
 
   useEffect(() => {
     if (currentUser?.role !== "learner") return;
@@ -287,9 +313,20 @@ export function ProgressTab({
 
     return (
       <section className="space-y-6">
+        <SpotlightTour steps={PROGRESS_TOUR_STEPS} isOpen={tourOpen} onClose={handleCloseTour} />
         <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
           <div className="space-y-1 text-center sm:text-left">
-            <p className="m-0 text-sm uppercase tracking-[0.18em] text-[#1cb0f6] font-black">⚡ Tiến độ của bạn</p>
+            <div className="flex items-center gap-3 justify-center sm:justify-start">
+              <p className="m-0 text-sm uppercase tracking-[0.18em] text-[#1cb0f6] font-black">⚡ Tiến độ của bạn</p>
+              <button
+                type="button"
+                onClick={() => setTourOpen(true)}
+                className="flex items-center gap-1 text-xs font-black text-slate-400 hover:text-[#1cb0f6] transition-colors cursor-pointer select-none group"
+              >
+                <span className="w-5 h-5 rounded-full border-2 border-slate-300 group-hover:border-[#1cb0f6] flex items-center justify-center text-[10px] font-black transition-colors">?</span>
+                Hướng dẫn
+              </button>
+            </div>
             <h2 className="m-0 mt-1 font-black text-slate-800 text-2xl">Thành tích học tập 🏆</h2>
             <p className="text-slate-500 mt-1 font-bold text-sm">Học mỗi ngày để giữ chuỗi liên tục và mở khóa huy hiệu!</p>
           </div>

@@ -6,6 +6,7 @@ import { TopicSummary } from "../../components/TopicSummary";
 import { PracticeWorkspace } from "../../components/PracticeWorkspace";
 import { StudyStage } from "../../components/StudyStage";
 import { getAssignedPackages, getMascotShop, getMascotConfig } from "../../api";
+import { SpotlightTour } from "../../components/SpotlightTour";
 import type { AnalyzeResponse, MascotItem, MascotConfig } from "../../api";
 import type { DashboardPayload, PracticeSession, ProgressByTopic, Topic } from "../../types/learn";
 import { mascots } from "../../utils/mascot";
@@ -118,6 +119,30 @@ export function LearnTab({
   const [loadingAssigned, setLoadingAssigned] = useState(false);
   const [shopItems, setShopItems] = useState<MascotItem[]>([]);
   const [mascotConfig, setMascotConfig] = useState<MascotConfig | null>(null);
+  const [tourOpen, setTourOpen] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem("tour_learn_tab_v1")) setTourOpen(true);
+  }, []);
+
+  const handleCloseTour = () => {
+    localStorage.setItem("tour_learn_tab_v1", "1");
+    setTourOpen(false);
+  };
+
+  const LEARN_TOUR_STEPS = [
+    {
+      selector: '[data-tour="learn-first-topic"]',
+      title: "Nhấn vào thẻ để bắt đầu học",
+      padding: 12,
+    },
+    ...(assignedPackages.length > 0 ? [{
+      selector: '[data-tour="learn-assigned"]',
+      title: "Bài tập từ giáo viên",
+      body: "Giáo viên đã giao cho bạn các gói từ vựng cần ôn luyện. Hãy hoàn thành chúng trước nhé!",
+      padding: 12,
+    }] : [])
+  ];
 
   useEffect(() => {
     const loadAssigned = async () => {
@@ -193,9 +218,24 @@ export function LearnTab({
   if (!session) {
     return (
       <section className="grid grid-cols-1 md:grid-cols-[1fr_250px] gap-8 max-w-4xl mx-auto items-start py-2">
+        <SpotlightTour steps={LEARN_TOUR_STEPS} isOpen={tourOpen} onClose={handleCloseTour} />
+
         <div className="w-full flex flex-col gap-6">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setTourOpen(true)}
+              className="flex items-center gap-1.5 text-xs font-black text-slate-400 hover:text-[#1cb0f6] transition-colors cursor-pointer select-none group"
+            >
+              <span className="w-5 h-5 rounded-full border-2 border-slate-300 group-hover:border-[#1cb0f6] flex items-center justify-center text-[10px] font-black transition-colors">
+                ?
+              </span>
+              Hướng dẫn
+            </button>
+          </div>
+
           {currentUser?.role === "learner" && assignedPackages.length > 0 && (
-            <div className="bg-gradient-to-br from-indigo-50/50 to-sky-50/30 border-2 border-indigo-150 border-b-4 rounded-[32px] p-6 shadow-sm">
+            <div data-tour="learn-assigned" className="bg-gradient-to-br from-indigo-50/50 to-sky-50/30 border-2 border-indigo-150 border-b-4 rounded-[32px] p-6 shadow-sm">
               <h3 className="m-0 text-lg font-black text-slate-800 flex items-center gap-2">
                 🎒 Bài tập được giao từ giáo viên
               </h3>
@@ -247,7 +287,7 @@ export function LearnTab({
         </div>
         
         {/* Welcome Mascot Widget */}
-        <div className="hidden md:flex flex-col gap-4 sticky top-6 bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-5 text-center items-center shadow-sm select-none">
+        <div data-tour="learn-mascot" className="hidden md:flex flex-col gap-4 sticky top-6 bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-5 text-center items-center shadow-sm select-none">
           <div className="w-28 h-28 my-1">
             <img
               src={welcomeMascotUrl ?? mascots[2]}

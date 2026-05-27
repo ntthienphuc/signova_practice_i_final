@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import { PracticeWorkspace } from "../../components/PracticeWorkspace";
 import type { AppTab } from "../../types/learn";
 import { useAuth } from "../../contexts/AuthContext";
 import { mascots } from "../../utils/mascot";
+import { SpotlightTour } from "../../components/SpotlightTour";
 
 interface ReviewTabProps {
   activeReviewWord: any;
@@ -122,6 +124,7 @@ function SectionGroup({
   emoji,
   words,
   color,
+  dataTour,
   loadingReviewWord,
   onStartReviewPractice,
 }: {
@@ -129,12 +132,13 @@ function SectionGroup({
   emoji: string;
   words: any[];
   color: string;
+  dataTour?: string;
   loadingReviewWord: string | null;
   onStartReviewPractice: (gloss: string) => void;
 }) {
   if (words.length === 0) return null;
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" {...(dataTour ? { "data-tour": dataTour } : {})}>
       <div className={`flex items-center gap-3 px-1`}>
         <span className="text-2xl">{emoji}</span>
         <div>
@@ -156,6 +160,21 @@ function SectionGroup({
   );
 }
 
+const REVIEW_TOUR_STEPS = [
+  {
+    selector: '[data-tour="review-header"]',
+    title: "Thống kê tiến độ ôn tập",
+    body: "Ba chỉ số cho thấy số từ cần luyện, đang tiến bộ và đã thành thạo.",
+    padding: 12,
+  },
+  {
+    selector: '[data-tour="review-need-practice"]',
+    title: "Luyện tập từ cần ôn",
+    body: "Nhấn \"Luyện ngay\" để quay video ký hiệu — AI chấm điểm tự động.",
+    padding: 12,
+  },
+];
+
 export function ReviewTab({
   activeReviewWord,
   loadingReview,
@@ -170,6 +189,16 @@ export function ReviewTab({
   onCompleteReview,
 }: ReviewTabProps) {
   const { currentUser } = useAuth();
+  const [tourOpen, setTourOpen] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem("tour_review_tab_v1")) setTourOpen(true);
+  }, []);
+
+  const handleCloseTour = () => {
+    localStorage.setItem("tour_review_tab_v1", "1");
+    setTourOpen(false);
+  };
   if (!currentUser) {
     return (
       <section className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-8 text-center py-16">
@@ -240,7 +269,7 @@ export function ReviewTab({
   return (
     <section className="space-y-6">
       {/* Header */}
-      <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6">
+      <div data-tour="review-header" className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6">
         <p className="m-0 text-sm uppercase tracking-[0.18em] text-[#1cb0f6] font-black">🏋️ Luyện Tập</p>
         <h2 className="m-0 mt-1 font-black text-slate-800 text-2xl">Ôn lại từ đã học</h2>
 
@@ -259,6 +288,19 @@ export function ReviewTab({
             <div className="text-[10px] font-black text-[#58cc02]/80 uppercase tracking-wider mt-0.5">Thành thạo</div>
           </div>
         </div>
+      </div>
+
+      <SpotlightTour steps={REVIEW_TOUR_STEPS} isOpen={tourOpen} onClose={handleCloseTour} />
+
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => setTourOpen(true)}
+          className="flex items-center gap-1.5 text-xs font-black text-slate-400 hover:text-[#1cb0f6] transition-colors cursor-pointer select-none group"
+        >
+          <span className="w-5 h-5 rounded-full border-2 border-slate-300 group-hover:border-[#1cb0f6] flex items-center justify-center text-[10px] font-black transition-colors">?</span>
+          Hướng dẫn
+        </button>
       </div>
 
       {reviewWords.length === 0 ? (
@@ -289,6 +331,7 @@ export function ReviewTab({
             emoji="🔥"
             words={needPractice}
             color="text-[#ef5d66]"
+            dataTour={needPractice.length > 0 ? "review-need-practice" : undefined}
             loadingReviewWord={loadingReviewWord}
             onStartReviewPractice={onStartReviewPractice}
           />

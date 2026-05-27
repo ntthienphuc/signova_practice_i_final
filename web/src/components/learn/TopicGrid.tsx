@@ -125,7 +125,7 @@ const activeTopicId = useMemo(() => {
               </>
             )}
 
-            <div className="relative w-full">
+            <div className="relative w-full" {...(index === 0 ? { "data-tour": "learn-first-topic" } : {})}>
               {isActive && !isLockedForGuest && (
                 <div
                   className="absolute -top-3.5 right-4 px-3 py-1 rounded-full text-[11px] font-black text-white z-10 shadow-sm tracking-wide"

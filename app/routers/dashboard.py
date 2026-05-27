@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.db import get_db
 from app.auth import get_current_user
 from app.models.user import User
@@ -25,14 +25,9 @@ def get_learner_dashboard_data(db: Session, learner: User) -> dict:
     
     formatted_progress = []
     for tp in progress_list:
-        studied_count = db.query(LearnerWordProgress).join(Word).filter(
-            LearnerWordProgress.learner_user_id == learner.id,
-            Word.topic_id == tp.topic_id,
-            LearnerWordProgress.studied == True
-        ).count()
         formatted_progress.append({
             "topic_id": tp.topic_id,
-            "completed_words": studied_count,
+            "completed_words": tp.completed_words,
             "completed": tp.completed,
             "checkpoint5_passed": tp.checkpoint5_passed,
             "practice2_final_passed": tp.practice2_final_passed
@@ -220,7 +215,7 @@ def get_linked_learner_detail(learner_id: str, current_user: User = Depends(get_
             detail="You are not authorized to view this learner's details"
         )
         
-    learner = db.query(User).filter(User.id == learner_uuid).first()
+    learner = db.query(User).options(joinedload(User.learner_profile)).filter(User.id == learner_uuid).first()
     if not learner:
         raise HTTPException(status_code=404, detail=f"Learner {learner_id} not found")
         
