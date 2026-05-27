@@ -14,7 +14,6 @@ class BankStore:
         if not self.manifest_path.exists():
             raise FileNotFoundError(f"Missing bank manifest: {self.manifest_path}")
         self.manifest = json.loads(self.manifest_path.read_text(encoding="utf-8"))
-        
         import unicodedata
         self.display_manifest_path = self.bank_root / "display_reference_manifest.json"
         if self.display_manifest_path.exists():
