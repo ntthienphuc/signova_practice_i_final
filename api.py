@@ -806,11 +806,34 @@ def create_app() -> FastAPI:
     @app.get("/learn-image/{gloss}")
     def learn_image(gloss: str) -> FileResponse:
         from urllib.parse import unquote
+        import unicodedata
         decoded_gloss = unquote(gloss)
         
-        img_path = APP_DIR / "outputs" / "learn_img" / f"{decoded_gloss}.png"
+        # Robust check for PNG image in outputs/learn_img
+        img_dir = APP_DIR / "outputs" / "learn_img"
+        img_path = None
+        if img_dir.exists():
+            target_clean = unicodedata.normalize("NFC", decoded_gloss).strip().lower()
+            # 1. Exact match
+            exact_path = img_dir / f"{decoded_gloss}.png"
+            if exact_path.exists():
+                img_path = exact_path
+            else:
+                # 2. NFC normalized match
+                nfc_gloss = unicodedata.normalize("NFC", decoded_gloss)
+                nfc_path = img_dir / f"{nfc_gloss}.png"
+                if nfc_path.exists():
+                    img_path = nfc_path
+                else:
+                    # 3. Case/normalization insensitive scan
+                    for item in img_dir.iterdir():
+                        if item.is_file() and item.suffix.lower() == ".png":
+                            item_clean = unicodedata.normalize("NFC", item.stem).strip().lower()
+                            if item_clean == target_clean:
+                                img_path = item
+                                break
         
-        if img_path.exists():
+        if img_path and img_path.exists():
             return FileResponse(img_path, media_type="image/png", filename=img_path.name)
             
         # Fallback to standard poster frame extraction
@@ -846,6 +869,55 @@ def create_app() -> FastAPI:
         if not path.exists():
             raise HTTPException(status_code=404, detail=f"Missing attempt playback for attempt_id={attempt_id}")
         return FileResponse(path, media_type="video/mp4", filename=path.name)
+
+    @app.get("/debug/assets")
+    def debug_assets() -> dict[str, Any]:
+        """Diagnose if asset files exist, their sizes, and whether they are LFS pointers."""
+        def check_file(path: Path) -> dict[str, Any]:
+            if not path.exists():
+                return {"exists": False}
+            size = path.stat().st_size
+            is_lfs_pointer = False
+            first_line = ""
+            try:
+                with open(path, "rb") as f:
+                    header = f.read(100)
+                    if header.startswith(b"version https://git-lfs"):
+                        is_lfs_pointer = True
+                        first_line = header.decode("utf-8", errors="ignore").split("\n")[0]
+            except Exception:
+                pass
+            return {
+                "exists": True,
+                "size_bytes": size,
+                "is_lfs_pointer": is_lfs_pointer,
+                "header_hint": first_line or None
+            }
+
+        # Check learn_img files
+        learn_img_dir = APP_DIR / "outputs" / "learn_img"
+        learn_imgs = {}
+        if learn_img_dir.exists():
+            for item in learn_img_dir.iterdir():
+                if item.is_file():
+                    learn_imgs[item.name] = check_file(item)
+
+        # Check reference videos
+        videos_dir = APP_DIR / "outputs" / "reference_bank_20_best_allcam1_fe" / "reference_videos"
+        videos = {}
+        if videos_dir.exists():
+            for item in videos_dir.iterdir():
+                if item.is_file():
+                    videos[item.name] = check_file(item)
+
+        return {
+            "learn_img_dir_exists": learn_img_dir.exists(),
+            "learn_img_count": len(learn_imgs),
+            "learn_imgs": learn_imgs,
+            "videos_dir_exists": videos_dir.exists(),
+            "video_count": len(videos),
+            "videos": videos,
+        }
 
     @app.post("/practice-i/analyze-video")
     async def practice_i_analyze_video(

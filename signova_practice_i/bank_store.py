@@ -14,13 +14,14 @@ class BankStore:
         if not self.manifest_path.exists():
             raise FileNotFoundError(f"Missing bank manifest: {self.manifest_path}")
         self.manifest = json.loads(self.manifest_path.read_text(encoding="utf-8"))
+        import unicodedata
         self.display_manifest_path = self.bank_root / "display_reference_manifest.json"
         if self.display_manifest_path.exists():
             display_manifest = json.loads(self.display_manifest_path.read_text(encoding="utf-8"))
-            self.display_references = {
-                str(item["gloss"]): item
-                for item in display_manifest.get("references", [])
-            }
+            self.display_references = {}
+            for item in display_manifest.get("references", []):
+                key = unicodedata.normalize("NFC", str(item["gloss"])).strip().lower()
+                self.display_references[key] = item
         else:
             self.display_references = {}
         self._banks: Dict[str, ReferenceBank] = {}
@@ -32,16 +33,19 @@ class BankStore:
         return self.manifest.get("topics", [])
 
     def get(self, gloss: str) -> ReferenceBank:
-        if gloss in self._banks:
-            return self._banks[gloss]
+        import unicodedata
+        normalized_gloss = unicodedata.normalize("NFC", gloss).strip().lower()
+        if normalized_gloss in self._banks:
+            return self._banks[normalized_gloss]
         for item in self.manifest["glosses"]:
-            if item["gloss"] != gloss:
+            item_normalized = unicodedata.normalize("NFC", item["gloss"]).strip().lower()
+            if item_normalized != normalized_gloss:
                 continue
             bank_path = Path(item["bank_path"])
             if not bank_path.is_absolute():
                 bank_path = self.bank_root / bank_path
             bank = load_reference_bank_npz(gloss, bank_path)
-            self._banks[gloss] = bank
+            self._banks[normalized_gloss] = bank
             return bank
         raise KeyError(f"Unknown gloss: {gloss}")
 
@@ -50,7 +54,9 @@ class BankStore:
         return {gloss: self.get(gloss) for gloss in selected}
 
     def get_display_reference(self, gloss: str) -> Dict[str, Any] | None:
-        item = self.display_references.get(gloss)
+        import unicodedata
+        key = unicodedata.normalize("NFC", gloss).strip().lower()
+        item = self.display_references.get(key)
         if item is None:
             return None
         video_path = Path(str(item["video_path"]))
