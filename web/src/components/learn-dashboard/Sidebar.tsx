@@ -34,6 +34,7 @@ export function Sidebar({
     tabs.push({ id: "review", label: "Luyện tập", icon: "🏋️" });
     tabs.push({ id: "progress", label: "Tiến độ", icon: "⚡" });
     tabs.push({ id: "mascot", label: "Linh vật", icon: "🐾" });
+    tabs.push({ id: "story", label: "Câu chuyện", icon: "📚" });
     tabs.push({ id: "account", label: "Tài khoản", icon: "👤" });
   } else if (role === "parent") {
     tabs.push({ id: "learn", label: "Học", icon: "📖" });

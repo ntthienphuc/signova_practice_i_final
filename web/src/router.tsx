@@ -12,6 +12,8 @@ import FamilyPage from "./pages/FamilyPage";
 import MascotPage from "./pages/MascotPage";
 import SchoolPage from "./pages/SchoolPage";
 import CustomPackagePage from "./pages/CustomPackagePage";
+import StoryTab from "./pages/tabs/StoryTab";
+import StoryPage from "./pages/StoryPage";
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +33,7 @@ export const router = createBrowserRouter([
       { path: "account",      element: <AccountPage /> },
       { path: "family",       element: <FamilyPage /> },
       { path: "mascot",       element: <MascotPage /> },
+      { path: "story",        element: <StoryTab /> },
       { path: "school",       element: <SchoolPage /> },
       { path: "custom",       element: <CustomPackagePage /> },
     ],
@@ -42,5 +45,9 @@ export const router = createBrowserRouter([
   {
     path: "/learn/:topicId/:wordOrder",
     element: <LearnWordPage />,
+  },
+  {
+    path: "/story/:storyId",
+    element: <StoryPage />,
   },
 ]);

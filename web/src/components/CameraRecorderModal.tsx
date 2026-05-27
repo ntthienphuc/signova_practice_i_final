@@ -32,10 +32,14 @@ export function CameraRecorderModal({ onSave, onClose }: CameraRecorderModalProp
   const startCamera = async () => {
     setCameraError("");
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false,
+      });
       streamRef.current = stream;
       if (previewRef.current) {
         previewRef.current.srcObject = stream;
+        previewRef.current.play().catch(() => {});
       }
     } catch {
       setCameraError("Không thể truy cập camera. Hãy cấp quyền camera cho trình duyệt.");
@@ -59,16 +63,20 @@ export function CameraRecorderModal({ onSave, onClose }: CameraRecorderModalProp
   const startRecording = () => {
     if (!streamRef.current) return;
     chunksRef.current = [];
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-      ? "video/webm;codecs=vp9"
-      : "video/webm";
-    const recorder = new MediaRecorder(streamRef.current, { mimeType });
+    const MIME_CANDIDATES = [
+      "video/webm;codecs=vp9",
+      "video/webm;codecs=vp8",
+      "video/webm",
+      "video/mp4",
+    ];
+    const mimeType = MIME_CANDIDATES.find((t) => MediaRecorder.isTypeSupported(t)) ?? "";
+    const recorder = new MediaRecorder(streamRef.current, mimeType ? { mimeType } : undefined);
     recorderRef.current = recorder;
     recorder.ondataavailable = (e) => {
       if (e.data.size > 0) chunksRef.current.push(e.data);
     };
     recorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: mimeType });
+      const blob = new Blob(chunksRef.current, mimeType ? { type: mimeType } : undefined);
       recordedBlobRef.current = blob;
       if (playbackUrlRef.current) URL.revokeObjectURL(playbackUrlRef.current);
       playbackUrlRef.current = URL.createObjectURL(blob);
@@ -102,13 +110,15 @@ export function CameraRecorderModal({ onSave, onClose }: CameraRecorderModalProp
     recordedBlobRef.current = null;
     chunksRef.current = [];
     setElapsed(0);
+    stopCamera();
     setState("idle");
     startCamera();
   };
 
   const handleSave = () => {
     if (!recordedBlobRef.current) return;
-    const ext = recordedBlobRef.current.type.includes("webm") ? "webm" : "mp4";
+    const blobType = recordedBlobRef.current.type;
+    const ext = blobType.includes("mp4") ? "mp4" : blobType.includes("webm") ? "webm" : "mp4";
     const file = new File([recordedBlobRef.current], `recording.${ext}`, {
       type: recordedBlobRef.current.type,
     });
