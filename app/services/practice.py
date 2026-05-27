@@ -9,6 +9,38 @@ from app.models.gamification import StreakLog
 from datetime import datetime, date, timezone
 from typing import Any, Dict, List
 import uuid
+import math
+import numbers
+
+try:
+    import numpy as np
+except ModuleNotFoundError:  # pragma: no cover - numpy is installed in API runtime
+    np = None
+
+
+def sanitize_for_json(obj: Any) -> Any:
+    """Recursively replace NaN/Inf float values with None so PostgreSQL JSON
+    columns don't reject the payload (NaN is not valid JSON per RFC 8259)."""
+    if np is not None:
+        if isinstance(obj, np.ndarray):
+            return sanitize_for_json(obj.tolist())
+        if isinstance(obj, np.generic):
+            return sanitize_for_json(obj.item())
+    if isinstance(obj, bool) or obj is None or isinstance(obj, str):
+        return obj
+    if isinstance(obj, numbers.Real):
+        value = float(obj)
+        if not math.isfinite(value):
+            return None
+        if isinstance(obj, int):
+            return obj
+        return value
+    if isinstance(obj, dict):
+        return {str(k): sanitize_for_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        return [sanitize_for_json(item) for item in obj]
+    return obj
+
 
 def save_practice_attempt(
     db: Session,
@@ -81,14 +113,16 @@ def save_practice_attempt(
     db.flush() # Generate attempt.id
     
     # 2. Create Feedback record
+    # NOTE: sanitize_for_json is required here — np.nanmedian on empty arrays
+    # produces float('nan') which is invalid JSON per RFC 8259 and rejected by PostgreSQL.
     feedback_data = analysis_result.get("feedback", {})
     feedback = PracticeAttemptFeedback(
         attempt_id=attempt.id,
         overall_text=feedback_data.get("overall"),
-        main_errors_json=feedback_data.get("main_errors"),
-        decision_json=decision,
-        top_matches_json=analysis_result.get("top3_bank_matches"),
-        overlay_meta_json=analysis_result.get("overlay")
+        main_errors_json=sanitize_for_json(feedback_data.get("main_errors")),
+        decision_json=sanitize_for_json(decision),
+        top_matches_json=sanitize_for_json(analysis_result.get("top3_bank_matches")),
+        overlay_meta_json=sanitize_for_json(analysis_result.get("overlay"))
     )
     db.add(feedback)
     

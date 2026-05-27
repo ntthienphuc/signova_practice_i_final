@@ -1,0 +1,73 @@
+const familyDashboardData = {
+  children: [
+    { id: 1, name: 'Nguyễn Minh Khôi', age: 8 },
+    { id: 2, name: 'Nguyễn Thị Lan', age: 6 },
+  ],
+  weeklyStats: {
+    wordsLearned: 14,
+    practiceSessions: 7,
+    accuracyRate: 72,
+    streakDays: 5,
+  },
+  errorWords: [
+    { word_vi: 'Uống', word_en: 'Drink', errorType_vi: 'Sai hướng tay', errorType_en: 'Wrong hand direction', timesWrong: 4, action_vi: 'Xem lại video mẫu', action_en: 'Review sample video' },
+    { word_vi: 'Học', word_en: 'Study', errorType_vi: 'Tốc độ quá nhanh', errorType_en: 'Speed too fast', timesWrong: 3, action_vi: 'Luyện chậm hơn', action_en: 'Practice slower' },
+    { word_vi: 'Nước', word_en: 'Water', errorType_vi: 'Vị trí ngón tay', errorType_en: 'Finger position off', timesWrong: 2, action_vi: 'Tập trung vào hình dạng tay', action_en: 'Focus on handshape' },
+    { word_vi: 'Mẹ', word_en: 'Mom', errorType_vi: 'Sai vị trí tiếp xúc', errorType_en: 'Wrong contact point', timesWrong: 1, action_vi: 'Xem hướng dẫn lại', action_en: 'Re-read instructions' },
+  ],
+  weeklyProgress: [
+    { day_vi: 'T2', day_en: 'Mon', count: 3 },
+    { day_vi: 'T3', day_en: 'Tue', count: 5 },
+    { day_vi: 'T4', day_en: 'Wed', count: 2 },
+    { day_vi: 'T5', day_en: 'Thu', count: 4 },
+    { day_vi: 'T6', day_en: 'Fri', count: 6 },
+    { day_vi: 'T7', day_en: 'Sat', count: 1 },
+    { day_vi: 'CN', day_en: 'Sun', count: 0 },
+  ],
+  learnTogether: [
+    { word_vi: 'Uống', word_en: 'Drink', category_vi: 'Sinh hoạt', category_en: 'Daily Life', imageText: 'Uong' },
+    { word_vi: 'Học', word_en: 'Study', category_vi: 'Giáo dục', category_en: 'Education', imageText: 'Hoc' },
+    { word_vi: 'Nước', word_en: 'Water', category_vi: 'Thực phẩm', category_en: 'Food', imageText: 'Nuoc' },
+  ],
+  recentActivity: [
+    { date: '19/05/2026', words_vi: ['Ăn', 'Uống', 'Ngủ'], words_en: ['Eat', 'Drink', 'Sleep'], score: 80 },
+    { date: '18/05/2026', words_vi: ['Mẹ', 'Bố'], words_en: ['Mom', 'Dad'], score: 91 },
+    { date: '17/05/2026', words_vi: ['Học', 'Nước'], words_en: ['Study', 'Water'], score: 65 },
+    { date: '16/05/2026', words_vi: ['Ăn', 'Học'], words_en: ['Eat', 'Study'], score: 74 },
+    { date: '15/05/2026', words_vi: ['Uống', 'Nước', 'Ăn'], words_en: ['Drink', 'Water', 'Eat'], score: 88 },
+  ],
+  ui: {
+    vi: {
+      greeting: 'Xin chào,',
+      greetingIcon: '👋',
+      childSelector: 'Chọn con',
+      statsLabels: ['Từ học tuần này', 'Buổi luyện tập', 'Độ chính xác', 'Ngày liên tiếp'],
+      statsUnits: ['từ', 'buổi', '%', 'ngày'],
+      errorSection: 'Từ con hay sai nhất',
+      errorHeaders: ['Từ', 'Loại lỗi', 'Số lần sai', 'Đề xuất'],
+      progressSection: 'Tiến độ tuần này',
+      learnSection: 'Học cùng con',
+      learnBtn: 'Luyện ngay',
+      activitySection: 'Hoạt động gần đây',
+      activityHeaders: ['Ngày', 'Từ đã luyện', 'Điểm'],
+      score: 'Điểm',
+    },
+    en: {
+      greeting: 'Hello,',
+      greetingIcon: '👋',
+      childSelector: 'Select child',
+      statsLabels: ['Words this week', 'Practice sessions', 'Accuracy rate', 'Streak days'],
+      statsUnits: ['words', 'sessions', '%', 'days'],
+      errorSection: "Child's Most Common Errors",
+      errorHeaders: ['Word', 'Error Type', 'Times Wrong', 'Suggested Action'],
+      progressSection: 'Progress This Week',
+      learnSection: 'Learn Together',
+      learnBtn: 'Practice now',
+      activitySection: 'Recent Activity',
+      activityHeaders: ['Date', 'Words Practiced', 'Score'],
+      score: 'Score',
+    },
+  },
+}
+
+export default familyDashboardData
