@@ -11,5 +11,5 @@ if (-not (Test-Path (Join-Path $WebRoot "node_modules"))) {
     npm install
 }
 
-Write-Host "Web dev server: http://127.0.0.1:$Port"
-npm run dev -- --host 127.0.0.1 --port $Port
+Write-Host "Web dev server: http://localhost:$Port (also accessible via local network IP)"
+npm run dev -- --host --port $Port

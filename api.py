@@ -438,9 +438,10 @@ def create_app() -> FastAPI:
             input_path = Path(tmpdir) / f"upload{suffix}"
             input_path.write_bytes(video_bytes)
             attempt_playback = ensure_attempt_playback(input_path, request_id)
+            analysis_input_path = Path(attempt_playback["playback_path"])
             try:
                 user_pose, user_results, video_meta = extract_video_pose_and_results(
-                    input_path,
+                    analysis_input_path,
                     max_frames=max_frames,
                     frame_stride=frame_stride,
                 )
@@ -636,6 +637,7 @@ def create_app() -> FastAPI:
         normalized_predictions = with_lesson_scores(ranked_predictions, analysis["lesson_glosses"])
         decision = decision_for_practice_ii(
             target_gloss=analysis["target_gloss"],
+            lesson_glosses=analysis["lesson_glosses"],
             target_result=analysis["target_result"],
             target_rank=analysis["target_rank"],
             bank_top1_gloss=(analysis["bank_ranking"][0]["gloss"] if analysis["bank_ranking"] else None),

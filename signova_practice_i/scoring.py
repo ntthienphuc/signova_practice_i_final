@@ -1,8 +1,17 @@
 from __future__ import annotations
 
+import math
 from typing import Any, Dict
 
 from .pose_utils import PoseSequence, ReferenceBank, compare_to_reference_bank
+
+
+def _finite_float(value: Any, default: float | None = None) -> float | None:
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return default
+    return parsed if math.isfinite(parsed) else default
 
 
 def public_result(result: Dict[str, Any]) -> Dict[str, Any]:
@@ -20,12 +29,18 @@ def rank_sequence_against_banks(seq: PoseSequence, banks: Dict[str, ReferenceBan
         ranked.append(
             {
                 "gloss": gloss,
-                "score": result["score"],
-                "bad_fraction": result["bad_fraction"],
-                "median_ratio": result["median_ratio"],
+                "score": _finite_float(result.get("score"), 0.0),
+                "bad_fraction": _finite_float(result.get("bad_fraction"), 1.0),
+                "median_ratio": _finite_float(result.get("median_ratio"), None),
             }
         )
-    ranked.sort(key=lambda item: (item["bad_fraction"], -item["score"], item["median_ratio"]))
+    ranked.sort(
+        key=lambda item: (
+            _finite_float(item.get("bad_fraction"), 1.0),
+            -float(_finite_float(item.get("score"), 0.0) or 0.0),
+            _finite_float(item.get("median_ratio"), math.inf),
+        )
+    )
     return ranked
 
 
@@ -106,6 +121,7 @@ def with_lesson_scores(
 
 def decision_for_practice_ii(
     target_gloss: str,
+    lesson_glosses: list[str],
     target_result: Dict[str, Any],
     target_rank: int,
     bank_top1_gloss: str | None,
@@ -123,9 +139,11 @@ def decision_for_practice_ii(
     bank_fallback_min_target_rank: int = 3,
 ) -> dict[str, Any]:
     base = decision_for_target(target_result, target_rank, top1_score=top1_score)
+    lesson_set = set(lesson_glosses)
     top1 = classifier_predictions[0] if classifier_predictions else None
     top2 = classifier_predictions[1] if len(classifier_predictions) > 1 else None
     predicted_gloss = top1["gloss"] if top1 is not None else None
+    predicted_gloss_in_lesson = predicted_gloss in lesson_set if predicted_gloss is not None else False
     predicted_raw_score = float(top1["raw_score"]) if top1 is not None else 0.0
     predicted_lesson_score = float(top1["lesson_score"]) if top1 is not None else 0.0
     predicted_margin = (
@@ -152,6 +170,7 @@ def decision_for_practice_ii(
         not bank_supports_target
         and
         predicted_gloss is not None
+        and predicted_gloss_in_lesson
         and predicted_gloss != target_gloss
         and predicted_raw_score >= wrong_word_min_raw_score
         and (
@@ -159,7 +178,6 @@ def decision_for_practice_ii(
             or target_rank != 1
             or target_result["score"] < 80
             or predicted_margin >= wrong_word_min_margin
-            or predicted_lesson_score == 0.0
         )
     )
     bank_wrong_word_fallback = bool(

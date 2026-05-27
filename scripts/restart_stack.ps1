@@ -79,15 +79,15 @@ $webArgs = @(
     "-Port", $WebPort
 )
 
-Write-Host "Starting API on http://127.0.0.1:$ApiPort ..."
+Write-Host "Starting API on http://localhost:$ApiPort (also on local network)..."
 Start-Process powershell -ArgumentList $apiArgs
 
 Start-Sleep -Seconds 2
 
-Write-Host "Starting Web on http://127.0.0.1:$WebPort ..."
+Write-Host "Starting Web on http://localhost:$WebPort (accessible from network)..."
 Start-Process powershell -ArgumentList $webArgs
 
 Write-Host ""
 Write-Host "Restart complete."
-Write-Host "API docs: http://127.0.0.1:$ApiPort/docs"
-Write-Host "Web:      http://127.0.0.1:$WebPort"
+Write-Host "API docs: http://localhost:$ApiPort/docs"
+Write-Host "Web:      http://localhost:$WebPort  (use your LAN IP for mobile access)"

@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Camera, RotateCcw } from "lucide-react";
+import { ArrowLeft, Camera, Lightbulb, RotateCcw } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { analyzeAttempt } from "../api/endpoints/practice";
 import type { AnalyzeResponse } from "../api/types";
+import { apiClient } from "../api/client";
+import { getVocabularyDetail } from "../api";
 import { CameraRecorderModal } from "../components/CameraRecorderModal";
 import { STORIES, getStoryById } from "../data/storyData";
 import { useAuth } from "../contexts/AuthContext";
@@ -33,6 +35,12 @@ export default function StoryPage() {
   const [error, setError] = useState("");
   const [result, setResult] = useState<SceneResult | null>(null);
   const [isComplete, setComplete] = useState(false);
+  const [recordedPreviewUrl, setRecordedPreviewUrl] = useState("");
+  const [hintOpen, setHintOpen] = useState(false);
+  const [hintLoading, setHintLoading] = useState(false);
+  const [hintError, setHintError] = useState("");
+  const [hintVideoUrl, setHintVideoUrl] = useState("");
+  const [hintPosterUrl, setHintPosterUrl] = useState("");
 
   useEffect(() => {
     if (isLoading || currentUser || storyIndex <= 0) return;
@@ -45,7 +53,20 @@ export default function StoryPage() {
     setResult(null);
     setError("");
     setComplete(false);
+    setHintOpen(false);
+    setHintLoading(false);
+    setHintError("");
+    setHintVideoUrl("");
+    setHintPosterUrl("");
   }, [storyId]);
+
+  useEffect(() => {
+    return () => {
+      if (recordedPreviewUrl) {
+        URL.revokeObjectURL(recordedPreviewUrl);
+      }
+    };
+  }, [recordedPreviewUrl]);
 
   if (!story) {
     return (
@@ -68,11 +89,44 @@ export default function StoryPage() {
   const scene = story.scenes[sceneIndex];
   const progressPercent = ((sceneIndex + 1) / story.scenes.length) * 100;
   const storyImage = story.id === "tho-va-gau-ket-ban" ? rabbitBearImage : null;
+  const baseUrl = apiClient.defaults.baseURL ?? window.location.origin;
+  const uploadedVideoUrl = result?.response.playback.user_video_url
+    ? new URL(result.response.playback.user_video_url, baseUrl).href
+    : recordedPreviewUrl;
+  const hasUploadedAttempt = Boolean(recordedPreviewUrl);
+
+  const loadHint = async () => {
+    if (hintOpen) {
+      setHintOpen(false);
+      return;
+    }
+    if (hintVideoUrl) {
+      setHintOpen(true);
+      return;
+    }
+    setHintLoading(true);
+    setHintError("");
+    try {
+      const detail = await getVocabularyDetail(scene.targetGloss);
+      const nextVideoUrl = detail.reference?.playback_url ?? detail.reference?.video_url ?? "";
+      setHintVideoUrl(nextVideoUrl ? new URL(nextVideoUrl, baseUrl).href : "");
+      setHintPosterUrl(detail.poster_url ? new URL(detail.poster_url, baseUrl).href : "");
+      setHintOpen(true);
+    } catch (nextError) {
+      setHintError(getErrorMessage(nextError));
+    } finally {
+      setHintLoading(false);
+    }
+  };
 
   const handleRecordedFile = async (file: File) => {
     setAnalyzing(true);
     setError("");
     setResult(null);
+    if (recordedPreviewUrl) {
+      URL.revokeObjectURL(recordedPreviewUrl);
+    }
+    setRecordedPreviewUrl(URL.createObjectURL(file));
     try {
       const response = await analyzeAttempt({
         mode: "practice_ii",
@@ -110,6 +164,15 @@ export default function StoryPage() {
     setAttempts(0);
     setResult(null);
     setError("");
+    if (recordedPreviewUrl) {
+      URL.revokeObjectURL(recordedPreviewUrl);
+      setRecordedPreviewUrl("");
+    }
+    setHintOpen(false);
+    setHintLoading(false);
+    setHintError("");
+    setHintVideoUrl("");
+    setHintPosterUrl("");
   };
 
   const skipScene = () => {
@@ -147,7 +210,7 @@ export default function StoryPage() {
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#f7fbff_0%,#eef8ff_52%,#fff8ed_100%)] px-4 py-5 sm:px-6">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-6xl">
         <header className="mb-5 flex items-center gap-4">
           <button
             type="button"
@@ -176,73 +239,174 @@ export default function StoryPage() {
         </header>
 
         <section className="rounded-[32px] border-2 border-sky-100 bg-white p-5 shadow-sm sm:p-7">
-          <div className="rounded-[28px] border-2 border-amber-100 bg-[linear-gradient(135deg,#fff7d6_0%,#e9f8ff_100%)] p-4 sm:p-6">
-            <div className="flex flex-col gap-5">
-              {storyImage ? (
-                <div className="relative overflow-hidden rounded-[28px] bg-white/85 shadow-sm ring-2 ring-white/80">
-                  <img
-                    src={storyImage}
-                    alt={story.title}
-                    className="h-[260px] w-full object-cover sm:h-[360px]"
-                  />
-                  <div className="absolute left-4 top-4 grid h-14 w-14 place-items-center rounded-2xl bg-white/90 text-3xl shadow-sm backdrop-blur">
-                    {scene.sceneEmoji}
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.9fr)] lg:items-start">
+            <div>
+              <div className="rounded-[28px] border-2 border-amber-100 bg-[linear-gradient(135deg,#fff7d6_0%,#e9f8ff_100%)] p-4 sm:p-6">
+                <div className="flex flex-col gap-5">
+                  {storyImage ? (
+                    <div className="relative aspect-square overflow-hidden rounded-[28px] bg-white/85 shadow-sm ring-2 ring-white/80">
+                      <img
+                        src={storyImage}
+                        alt={story.title}
+                        className="h-full w-full object-cover"
+                      />
+                      <div className="absolute left-4 top-4 grid h-14 w-14 place-items-center rounded-2xl bg-white/90 text-3xl shadow-sm backdrop-blur">
+                        {scene.sceneEmoji}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid h-24 w-24 shrink-0 place-items-center rounded-[28px] bg-white/85 text-6xl shadow-sm">
+                      {scene.sceneEmoji}
+                    </div>
+                  )}
+                  <div className={storyImage ? "px-1 sm:px-2" : ""}>
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <span className="text-3xl">{scene.characterEmoji}</span>
+                      <h1 className="m-0 text-2xl font-black leading-tight text-slate-800 sm:text-3xl">
+                        {scene.contextTitle}
+                      </h1>
+                    </div>
+                    <p className="m-0 text-base font-bold leading-relaxed text-slate-600">
+                      {scene.contextDescription}
+                    </p>
                   </div>
                 </div>
-              ) : (
-                <div className="grid h-24 w-24 shrink-0 place-items-center rounded-[28px] bg-white/85 text-6xl shadow-sm">
-                  {scene.sceneEmoji}
-                </div>
-              )}
-              <div className={storyImage ? "px-1 sm:px-2" : ""}>
-                <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <span className="text-3xl">{scene.characterEmoji}</span>
-                  <h1 className="m-0 text-2xl font-black leading-tight text-slate-800 sm:text-3xl">
-                    {scene.contextTitle}
-                  </h1>
-                </div>
-                <p className="m-0 text-base font-bold leading-relaxed text-slate-600">
-                  {scene.contextDescription}
-                </p>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                {scene.lessonGlosses.map((gloss) => (
+                  <span
+                    key={gloss}
+                    className="inline-flex min-h-[44px] items-center rounded-2xl border-2 border-sky-100 bg-sky-50 px-5 py-2.5 text-base font-black text-sky-700 shadow-sm"
+                  >
+                    {gloss}
+                  </span>
+                ))}
               </div>
             </div>
-          </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            {scene.lessonGlosses.map((gloss) => (
-              <span
-                key={gloss}
-                className="inline-flex min-h-[44px] items-center rounded-2xl border-2 border-sky-100 bg-sky-50 px-5 py-2.5 text-base font-black text-sky-700 shadow-sm"
-              >
-                {gloss}
-              </span>
-            ))}
-          </div>
+            <div className="rounded-[28px] border-2 border-slate-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_100%)] p-4 sm:p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="m-0 text-xs font-black uppercase tracking-[0.14em] text-sky-600">
+                    Bài làm của bé
+                  </p>
+                  <h2 className="m-0 mt-1 text-2xl font-black text-slate-800">Quay và nộp video</h2>
+                </div>
+                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-2xl shadow-sm">
+                  🎥
+                </div>
+              </div>
 
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={() => setRecorderOpen(true)}
-              disabled={isAnalyzing}
-              className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-2xl border-b-4 border-[#1899d6] bg-[#1cb0f6] px-6 text-sm font-black text-white transition-all hover:bg-[#24c4ff] active:translate-y-1 active:border-b-0 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <Camera size={18} />
-              Bắt đầu quay 🎥
-            </button>
-          </div>
+              <p className="m-0 mt-3 text-sm font-bold leading-relaxed text-slate-500">
+                Bé hãy quay lại ký hiệu đúng với tình huống ở bên trái. Sau khi nộp, hệ thống sẽ chấm theo logic của Practice II.
+              </p>
 
-          {isAnalyzing && (
-            <div className="mt-6 flex items-center gap-3 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
-              <div className="h-8 w-8 rounded-full border-4 border-sky-100 border-t-[#1cb0f6] animate-spin" />
-              <p className="m-0 text-sm font-black text-slate-600">Đang chấm điểm...</p>
+              <div className="mt-5">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => setRecorderOpen(true)}
+                    disabled={isAnalyzing}
+                    className="inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-2xl border-b-4 border-[#1899d6] bg-[#1cb0f6] px-6 text-sm font-black text-white transition-all hover:bg-[#24c4ff] active:translate-y-1 active:border-b-0 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Camera size={18} />
+                    Bắt đầu quay
+                  </button>
+                  <button
+                    type="button"
+                    onClick={loadHint}
+                    disabled={hintLoading || !hasUploadedAttempt}
+                    className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-2xl border-2 border-amber-200 bg-amber-50 px-5 text-sm font-black text-amber-800 transition-all hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Lightbulb size={18} />
+                    {hintLoading
+                      ? "Đang tải hint..."
+                      : hintOpen
+                        ? "Ẩn hint"
+                        : hasUploadedAttempt
+                          ? "Xem hint"
+                          : "Gửi video để mở gợi ý"}
+                  </button>
+                </div>
+              </div>
+
+              {isAnalyzing && (
+                <div className="mt-5 flex items-center gap-3 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
+                  <div className="h-8 w-8 rounded-full border-4 border-sky-100 border-t-[#1cb0f6] animate-spin" />
+                  <p className="m-0 text-sm font-black text-slate-600">Đang chấm điểm...</p>
+                </div>
+              )}
+
+              {error && (
+                <div className="mt-5 rounded-2xl border-2 border-rose-100 bg-rose-50 p-4 text-sm font-bold text-rose-700">
+                  {error}
+                </div>
+              )}
+
+              {hintError && (
+                <div className="mt-5 rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-800">
+                  {hintError}
+                </div>
+              )}
+
+              {hintOpen && hintVideoUrl && (
+                <section className="mt-5 rounded-[24px] border-2 border-emerald-200 bg-emerald-50 p-4">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                      <h2 className="m-0 text-lg font-black text-emerald-900">Hint: video từ đúng</h2>
+                      <p className="m-0 mt-1 text-xs font-black uppercase tracking-[0.14em] text-emerald-700">
+                        {scene.targetGloss}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-emerald-700">
+                      Video mẫu
+                    </span>
+                  </div>
+                  <div className="overflow-hidden rounded-[20px] border-2 border-emerald-200 bg-slate-900">
+                    <video
+                      src={hintVideoUrl}
+                      poster={hintPosterUrl || undefined}
+                      controls
+                      playsInline
+                      className="aspect-square w-full bg-black object-contain"
+                    />
+                  </div>
+                  <p className="m-0 mt-3 text-sm font-bold leading-relaxed text-emerald-900">
+                    Xem kỹ hướng tay và nhịp chuyển động của từ đúng, rồi quay lại video của bé để so sánh.
+                  </p>
+                </section>
+              )}
+
+              {uploadedVideoUrl && (
+                <section className="mt-5 rounded-[24px] border-2 border-slate-200 bg-slate-50 p-4">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h2 className="m-0 text-lg font-black text-slate-800">Video bé vừa gửi</h2>
+                    <span className="text-xs font-black uppercase tracking-[0.14em] text-slate-500">
+                      Xem lại bài làm
+                    </span>
+                  </div>
+                  <div className="overflow-hidden rounded-[20px] border-2 border-slate-200 bg-slate-900">
+                    <video
+                      src={uploadedVideoUrl}
+                      controls
+                      playsInline
+                      className="aspect-square w-full bg-black object-contain"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRecorderOpen(true)}
+                    disabled={isAnalyzing}
+                    className="mt-3 inline-flex min-h-[46px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white px-4 text-sm font-black text-slate-700 transition-all hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <RotateCcw size={16} />
+                    Quay lại video
+                  </button>
+                </section>
+              )}
             </div>
-          )}
-
-          {error && (
-            <div className="mt-6 rounded-2xl border-2 border-rose-100 bg-rose-50 p-4 text-sm font-bold text-rose-700">
-              {error}
-            </div>
-          )}
+          </div>
 
           {result && (
             <ResultPanel
@@ -325,7 +489,7 @@ function ResultPanel({
           </h2>
           <p className={`m-0 mt-1 text-sm font-bold leading-relaxed ${isWrong ? "text-amber-800" : "text-slate-600"}`}>
             {isWrong
-              ? `${wrongWordMessage}${predicted ? ` Mascot dang thay giong "${predicted}".` : ""}`
+              ? `${wrongWordMessage}`
               : failMessage}
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
