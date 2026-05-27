@@ -138,7 +138,7 @@ const landingData = {
         {
           name: 'Family Companion',
           target: 'Phụ huynh',
-          price: '79.000 – 129.000 VND',
+          price: '129.000 VND',
           period: '/tháng',
           highlight: true,
           features: [
