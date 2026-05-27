@@ -131,6 +131,24 @@ def test_scoring_with_templates():
     assert decision["low_tracking_quality"] is True
     assert decision["accept_as_target"] is False # should reject due to low tracking quality
 
+    # 6. Practice II must not surface a wrong gloss outside the lesson choices
+    from signova_practice_i.scoring import decision_for_practice_ii
+    practice2_decision = decision_for_practice_ii(
+        target_gloss="Giúp đỡ",
+        lesson_glosses=["Giúp đỡ", "Làm bài tập", "Dụng cụ học tập"],
+        target_result={"score": 72.0, "valid_fraction": 0.95, "low_tracking_quality": False},
+        target_rank=2,
+        bank_top1_gloss="Làm bài tập",
+        classifier_predictions=[
+            {"gloss": "Áo sơ mi", "raw_score": 0.82, "lesson_score": 0.0},
+            {"gloss": "Giúp đỡ", "raw_score": 0.05, "lesson_score": 0.40},
+        ],
+        top1_score=96.0,
+    )
+    assert practice2_decision["predicted_wrong_gloss"] is None
+    assert practice2_decision["predicted_wrong_source"] is None
+    assert practice2_decision["possible_wrong_word"] is True
+
     print("All scoring engine unit tests passed!")
 
 if __name__ == "__main__":
