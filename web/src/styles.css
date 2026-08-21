@@ -4,6 +4,44 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .landing-hero {
+    background: linear-gradient(135deg, #f8fdff 0%, #e8f9ff 49%, #d5f4ff 100%);
+  }
+
+  .landing-hero-grid {
+    background-image: linear-gradient(rgba(14, 165, 233, 0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(14, 165, 233, 0.12) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: linear-gradient(to bottom, black, transparent 85%);
+  }
+
+  .landing-mascot-float {
+    animation: landing-float 5.5s ease-in-out infinite;
+  }
+
+  .landing-reveal {
+    animation: landing-rise 700ms cubic-bezier(.2,.8,.2,1) both;
+  }
+
+  .landing-reveal-delay {
+    animation: landing-rise 780ms 120ms cubic-bezier(.2,.8,.2,1) both;
+  }
+}
+
+@keyframes landing-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-12px) rotate(1deg); }
+}
+
+@keyframes landing-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-mascot-float, .landing-reveal, .landing-reveal-delay { animation: none; }
+}
+
 @layer utilities {
   .bg-dot-grid {
     background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);

@@ -1,5 +1,6 @@
 import { useOutletContext } from "react-router-dom";
 import { Hero } from "../components/landing/Hero";
+import { LearningLoop } from "../components/landing/LearningLoop";
 import { ProblemStatement } from "../components/landing/ProblemStatement";
 import { Features } from "../components/landing/Features";
 import { Products } from "../components/landing/Products";
@@ -17,7 +18,8 @@ export default function LandingPage() {
   return (
     <>
       <main>
-        <Hero data={data.hero} />
+        <Hero data={data.hero} locale={locale} />
+        <LearningLoop locale={locale} />
         <ProblemStatement data={data.problem} />
         <Features data={data.features} />
         <Products data={data.products} />
@@ -25,7 +27,7 @@ export default function LandingPage() {
         <Pricing data={data.pricing} />
         <ValueProps data={data.valueProps} />
       </main>
-      <CTAFooter data={data.ctaFooter} footerData={data.footer} />
+      <CTAFooter data={data.ctaFooter} footerData={data.footer} locale={locale} />
     </>
   );
 }
