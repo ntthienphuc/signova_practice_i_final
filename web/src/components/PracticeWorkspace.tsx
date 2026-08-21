@@ -250,9 +250,16 @@ export function PracticeWorkspace({
     let frameId = 0;
     const tick = () => {
       if (playing) {
+        const uploadEnded = !isFromCamera && (
+          userVideo.ended ||
+          (Number.isFinite(userVideo.duration) && userVideo.currentTime >= userVideo.duration - 0.05)
+        );
         const userEnd = (userSegment?.segment_end_ms ?? 0) / 1000;
         const referenceEnd = (referenceSegment?.segment_end_ms ?? 0) / 1000;
-        if (userVideo.currentTime >= userEnd || referenceVideo.currentTime >= referenceEnd) {
+        const cameraEnded = isFromCamera && (
+          userVideo.currentTime >= userEnd || referenceVideo.currentTime >= referenceEnd
+        );
+        if (uploadEnded || cameraEnded) {
           userVideo.pause();
           referenceVideo.pause();
           setPlaying(false);
@@ -263,7 +270,7 @@ export function PracticeWorkspace({
     };
     frameId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frameId);
-  }, [analysis, playing, userSegment, referenceSegment]);
+  }, [analysis, isFromCamera, playing, userSegment, referenceSegment]);
 
   useEffect(() => {
     const handleResize = () => redrawOverlays();
@@ -349,6 +356,17 @@ export function PracticeWorkspace({
     const userEnd = userSegment.segment_end_ms / 1000;
     const referenceStart = referenceSegment.segment_start_ms / 1000;
     const referenceEnd = referenceSegment.segment_end_ms / 1000;
+
+    // Uploaded files should be reviewed from start to finish. Camera recordings
+    // keep the existing segment-synchronised playback behavior.
+    if (!isFromCamera) {
+      userVideo.currentTime = 0;
+      userVideo.playbackRate = 1;
+      referenceVideo.pause();
+      await userVideo.play();
+      setPlaying(true);
+      return;
+    }
 
     if (
       userVideo.currentTime >= userEnd ||
