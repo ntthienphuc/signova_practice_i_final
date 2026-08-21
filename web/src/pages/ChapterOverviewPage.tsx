@@ -7,6 +7,7 @@ import { AuthModal } from "../components/AuthModal";
 import { SpotlightTour } from "../components/SpotlightTour";
 import type { Topic, DashboardPayload } from "../types/learn";
 import { useAuth } from "../contexts/AuthContext";
+import { readLearningCheckpoint } from "../utils/learningCheckpoint";
 
 const MOCK_EXTRA_TOPICS: Topic[] = [
   {
@@ -51,12 +52,18 @@ export default function ChapterOverviewPage() {
 
   const [curriculum, setCurriculum] = useState<DashboardPayload | null>(null);
   const [completedCount, setCompletedCount] = useState(0);
+  const [checkpointWordIndex, setCheckpointWordIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
 
   const isGuest = !currentUser;
+
+  useEffect(() => {
+    const checkpoint = readLearningCheckpoint(currentUser?.id);
+    setCheckpointWordIndex(checkpoint && checkpoint.topicId === topicId ? checkpoint.wordIndex : null);
+  }, [currentUser?.id, topicId]);
 
   useEffect(() => {
     if (!localStorage.getItem("tour_chapter_overview_v1")) setTourOpen(true);
@@ -133,7 +140,10 @@ export default function ChapterOverviewPage() {
   }
 
   const accent = TOPIC_ACCENTS[topicIndex % TOPIC_ACCENTS.length];
-  const resumeIndex = Math.min(completedCount, topic.words.length - 1);
+  const resumeIndex = Math.min(
+    Math.max(completedCount, checkpointWordIndex ?? 0),
+    topic.words.length - 1
+  );
   const startReviewPractice = (startIndex: number, scope: 5 | 10) => {
     if (isGuest) {
       setIsAuthOpen(true);

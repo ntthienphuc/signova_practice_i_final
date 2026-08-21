@@ -6,6 +6,11 @@ import { PracticeWorkspace } from "../components/PracticeWorkspace";
 import { StudyStage } from "../components/StudyStage";
 import type { AnalysisSummary, DashboardPayload } from "../types/learn";
 import { summarizeAnalysis } from "../utils/helpers";
+import {
+  clearLearningCheckpoint,
+  readLearningCheckpoint,
+  writeLearningCheckpoint,
+} from "../utils/learningCheckpoint";
 
 type PageStage = "learn" | "practice";
 
@@ -113,8 +118,14 @@ export default function LearnWordPage() {
   }, [curriculum, topicId, wordOrder, navigate]);
 
   useEffect(() => {
-    setStage("learn");
-  }, [topicId, wordOrder]);
+    const checkpoint = readLearningCheckpoint(currentUser?.id);
+    const currentIndex = Math.max(0, Number(wordOrder ?? "0"));
+    setStage(
+      checkpoint && checkpoint.topicId === topicId && checkpoint.wordIndex === currentIndex
+        ? checkpoint.stage
+        : "learn"
+    );
+  }, [currentUser?.id, topicId, wordOrder]);
 
   useEffect(() => {
     setAssignmentResults([]);
@@ -126,10 +137,20 @@ export default function LearnWordPage() {
   const isCustomPackage = Boolean(topicId?.startsWith("custom-pkg-"));
   const customPackageId = isCustomPackage ? topicId!.replace("custom-pkg-", "") : null;
 
+  useEffect(() => {
+    if (!topicId || !currentUser?.id) return;
+    writeLearningCheckpoint(currentUser.id, {
+      topicId,
+      wordIndex,
+      stage,
+      updatedAt: Date.now(),
+    });
+  }, [currentUser?.id, topicId, wordIndex, stage]);
+
   const goToWord = (index: number) => {
     if (!topic) return;
     if (index < 0 || index >= topic.words.length) {
-      navigate("/practice");
+      navigate("/learn-dashboard");
     } else {
       navigate(`/learn/${topic.id}/${index}`);
     }
@@ -188,6 +209,7 @@ export default function LearnWordPage() {
             onComplete={(raw) => {
               setAssignmentResults((prev) => [...prev, summarizeAnalysis(raw)]);
               if (wordIndex >= topic.words.length - 1) {
+                clearLearningCheckpoint(currentUser?.id);
                 navigate("/learn-dashboard");
               } else {
                 navigate(`/learn/${topic.id}/${wordIndex + 1}`);
@@ -217,11 +239,14 @@ export default function LearnWordPage() {
               wordIndex >= topic.words.length - 1 ? "Hoàn thành topic →" : "Sang từ tiếp theo →"
             }
             onBackToLearn={() => setStage("learn")}
-            onComplete={() =>
-              wordIndex >= topic.words.length - 1
-                ? navigate("/learn-dashboard")
-                : goToWord(wordIndex + 1)
-            }
+            onComplete={() => {
+              if (wordIndex >= topic.words.length - 1) {
+                clearLearningCheckpoint(currentUser?.id);
+                navigate("/learn-dashboard");
+              } else {
+                goToWord(wordIndex + 1);
+              }
+            }}
           />
         </main>
       </div>
@@ -241,6 +266,7 @@ export default function LearnWordPage() {
           isAlreadyLearned={wordIndex < completedWordsForTopic}
           onNextWord={() => {
             if (wordIndex >= topic.words.length - 1) {
+              clearLearningCheckpoint(currentUser?.id);
               navigate("/learn-dashboard");
             } else {
               navigate(`/learn/${topic.id}/${wordIndex + 1}`);
