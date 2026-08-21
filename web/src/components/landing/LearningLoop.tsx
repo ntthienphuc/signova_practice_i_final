@@ -30,7 +30,7 @@ const content = {
 export function LearningLoop({ locale }: LearningLoopProps) {
   const data = content[locale];
   return (
-    <section className="relative overflow-hidden bg-slate-950 py-20 sm:py-24" id="how-it-works">
+    <section className="relative overflow-visible bg-slate-950 py-20 sm:py-24" id="how-it-works">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_20%,rgba(14,165,233,.28),transparent_28%),radial-gradient(circle_at_82%_65%,rgba(6,182,212,.18),transparent_28%)]" />
       <div className="relative mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[.85fr_1.15fr] lg:items-center lg:px-8">
         <div>
@@ -47,7 +47,11 @@ export function LearningLoop({ locale }: LearningLoopProps) {
                 <p className="text-[10px] font-black uppercase tracking-[.16em] text-cyan-200">0{index + 1}</p>
                 <h3 className="mt-2 text-lg font-black leading-tight text-white">{step.title}</h3>
                 <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-300">{step.body}</p>
-                {index < data.steps.length - 1 && <ArrowRight className="absolute -right-3 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-cyan-300 p-1 text-slate-950 lg:block" size={28} />}
+                {index < data.steps.length - 1 && (
+                  <span className="pointer-events-none absolute -right-4 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full border-2 border-slate-950 bg-cyan-300 text-slate-950 shadow-[0_0_0_2px_rgba(103,232,249,.8),0_8px_18px_rgba(0,0,0,.25)] lg:grid">
+                    <ArrowRight size={19} strokeWidth={3.5} />
+                  </span>
+                )}
               </div>
             );
           })}

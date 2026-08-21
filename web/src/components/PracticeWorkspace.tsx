@@ -224,6 +224,7 @@ export function PracticeWorkspace({
       frames: analysis.userFrames,
       segment: userSegment,
       hideOutsideSegment: !isFromCamera,
+      fallbackToFullTimeline: !isFromCamera,
       connections: analysis.connections,
       badByFrame: analysis.badByFrame,
       palette: USER_PALETTE,
@@ -245,24 +246,24 @@ export function PracticeWorkspace({
     }
     const userVideo = userVideoRef.current;
     const referenceVideo = referenceVideoRef.current;
-    if (!userVideo || !referenceVideo) {
+    if (!userVideo && !referenceVideo) {
       return undefined;
     }
     let frameId = 0;
     const tick = () => {
       if (playing) {
-        const uploadEnded = !isFromCamera && (
+        const uploadEnded = !isFromCamera && userVideo && (
           userVideo.ended ||
           (Number.isFinite(userVideo.duration) && userVideo.currentTime >= userVideo.duration - 0.05)
         );
         const userEnd = (userSegment?.segment_end_ms ?? 0) / 1000;
         const referenceEnd = (referenceSegment?.segment_end_ms ?? 0) / 1000;
-        const cameraEnded = isFromCamera && (
+        const cameraEnded = isFromCamera && userVideo && referenceVideo && (
           userVideo.currentTime >= userEnd || referenceVideo.currentTime >= referenceEnd
         );
         if (uploadEnded || cameraEnded) {
-          userVideo.pause();
-          referenceVideo.pause();
+          userVideo?.pause();
+          referenceVideo?.pause();
           setPlaying(false);
         }
       }
@@ -292,6 +293,7 @@ export function PracticeWorkspace({
       onLoadedData: () => redrawOverlays(),
       onCanPlay: () => setStatus("ready"),
       onCanPlayThrough: () => redrawOverlays(),
+      onDurationChange: () => redrawOverlays(),
       onTimeUpdate: () => redrawOverlays(),
       onWaiting: () => setStatus("buffering"),
       onPause: () => {
@@ -342,7 +344,23 @@ export function PracticeWorkspace({
   async function playSegments(): Promise<void> {
     const userVideo = userVideoRef.current;
     const referenceVideo = referenceVideoRef.current;
-    if (!analysis || !userVideo || !referenceVideo || !userSegment || !referenceSegment) {
+    if (!analysis || !userVideo) {
+      return;
+    }
+    userVideo.pause();
+
+    // Uploaded files should be reviewed from start to finish. Camera recordings
+    // keep the existing segment-synchronised playback behavior.
+    if (!isFromCamera) {
+      userVideo.currentTime = 0;
+      userVideo.playbackRate = 1;
+      referenceVideo?.pause();
+      await userVideo.play();
+      setPlaying(true);
+      return;
+    }
+
+    if (!referenceVideo || !userSegment || !referenceSegment) {
       return;
     }
     const commonDuration = Math.max(
@@ -350,24 +368,11 @@ export function PracticeWorkspace({
       referenceSegment.segment_duration_ms,
       1
     );
-    userVideo.pause();
-    referenceVideo.pause();
-
     const userStart = userSegment.segment_start_ms / 1000;
     const userEnd = userSegment.segment_end_ms / 1000;
     const referenceStart = referenceSegment.segment_start_ms / 1000;
     const referenceEnd = referenceSegment.segment_end_ms / 1000;
-
-    // Uploaded files should be reviewed from start to finish. Camera recordings
-    // keep the existing segment-synchronised playback behavior.
-    if (!isFromCamera) {
-      userVideo.currentTime = 0;
-      userVideo.playbackRate = 1;
-      referenceVideo.pause();
-      await userVideo.play();
-      setPlaying(true);
-      return;
-    }
+    referenceVideo.pause();
 
     if (
       userVideo.currentTime >= userEnd ||
@@ -394,17 +399,13 @@ export function PracticeWorkspace({
 
   function resetSegments(): void {
     pauseSegments();
-    if (
-      !analysis ||
-      !userVideoRef.current ||
-      !referenceVideoRef.current ||
-      !userSegment ||
-      !referenceSegment
-    ) {
+    if (!analysis || !userVideoRef.current || !userSegment) {
       return;
     }
     userVideoRef.current.currentTime = userSegment.segment_start_ms / 1000;
-    referenceVideoRef.current.currentTime = referenceSegment.segment_start_ms / 1000;
+    if (referenceVideoRef.current && referenceSegment) {
+      referenceVideoRef.current.currentTime = referenceSegment.segment_start_ms / 1000;
+    }
     redrawOverlays();
   }
 

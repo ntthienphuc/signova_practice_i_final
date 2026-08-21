@@ -34,6 +34,7 @@ export interface DrawOverlayParams {
   frames: FrameData[];
   segment: NormalizedSegment | null;
   hideOutsideSegment?: boolean;
+  fallbackToFullTimeline?: boolean;
   connections: [number, number][];
   badByFrame: Set<number>[];
   palette: Palette;
@@ -103,6 +104,38 @@ function normalizeSegment(segment: SegmentTiming | null | undefined): Normalized
     segment_start_ms: startMs,
     segment_end_ms: endMs,
     segment_duration_ms: Math.max(1, Number(segment.segment_duration_ms ?? (endMs - startMs)))
+  };
+}
+
+function getEffectiveSegment(
+  segment: NormalizedSegment | null,
+  video: HTMLVideoElement,
+  frames: FrameData[],
+  fallbackToFullTimeline: boolean
+): NormalizedSegment | null {
+  if (!segment || !fallbackToFullTimeline) {
+    return segment;
+  }
+
+  const start = Number(segment.segment_start_ms);
+  const end = Number(segment.segment_end_ms);
+  const durationMs = Number.isFinite(video.duration) && video.duration > 0
+    ? video.duration * 1000
+    : 0;
+  const hasValidBounds = Number.isFinite(start) && Number.isFinite(end) && end > start;
+  const fitsVideo = !durationMs || (start >= -250 && end <= durationMs + 250);
+
+  if (hasValidBounds && fitsVideo) {
+    return segment;
+  }
+
+  // A malformed segment should not leave upload playback permanently blank.
+  const fallbackDuration = durationMs || Math.max(segment.segment_duration_ms, frames.length * 33.33, 1);
+  return {
+    ...segment,
+    segment_start_ms: 0,
+    segment_end_ms: fallbackDuration,
+    segment_duration_ms: fallbackDuration,
   };
 }
 
@@ -205,11 +238,16 @@ export function drawOverlay({
   frames,
   segment,
   hideOutsideSegment = false,
+  fallbackToFullTimeline = false,
   connections,
   badByFrame,
   palette
 }: DrawOverlayParams): void {
   if (!canvas || !video || !frames.length || !segment) {
+    return;
+  }
+  const effectiveSegment = getEffectiveSegment(segment, video, frames, fallbackToFullTimeline);
+  if (!effectiveSegment) {
     return;
   }
   const ctx = setCanvasSize(canvas);
@@ -218,12 +256,12 @@ export function drawOverlay({
   const currentMs = (video.currentTime || 0) * 1000;
   if (
     hideOutsideSegment &&
-    (currentMs < segment.segment_start_ms || currentMs > segment.segment_end_ms)
+    (currentMs < effectiveSegment.segment_start_ms || currentMs > effectiveSegment.segment_end_ms)
   ) {
     return;
   }
 
-  const frameIndex = pickFrameIndex(segment, frames, video.currentTime || 0);
+  const frameIndex = pickFrameIndex(effectiveSegment, frames, video.currentTime || 0);
   const frame = frames[frameIndex];
   const points: FramePoints = Array.isArray((frame as { points?: FramePoints }).points)
     ? (frame as { points: FramePoints }).points

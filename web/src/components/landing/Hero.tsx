@@ -11,8 +11,6 @@ const labels = {
   vi: {
     rhythm: "Học theo nhịp của bé",
     feedback: "AI phản hồi trực quan",
-    detected: "Nhận diện",
-    onRhythm: "Đúng nhịp",
     goingWell: "Đang tốt",
     feedbackCopy: "Thấy điểm cần sửa, ngay trong lúc luyện tập.",
     signs: "Ký hiệu VSL",
@@ -22,8 +20,6 @@ const labels = {
   en: {
     rhythm: "Learn at your own pace",
     feedback: "Visual AI feedback",
-    detected: "Detection",
-    onRhythm: "On rhythm",
     goingWell: "Going well",
     feedbackCopy: "See what to adjust while practicing.",
     signs: "VSL signs",
@@ -79,10 +75,6 @@ export function Hero({ data, locale }: HeroProps) {
 
         <div className="landing-reveal-delay relative mx-auto flex w-full max-w-[570px] items-center justify-center lg:justify-end">
           <div className="absolute left-[8%] top-[9%] h-20 w-20 rounded-full border border-white/80 bg-white/60 shadow-[0_12px_35px_rgba(2,132,199,.12)] backdrop-blur" />
-          <div className="absolute left-[2%] top-[24%] hidden rounded-2xl border border-emerald-100 bg-white/90 px-3 py-2 shadow-[0_18px_35px_rgba(16,185,129,.16)] lg:block">
-            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600">{copy.detected}</p>
-            <p className="text-lg font-black leading-none text-slate-800">{copy.onRhythm}</p>
-          </div>
 
           <div className="relative aspect-square w-full max-w-[490px]">
             <div className="absolute inset-[7%] rounded-[34%] bg-gradient-to-br from-cyan-100 via-sky-100 to-blue-200 shadow-[inset_0_0_0_1px_rgba(255,255,255,.8)]" />
