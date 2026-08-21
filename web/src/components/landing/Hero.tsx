@@ -79,7 +79,7 @@ export function Hero({ data, locale }: HeroProps) {
 
         <div className="landing-reveal-delay relative mx-auto flex w-full max-w-[570px] items-center justify-center lg:justify-end">
           <div className="absolute left-[8%] top-[9%] h-20 w-20 rounded-full border border-white/80 bg-white/60 shadow-[0_12px_35px_rgba(2,132,199,.12)] backdrop-blur" />
-          <div className="absolute bottom-[12%] left-[4%] hidden rounded-2xl border border-emerald-100 bg-white/90 px-3 py-2 shadow-[0_18px_35px_rgba(16,185,129,.16)] sm:block">
+          <div className="absolute left-[2%] top-[24%] hidden rounded-2xl border border-emerald-100 bg-white/90 px-3 py-2 shadow-[0_18px_35px_rgba(16,185,129,.16)] lg:block">
             <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600">{copy.detected}</p>
             <p className="text-lg font-black leading-none text-slate-800">{copy.onRhythm}</p>
           </div>

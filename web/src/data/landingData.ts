@@ -136,6 +136,20 @@ const landingData = {
           cta: 'Bắt đầu miễn phí',
         },
         {
+          name: 'Premium Individual',
+          target: 'Người học cá nhân',
+          price: '79.000 VND',
+          period: '/tháng',
+          highlight: false,
+          features: [
+            'Toàn bộ từ vựng cơ bản',
+            'Video mẫu tham khảo',
+            'AI luyện tập mở rộng',
+            'Ôn tập các từ còn yếu',
+          ],
+          cta: 'Chọn gói này',
+        },
+        {
           name: 'Family Companion',
           target: 'Phụ huynh',
           price: '129.000 VND',
@@ -381,9 +395,23 @@ const landingData = {
           cta: 'Get started free',
         },
         {
+          name: 'Premium Individual',
+          target: 'Individual learners',
+          price: '79,000 VND',
+          period: '/month',
+          highlight: false,
+          features: [
+            'Full starter vocabulary',
+            'Sample reference videos',
+            'Extended AI practice',
+            'Review words that need work',
+          ],
+          cta: 'Choose this plan',
+        },
+        {
           name: 'Family Companion',
           target: 'Parents',
-          price: '79,000 – 129,000 VND',
+          price: '129,000 VND',
           period: '/month',
           highlight: true,
           features: [

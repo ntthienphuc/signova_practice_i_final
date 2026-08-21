@@ -38,16 +38,16 @@ export function LearningLoop({ locale }: LearningLoopProps) {
           <h2 className="mt-4 max-w-xl text-4xl font-black leading-[1.05] tracking-[-.04em] text-white sm:text-5xl">{data.heading}</h2>
           <p className="mt-5 max-w-lg text-base font-bold leading-relaxed text-slate-300 sm:text-lg">{data.body}</p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-3 sm:gap-0">
+        <div className="grid gap-3 lg:grid-cols-3 lg:gap-0">
           {data.steps.map((step, index) => {
             const Icon = step.icon;
             return (
-              <div key={step.title} className="relative rounded-[24px] border border-white/10 bg-white/[.07] p-5 backdrop-blur-sm sm:rounded-none sm:first:rounded-l-[24px] sm:last:rounded-r-[24px] sm:not(:last-child):border-r-0">
+              <div key={step.title} className="relative rounded-[24px] border border-white/10 bg-white/[.07] p-5 backdrop-blur-sm lg:rounded-none lg:first:rounded-l-[24px] lg:last:rounded-r-[24px] lg:not(:last-child):border-r-0">
                 <span className="mb-5 grid h-11 w-11 place-items-center rounded-2xl bg-cyan-300 text-slate-950"><Icon size={22} strokeWidth={2.6} /></span>
                 <p className="text-[10px] font-black uppercase tracking-[.16em] text-cyan-200">0{index + 1}</p>
                 <h3 className="mt-2 text-lg font-black leading-tight text-white">{step.title}</h3>
                 <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-300">{step.body}</p>
-                {index < data.steps.length - 1 && <ArrowRight className="absolute -right-3 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-cyan-300 p-1 text-slate-950 sm:block" size={28} />}
+                {index < data.steps.length - 1 && <ArrowRight className="absolute -right-3 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-cyan-300 p-1 text-slate-950 lg:block" size={28} />}
               </div>
             );
           })}
