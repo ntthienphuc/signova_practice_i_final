@@ -33,6 +33,7 @@ export interface DrawOverlayParams {
   video: HTMLVideoElement | null;
   frames: FrameData[];
   segment: NormalizedSegment | null;
+  hideOutsideSegment?: boolean;
   connections: [number, number][];
   badByFrame: Set<number>[];
   palette: Palette;
@@ -203,6 +204,7 @@ export function drawOverlay({
   video,
   frames,
   segment,
+  hideOutsideSegment = false,
   connections,
   badByFrame,
   palette
@@ -212,6 +214,14 @@ export function drawOverlay({
   }
   const ctx = setCanvasSize(canvas);
   ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+  const currentMs = (video.currentTime || 0) * 1000;
+  if (
+    hideOutsideSegment &&
+    (currentMs < segment.segment_start_ms || currentMs > segment.segment_end_ms)
+  ) {
+    return;
+  }
 
   const frameIndex = pickFrameIndex(segment, frames, video.currentTime || 0);
   const frame = frames[frameIndex];

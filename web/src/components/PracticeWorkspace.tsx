@@ -223,6 +223,7 @@ export function PracticeWorkspace({
       video: userVideoRef.current,
       frames: analysis.userFrames,
       segment: userSegment,
+      hideOutsideSegment: !isFromCamera,
       connections: analysis.connections,
       badByFrame: analysis.badByFrame,
       palette: USER_PALETTE,
