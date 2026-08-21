@@ -276,7 +276,7 @@ export function Sidebar({
 
       {/* ── Mobile bottom tab bar (Duolingo-style) ────────── */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-slate-200 safe-area-bottom">
-        <div className="flex items-center justify-around px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <div className="flex items-center px-1 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -284,14 +284,14 @@ export function Sidebar({
                 key={tab.id}
                 type="button"
                 onClick={() => onTabChange(tab.id)}
-                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition-all cursor-pointer min-w-[56px] ${
+                className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-0.5 py-1 transition-all cursor-pointer ${
                   isActive ? "text-[#1cb0f6]" : "text-slate-400"
                 }`}
               >
-                <span className={`text-2xl leading-none transition-transform ${isActive ? "scale-110" : ""}`}>
+                <span className={`text-[1.35rem] leading-none transition-transform ${isActive ? "scale-110" : ""}`}>
                   {tab.icon}
                 </span>
-                <span className={`text-[10px] font-black leading-none whitespace-nowrap ${isActive ? "text-[#1cb0f6]" : "text-slate-400"}`}>
+                <span className={`max-w-full truncate text-[9px] font-black leading-none ${isActive ? "text-[#1cb0f6]" : "text-slate-400"}`}>
                   {tab.label}
                 </span>
                 {isActive && (

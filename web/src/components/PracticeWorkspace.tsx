@@ -693,8 +693,8 @@ export function PracticeWorkspace({
                   <h4 className="text-base font-black text-slate-700 mb-1">Bé ơi, gửi video bài làm nào!</h4>
                   <p className="text-slate-500 text-xs font-bold px-4">Tải video quay sẵn từ máy hoặc bấm quay trực tiếp bằng camera nhé! ✨</p>
                 </div>
-                <div className="flex gap-3">
-                  <label className="flex items-center gap-2 py-3 px-5 bg-white border-2 border-b-2 border-slate-200 text-slate-700 font-black rounded-2xl text-sm cursor-pointer transition-all active:border-b-0 active:translate-y-[2px] hover:bg-slate-50">
+                <div className="flex w-full flex-col gap-3 min-[420px]:w-auto min-[420px]:flex-row">
+                  <label className="flex w-full items-center justify-center gap-2 py-3 px-5 bg-white border-2 border-b-2 border-slate-200 text-slate-700 font-black rounded-2xl text-sm cursor-pointer transition-all active:border-b-0 active:translate-y-[2px] hover:bg-slate-50 min-[420px]:w-auto">
                     <input type="file" accept="video/*" onChange={handleFileChange} className="hidden" />
                     <UploadCloud size={16} className="text-[#1cb0f6]" />
                     Tải video lên
@@ -702,7 +702,7 @@ export function PracticeWorkspace({
                   <button
                     type="button"
                     onClick={() => setIsCameraOpen(true)}
-                    className="flex items-center gap-2 py-3 px-5 bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white font-black rounded-2xl text-sm cursor-pointer transition-all active:border-b-0 active:translate-y-[2px]"
+                    className="flex w-full items-center justify-center gap-2 py-3 px-5 bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white font-black rounded-2xl text-sm cursor-pointer transition-all active:border-b-0 active:translate-y-[2px] min-[420px]:w-auto"
                   >
                     <Camera size={16} />
                     Quay video
@@ -745,17 +745,17 @@ export function PracticeWorkspace({
                   )}
                 </div>
                 
-                <div className="flex gap-3 items-center">
+                <div className="flex flex-col gap-3 min-[420px]:flex-row min-[420px]:items-center">
                   <button
                     type="button"
                     onClick={() => { setFile(null); setIsFromCamera(false); setError(""); setPlaying(false); }}
-                    className="py-2.5 px-4 bg-white border-2 border-b-2 border-slate-200 text-slate-655 font-black rounded-2xl text-xs transition-all cursor-pointer flex items-center gap-1.5 active:border-b-0 active:translate-y-[2px] hover:bg-slate-50"
+                    className="flex w-full items-center justify-center gap-1.5 py-2.5 px-4 bg-white border-2 border-b-2 border-slate-200 text-slate-655 font-black rounded-2xl text-xs transition-all cursor-pointer active:border-b-0 active:translate-y-[2px] hover:bg-slate-50 min-[420px]:w-auto"
                   >
                     🔄 Chọn lại
                   </button>
                   
                   <button
-                    className="flex-1 py-3 px-6 bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white font-black rounded-2xl text-sm cursor-pointer flex items-center justify-center gap-2 active:border-b-0 active:translate-y-[2px] transition-all disabled:opacity-50"
+                    className="w-full py-3 px-6 bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white font-black rounded-2xl text-sm cursor-pointer flex items-center justify-center gap-2 active:border-b-0 active:translate-y-[2px] transition-all disabled:opacity-50 min-[420px]:flex-1"
                     type="button"
                     disabled={loading}
                     onClick={handleAnalyze}
@@ -839,18 +839,18 @@ export function PracticeWorkspace({
                       <strong className="text-lg font-black text-amber-800">Video chất lượng chưa đủ</strong>
                       <p className="text-sm font-bold text-amber-700">Vui lòng quay lại để nhận kết quả chính xác nhé!</p>
                     </div>
-                    <div className="flex gap-2 w-full">
+                    <div className="flex w-full flex-col gap-2 min-[420px]:flex-row">
                       <button
                         type="button"
                         onClick={() => setIsCameraOpen(true)}
-                        className="flex-1 py-3 px-4 bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white font-black rounded-2xl text-sm cursor-pointer flex items-center justify-center gap-1.5 active:border-b-0 active:translate-y-[2px] transition-all"
+                        className="w-full py-3 px-4 bg-[#1cb0f6] border-b-2 border-[#1899d6] hover:bg-[#24c4ff] text-white font-black rounded-2xl text-sm cursor-pointer flex items-center justify-center gap-1.5 active:border-b-0 active:translate-y-[2px] transition-all min-[420px]:flex-1"
                       >
                         📷 Quay lại
                       </button>
                       <button
                         type="button"
                         onClick={() => { setFile(null); setIsFromCamera(false); setAnalysis(null); setError(""); setPlaying(false); }}
-                        className="flex-1 py-3 px-4 bg-white border-2 border-b-2 border-slate-200 text-slate-700 font-black rounded-2xl text-sm cursor-pointer flex items-center justify-center gap-1.5 active:border-b-0 active:translate-y-[2px] transition-all hover:bg-slate-50"
+                        className="w-full py-3 px-4 bg-white border-2 border-b-2 border-slate-200 text-slate-700 font-black rounded-2xl text-sm cursor-pointer flex items-center justify-center gap-1.5 active:border-b-0 active:translate-y-[2px] transition-all hover:bg-slate-50 min-[420px]:flex-1"
                       >
                         📤 Tải video khác
                       </button>

@@ -86,7 +86,7 @@ const activeTopicId = useMemo(() => {
             {!currentUser && index === 1 && (
               <>
                 <div
-                  className="w-full rounded-2xl px-6 py-6 flex items-center gap-5"
+                  className="w-full rounded-2xl px-4 py-5 sm:px-6 sm:py-6 flex items-center gap-3 sm:gap-5"
                   style={{ backgroundColor: "#dff3fd", border: "2px solid #1cb0f6" }}
                 >
                   <div className="w-16 h-16 select-none flex-shrink-0">
@@ -110,7 +110,7 @@ const activeTopicId = useMemo(() => {
                     <button
                       type="button"
                       onClick={onOpenAuth}
-                      className="mt-3 px-5 py-2 rounded-xl font-black text-white text-xs cursor-pointer transition-all active:translate-y-[1px]"
+                      className="mt-3 px-4 sm:px-5 py-2 rounded-xl font-black text-white text-xs cursor-pointer transition-all active:translate-y-[1px]"
                       style={{
                         backgroundColor: "#1cb0f6",
                         border: "none",
@@ -138,7 +138,7 @@ const activeTopicId = useMemo(() => {
               <button
                 type="button"
                 onClick={handleOpenOverview}
-                className={`w-full text-left rounded-2xl p-5 flex items-center gap-4 transition-all duration-150 cursor-pointer ${
+                className={`w-full text-left rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4 transition-all duration-150 cursor-pointer ${
                   isLockedForGuest ? "opacity-60" : "hover:brightness-[0.97] active:translate-y-[1px]"
                 }`}
                 style={{

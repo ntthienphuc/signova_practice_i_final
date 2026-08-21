@@ -58,7 +58,7 @@ export function LearnerProgressDetails({ data, topics }: { data: any; topics: To
   return (
     <div className="space-y-5">
       {/* Big stat cards */}
-      <div data-tour="progress-stats" className="grid grid-cols-3 gap-3 sm:gap-4">
+      <div data-tour="progress-stats" className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-[#fff8ee] border-2 border-b-4 border-[#ff9600]/40 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 text-center">
           <div className="text-3xl sm:text-5xl select-none mb-1 sm:mb-2">🔥</div>
           <strong className="block text-3xl sm:text-5xl font-black text-[#ff9600] leading-none">{activeStreak}</strong>

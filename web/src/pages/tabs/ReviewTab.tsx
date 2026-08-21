@@ -71,7 +71,7 @@ function WordCard({
   }[cat];
 
   return (
-    <div className={`bg-white rounded-[24px] border-2 border-b-4 ${catConfig.border} p-5 flex flex-col gap-3 transition-all hover:scale-[1.01]`}>
+    <div className={`bg-white rounded-[24px] border-2 border-b-4 ${catConfig.border} p-4 sm:p-5 flex flex-col gap-3 transition-all hover:-translate-y-0.5 hover:shadow-md`}>
       {/* Word name + badge */}
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-2xl font-black text-slate-800 m-0">{word.gloss}</h3>
@@ -81,7 +81,7 @@ function WordCard({
       </div>
 
       {/* Score + stats row */}
-      <div className="flex gap-3 text-sm font-bold">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm font-bold">
         {lastScore !== null && (
           <div className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-center">
             <div className="text-[10px] uppercase text-slate-400 font-black tracking-wider">Điểm gần nhất</div>
@@ -275,7 +275,7 @@ export function ReviewTab({
         <p className="m-0 mt-2 max-w-2xl text-sm font-bold leading-relaxed text-slate-500">Ôn đúng nhóm từ đang cần luyện để mỗi lần thử đều có mục tiêu rõ ràng hơn.</p>
 
         {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3 mt-4">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-2.5 sm:gap-3 mt-4">
           <div className="bg-[#fff0f0] border-2 border-b-4 border-[#ef5d66]/30 rounded-2xl px-3 py-3 text-center shadow-sm">
             <div className="text-2xl font-black text-[#ef5d66]">{needPractice.length}</div>
             <div className="text-[10px] font-black text-[#ef5d66]/80 uppercase tracking-wider mt-0.5">Cần luyện</div>
