@@ -234,8 +234,29 @@ export function LearnTab({
             </button>
           </div>
 
+          <div className="relative overflow-hidden rounded-[30px] border-2 border-sky-100 bg-gradient-to-br from-white via-sky-50/80 to-cyan-100/70 p-5 shadow-[0_16px_34px_rgba(14,165,233,.10)] sm:p-6">
+            <div className="relative z-10 min-w-0">
+              <p className="m-0 text-[11px] font-black uppercase tracking-[0.18em] text-[#1cb0f6]">Không gian học tập</p>
+              <h2 className="m-0 mt-2 text-2xl font-black leading-tight text-slate-800 sm:text-3xl">
+                {currentUser?.learner_profile?.display_name
+                  ? `Chào ${currentUser.learner_profile.display_name}! Hôm nay mình học gì?`
+                  : "Chọn một chủ đề để bắt đầu nhé!"}
+              </h2>
+              <p className="m-0 mt-2 max-w-xl text-sm font-bold leading-relaxed text-slate-600">
+                Học từng từ, luyện ngay trước camera và nhận gợi ý cụ thể để tiến bộ sau mỗi lần thử.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="rounded-full border border-white/80 bg-white/80 px-3 py-1 text-[11px] font-black text-sky-700">📚 {topics.length} chủ đề</span>
+                {currentUser?.learner_profile && (
+                  <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-black text-amber-700">🔥 {currentUser.learner_profile.learning_streak} ngày liên tục</span>
+                )}
+              </div>
+            </div>
+            <div className="pointer-events-none absolute -right-5 -bottom-8 text-[8rem] leading-none opacity-20">🤟</div>
+          </div>
+
           {currentUser?.role === "learner" && assignedPackages.length > 0 && (
-            <div data-tour="learn-assigned" className="bg-gradient-to-br from-indigo-50/50 to-sky-50/30 border-2 border-indigo-150 border-b-4 rounded-[32px] p-6 shadow-sm">
+            <div data-tour="learn-assigned" className="bg-gradient-to-br from-indigo-50/70 to-sky-50/50 border-2 border-indigo-150 border-b-4 rounded-[32px] p-6 shadow-[0_12px_28px_rgba(99,102,241,.10)]">
               <h3 className="m-0 text-lg font-black text-slate-800 flex items-center gap-2">
                 🎒 Bài tập được giao từ giáo viên
               </h3>
@@ -287,7 +308,7 @@ export function LearnTab({
         </div>
         
         {/* Welcome Mascot Widget */}
-        <div data-tour="learn-mascot" className="hidden md:flex flex-col gap-4 sticky top-6 bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-5 text-center items-center shadow-sm select-none">
+        <div data-tour="learn-mascot" className="hidden md:flex flex-col gap-4 sticky top-6 bg-gradient-to-b from-white to-sky-50 border-2 border-b-4 border-sky-100 rounded-[28px] p-5 text-center items-center shadow-[0_14px_30px_rgba(14,165,233,.10)] select-none">
           <div className="w-28 h-28 my-1">
             <img
               src={welcomeMascotUrl ?? mascots[2]}

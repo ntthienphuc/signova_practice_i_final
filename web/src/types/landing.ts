@@ -17,8 +17,13 @@ export interface HeroData {
 }
 
 export interface ProblemData {
+  eyebrow: string;
   heading: string;
   body: string;
+  contrastLeftTitle: string;
+  contrastLeftItems: string[];
+  contrastRightTitle: string;
+  contrastRightItems: string[];
 }
 
 export interface FeatureItem {

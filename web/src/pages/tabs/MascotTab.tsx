@@ -90,7 +90,7 @@ export function MascotTab({ onOpenAuth }: MascotTabProps) {
   return (
     <section className="space-y-5">
       {/* Hero — mascot display */}
-      <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6 flex flex-col sm:flex-row items-center gap-6">
+      <div className="bg-gradient-to-br from-white via-sky-50/70 to-indigo-50 border-2 border-b-4 border-sky-100 rounded-[28px] p-6 flex flex-col sm:flex-row items-center gap-6 shadow-[0_16px_34px_rgba(14,165,233,.10)]">
         <div className="relative flex-shrink-0">
           <div className="w-32 h-32 rounded-3xl overflow-hidden bg-slate-50 border-2 border-slate-100 flex items-center justify-center">
             <img
@@ -121,7 +121,7 @@ export function MascotTab({ onOpenAuth }: MascotTabProps) {
       </div>
 
       {/* Shop grid */}
-      <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-5 space-y-4">
+      <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-5 space-y-4 shadow-[0_12px_28px_rgba(15,23,42,.06)]">
         <h3 className="text-xl font-black text-slate-800 border-b-2 border-slate-100 pb-3 flex items-center gap-2 m-0 select-none">
           🛒 Cửa hàng
         </h3>
@@ -142,7 +142,7 @@ export function MascotTab({ onOpenAuth }: MascotTabProps) {
                   className={`border-2 rounded-[20px] p-3 flex flex-col items-center gap-2 transition-all ${
                     isActive
                       ? "border-b-4 border-[#1cb0f6] bg-[#f0f8ff]"
-                      : "border-b-4 border-slate-200 bg-white"
+                      : "border-b-4 border-slate-200 bg-white hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md"
                   }`}
                 >
                   <div className="w-full aspect-square rounded-xl overflow-hidden bg-slate-50 border border-slate-100">

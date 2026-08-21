@@ -209,7 +209,7 @@ export function AccountTab({
 
   return (
     <section className="space-y-5 sm:space-y-6 max-w-full overflow-hidden">
-      <div className="bg-white border-2 border-b-4 border-slate-200 rounded-[24px] sm:rounded-[28px] p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
+      <div className="bg-gradient-to-br from-white via-white to-indigo-50/70 border-2 border-b-4 border-indigo-100 rounded-[24px] sm:rounded-[28px] p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-[0_14px_30px_rgba(99,102,241,.08)] select-none">
         <div className="space-y-1 text-center sm:text-left min-w-0">
           <p className="m-0 text-xs uppercase tracking-[0.18em] text-[#1cb0f6] font-black">Cài đặt tài khoản ⚙️</p>
           <h2 className="m-0 mt-1 font-black text-slate-800 text-lg sm:text-xl leading-tight">Thông tin cá nhân & Quản lý</h2>

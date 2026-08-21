@@ -269,21 +269,22 @@ export function ReviewTab({
   return (
     <section className="space-y-6">
       {/* Header */}
-      <div data-tour="review-header" className="bg-white border-2 border-b-4 border-slate-200 rounded-[28px] p-6">
+      <div data-tour="review-header" className="bg-gradient-to-br from-white via-white to-rose-50/60 border-2 border-b-4 border-slate-200 rounded-[28px] p-6 shadow-[0_14px_30px_rgba(239,93,102,.08)]">
         <p className="m-0 text-sm uppercase tracking-[0.18em] text-[#1cb0f6] font-black">🏋️ Luyện Tập</p>
         <h2 className="m-0 mt-1 font-black text-slate-800 text-2xl">Ôn lại từ đã học</h2>
+        <p className="m-0 mt-2 max-w-2xl text-sm font-bold leading-relaxed text-slate-500">Ôn đúng nhóm từ đang cần luyện để mỗi lần thử đều có mục tiêu rõ ràng hơn.</p>
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3 mt-4">
-          <div className="bg-[#fff0f0] border-2 border-b-4 border-[#ef5d66]/30 rounded-2xl px-3 py-3 text-center">
+          <div className="bg-[#fff0f0] border-2 border-b-4 border-[#ef5d66]/30 rounded-2xl px-3 py-3 text-center shadow-sm">
             <div className="text-2xl font-black text-[#ef5d66]">{needPractice.length}</div>
             <div className="text-[10px] font-black text-[#ef5d66]/80 uppercase tracking-wider mt-0.5">Cần luyện</div>
           </div>
-          <div className="bg-[#fff8ee] border-2 border-b-4 border-[#ff9600]/30 rounded-2xl px-3 py-3 text-center">
+          <div className="bg-[#fff8ee] border-2 border-b-4 border-[#ff9600]/30 rounded-2xl px-3 py-3 text-center shadow-sm">
             <div className="text-2xl font-black text-[#ff9600]">{improving.length}</div>
             <div className="text-[10px] font-black text-[#ff9600]/80 uppercase tracking-wider mt-0.5">Tiến bộ</div>
           </div>
-          <div className="bg-[#f0fff4] border-2 border-b-4 border-[#58cc02]/30 rounded-2xl px-3 py-3 text-center">
+          <div className="bg-[#f0fff4] border-2 border-b-4 border-[#58cc02]/30 rounded-2xl px-3 py-3 text-center shadow-sm">
             <div className="text-2xl font-black text-[#58cc02]">{mastered.length}</div>
             <div className="text-[10px] font-black text-[#58cc02]/80 uppercase tracking-wider mt-0.5">Thành thạo</div>
           </div>

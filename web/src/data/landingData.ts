@@ -20,8 +20,21 @@ const landingData = {
     },
 
     problem: {
-      heading: 'Học ký hiệu không có phản hồi',
-      body: 'Hầu hết nền tảng học ngôn ngữ ký hiệu chỉ cung cấp video mẫu hoặc từ điển. Người học vẫn phải tự đoán xem mình làm đúng không. Signova giải quyết khoảng trống này với phản hồi AI nhanh.',
+      eyebrow: 'Thách thức',
+      heading: 'Có AI vẫn chưa đủ nếu feedback chưa đủ sâu',
+      body: 'Nhiều nền tảng đã dùng AI để hỗ trợ nhận diện ký hiệu. Khoảng trống còn lại là người học chưa được chỉ rõ từng khớp nào lệch, lệch ở hướng hay góc nào, và cần sửa ra sao.',
+      contrastLeftTitle: 'Feedback hiện nay',
+      contrastLeftItems: [
+        'AI có thể nhận diện hoặc chấm điểm, nhưng kết quả thường dừng ở mức đúng/sai hoặc một điểm tổng.',
+        'Người học khó biết khớp tay, khuỷu tay hay hướng ngón tay đang lệch ở đâu.',
+        'Thiếu gợi ý sửa cụ thể khiến lỗi cũ dễ lặp lại qua nhiều buổi học.',
+      ],
+      contrastRightTitle: 'Signova đi sâu hơn',
+      contrastRightItems: [
+        'Overlay xanh/đỏ bám theo chuỗi chuyển động, giúp nhìn thấy khác biệt ngay trên video.',
+        'Chỉ rõ vùng cần chỉnh như cổ tay, khuỷu tay và hướng ngón tay để người học biết phải sửa gì.',
+        'Biến mỗi lần luyện thành một bước tiến cụ thể, dễ hiểu và dễ làm lại.',
+      ],
     },
 
     products: {
@@ -279,8 +292,21 @@ const landingData = {
     },
 
     problem: {
-      heading: "Learning sign language without feedback — you finish a lesson and still don't know if you did it right",
-      body: "Most sign language learning platforms only provide sample videos or dictionaries. Learners still have to guess if they're doing it right. Signova solves this gap with real-time AI feedback.",
+      eyebrow: 'The feedback gap',
+      heading: 'AI is only useful when its feedback tells you what to fix',
+      body: 'Many platforms already use AI to recognize signs. The remaining gap is detail: learners still need to know which joint drifted, which direction was off, and what to adjust next.',
+      contrastLeftTitle: 'Where feedback stops',
+      contrastLeftItems: [
+        'AI may recognize or score a sign, but the result often stops at right/wrong or one overall number.',
+        'Learners cannot easily see whether the wrist, elbow, or finger direction is off.',
+        'Without a concrete correction, the same mistake can repeat across practice sessions.',
+      ],
+      contrastRightTitle: 'How Signova goes deeper',
+      contrastRightItems: [
+        'Green/red overlays follow the movement sequence so differences are visible on the video.',
+        'Feedback points to areas such as the wrist, elbow, and finger direction.',
+        'Every attempt becomes a clear, actionable next step instead of another guess.',
+      ],
     },
 
     products: {

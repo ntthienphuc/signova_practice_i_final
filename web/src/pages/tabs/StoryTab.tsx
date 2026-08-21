@@ -31,7 +31,7 @@ export default function StoryTab() {
   return (
     <section className="min-h-[calc(100vh-80px)] bg-[#f7fbff] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6 rounded-[28px] border-2 border-sky-100 bg-white px-5 py-6 shadow-sm sm:px-7">
+        <div className="mb-6 rounded-[28px] border-2 border-sky-100 bg-gradient-to-br from-white via-white to-sky-50 px-5 py-6 shadow-[0_14px_30px_rgba(14,165,233,.08)] sm:px-7">
           <p className="m-0 text-xs font-black uppercase tracking-[0.18em] text-[#1cb0f6]">
             Khai vấn qua cốt truyện
           </p>
@@ -47,7 +47,7 @@ export default function StoryTab() {
           {STORIES.map((story, index) => (
             <article
               key={story.id}
-              className="flex min-h-[260px] flex-col rounded-[24px] border-2 border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md sm:p-5"
+              className="flex min-h-[260px] flex-col rounded-[24px] border-2 border-slate-200 bg-white p-4 shadow-[0_10px_22px_rgba(15,23,42,.05)] transition-all hover:-translate-y-1 hover:border-sky-200 hover:shadow-[0_16px_28px_rgba(14,165,233,.12)] sm:p-5"
             >
               <div className="mb-4 flex items-start justify-between gap-2">
                 {story.id === "tho-va-gau-ket-ban" ? (
